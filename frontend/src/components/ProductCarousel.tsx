@@ -1,163 +1,127 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-
+import React, {useEffect, useRef,useState,} from 'react';
+import {View, FlatList, StyleSheet,Dimensions,} from 'react-native';
+  
 import ProductCard from './ProductCard';
-import { productData } from '../data/productData';
-
 const { width } = Dimensions.get('window');
-
 const ProductCarousel = () => {
-
   const flatListRef = useRef<FlatList>(null);
-
+  const [products, setProducts] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] =
     useState(0);
+  // Get products from backend
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(
+        "http://192.168.0.112:5000/api/products"
+      );
+      const data = await response.json();
+      setProducts(data.products);
+    } catch(error) {
+      console.log(
+        "Product fetch error:",
+        error
+      );
+    }
 
+  };
   useEffect(() => {
-
+    fetchProducts();
+  }, []);
+  // Auto slide
+  useEffect(() => {
+    if(products.length === 0)
+      return;
     const interval = setInterval(() => {
-
       let nextIndex =
         currentIndex + 1;
-
-      if (
-        nextIndex >=
-        productData.length
-      ) {
-
+      if(nextIndex >= products.length){
         nextIndex = 0;
-
         flatListRef.current?.scrollToOffset({
-          offset: 0,
-          animated: true,
+          offset:0,
+          animated:true
         });
-
-      } else {
-
-        flatListRef.current?.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
-
       }
-
+      else {
+        flatListRef.current?.scrollToIndex({
+          index:nextIndex,
+          animated:true
+        });
+      }
       setCurrentIndex(nextIndex);
-
-    }, 5000);
-
+    },5000);
     return () =>
       clearInterval(interval);
-
-  }, [currentIndex]);
+  },[currentIndex, products]);
 
   return (
-
     <View>
-
       <FlatList
         ref={flatListRef}
-        data={productData}
+        data={products}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-
+        keyExtractor={(item)=>item.id.toString()}
+        renderItem={({item})=>(
           <View
-            style={styles.cardContainer}
-          >
-
+            style={styles.cardContainer}>
             <ProductCard
-              item={item}
-            />
-
+              item={item}/>
           </View>
-
         )}
-        onMomentumScrollEnd={(
-          event
-        ) => {
-
-          const index =
-            Math.round(
-              event.nativeEvent
-                .contentOffset.x /
-                width
-            );
-
+        onMomentumScrollEnd={(event)=>{
+          const index = Math.round(
+            event.nativeEvent.contentOffset.x /
+            width
+          );
           setCurrentIndex(index);
-
         }}
       />
-
-      {/* Indicators */}
-
       <View
-        style={styles.indicatorContainer}
-      >
+        style={styles.indicatorContainer}>
 
-        {productData.map(
-          (_, index) => (
-
-            <View
-              key={index}
-              style={[
-                styles.dot,
-
-                currentIndex ===
-                  index &&
-                  styles.activeDot,
-              ]}
-            />
-
-          )
-        )}
-
+        {products.map((_,index)=>(
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              currentIndex === index &&
+              styles.activeDot
+            ]}
+          />
+        ))}
       </View>
-
     </View>
-
   );
-
 };
-
 export default ProductCarousel;
 
-const styles =
-  StyleSheet.create({
+const styles = StyleSheet.create({
+  cardContainer:{
+    width: width - 32,
+  },
 
-    cardContainer: {
-      width: width - 32,
-    },
 
-    indicatorContainer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      marginTop: 10,
-    },
+  indicatorContainer:{
+    flexDirection:'row',
+    justifyContent:'center',
+    marginTop:10,
+  },
 
-    dot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: '#D9D9D9',
-      marginHorizontal: 4,
-    },
 
-    activeDot: {
-      width: 24,
-      borderRadius: 4,
-      backgroundColor: '#000',
-    },
+  dot:{
+    width:8,
+    height:8,
+    borderRadius:4,
+    backgroundColor:'#D9D9D9',
+    marginHorizontal:4,
+  },
+
+
+  activeDot:{
+    width:24,
+    borderRadius:4,
+    backgroundColor:'#000',
+  },
 
 });

@@ -10,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 
-const Header = () => {
+const Header = ({location}:any) => {
   const navigation = useNavigation<any>();
 
   return (
@@ -34,8 +34,8 @@ const Header = () => {
   />
 
   <Text style={styles.locationText}>
-    Location
-  </Text>
+  {location || "Select your location"}
+</Text>
 
 </View>
 

@@ -1,65 +1,47 @@
 import React from 'react';
-
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import {View,Text,Image,TouchableOpacity,StyleSheet,} from 'react-native';
 
 const ProductCard = ({ item }: any) => {
-
   return (
-
     <View style={styles.card}>
-
-     <View style={styles.imageContainer}>
-
-  <Image
-    source={item.image}
-    style={styles.productImage}
-    resizeMode="contain"
-  />
-
-</View>
-
+      {/* Product Image */}
+      <View style={styles.imageContainer}>
+        {item.image ? (
+          <Image
+            source={{ uri: item.image }}
+            style={styles.productImage}
+            resizeMode="contain"/>
+        ) : (
+          <Text style={styles.noImage}>
+            No Image
+          </Text>
+        )}
+      </View>
+ {/* Product Details */}
       <View style={styles.detailsContainer}>
-
         <Text style={styles.productName}>
           {item.name}
         </Text>
-
         <Text style={styles.quantity}>
-          {item.quantity}
+          Stock: {item.stock}
         </Text>
-
         <Text style={styles.price}>
-          {item.price}
+          ₹{item.price}
         </Text>
-
         <TouchableOpacity
-          style={styles.button}
-        >
-
+          style={styles.button}>
           <Text style={styles.buttonText}>
             Grab Now
           </Text>
-
         </TouchableOpacity>
-
       </View>
-
     </View>
-
   );
-
 };
 
 export default ProductCard;
 
 const styles = StyleSheet.create({
-
   card: {
     backgroundColor: '#FFF',
     borderRadius: 18,
@@ -71,9 +53,23 @@ const styles = StyleSheet.create({
     borderColor: '#EAEAEA',
   },
 
+  imageContainer: {
+    width: 100,
+    height: 120,
+    backgroundColor: '#F4F4F4',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
   productImage: {
     width: 100,
     height: 100,
+  },
+
+  noImage: {
+    color: '#777',
+    fontSize: 12,
   },
 
   detailsContainer: {
@@ -83,7 +79,7 @@ const styles = StyleSheet.create({
 
   productName: {
     fontSize: 16,
-    fontWeight:'500',
+    fontWeight: '500',
     color: '#000',
   },
 
@@ -92,6 +88,7 @@ const styles = StyleSheet.create({
     color: '#777',
     marginTop: 4,
   },
+
 
   price: {
     fontSize: 16,
@@ -108,19 +105,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
   buttonText: {
     color: '#FFF',
     fontSize: 14,
     fontWeight: '500',
   },
-  imageContainer: {
-  width: 100,
-  height: 120,
-  backgroundColor: '#F4F4F4',
-  borderRadius: 16,
-  justifyContent: 'center',
-  alignItems: 'center',
-},
 
 });

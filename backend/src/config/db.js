@@ -7,9 +7,12 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  max: 10,
+  idleTimeoutMillis: 30000,
 });
 
-pool.connect()
+// Test connection
+pool.query("SELECT NOW()")
   .then(() => console.log("✅ PostgreSQL Connected"))
   .catch((err) => console.log("❌ Database Error:", err.message));
 

@@ -1,242 +1,168 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-
-import {Ionicons} from '@expo/vector-icons';
-
+import React, { useEffect, useRef, useState, } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
-  Alert,
-  Keyboard,
-  TouchableWithoutFeedback,
-} from 'react-native';
-
+import { View,Text,TouchableOpacity,TextInput,StyleSheet,Alert,Keyboard,TouchableWithoutFeedback,} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import {
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import {useNavigation,useRoute,} from '@react-navigation/native';
 
 const OtpVerifyScreen = () => {
-  const MOCK_OTP = '123456';
-
   const navigation = useNavigation<any>();
-
   const route = useRoute<any>();
-
   const { phoneNumber } = route.params;
-
-  const [otp, setOtp] = useState([
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]);
-
+  const [otp, setOtp] = useState(['','','','','','',]);
   const [error, setError] = useState('');
-
   const [timer, setTimer] = useState(30);
-
   const [isResendVisible, setIsResendVisible] = useState(false);
-
   const inputRefs = useRef<any>([]);
 
   /* ---------------- TIMER ---------------- */
-
   useEffect(() => {
-
     let interval: any;
-
     if (timer > 0) {
-
       interval = setInterval(() => {
-
         setTimer((prev) => prev - 1);
-
       }, 1000);
-
     } else {
-
       setIsResendVisible(true);
-
     }
-
     return () => clearInterval(interval);
-
   }, [timer]);
-
   /* ---------------- RESEND OTP ---------------- */
-
   const handleResendOtp = () => {
-
     setTimer(30);
-
     setIsResendVisible(false);
-
-    // Alert.alert(
-    //   'OTP Sent Again',
-    //   `OTP resent to +91 ${phoneNumber}`
-    // );
-
   };
 
   /* ---------------- OTP INPUT ---------------- */
-
   const handleOtpChange = (
     text: string,
     index: number
   ) => {
-
     if (!/^[0-9]?$/.test(text)) {
       return;
     }
-
     const updatedOtp = [...otp];
-
     updatedOtp[index] = text;
-
     setOtp(updatedOtp);
-
     setError('');
-
     /* MOVE FORWARD */
-
     if (text && index < 5) {
-
       inputRefs.current[index + 1]?.focus();
-
     }
-
     /* MOVE BACKWARD */
-
   };
 
   /* ---------------- VERIFY ---------------- */
-const handleVerify = async () => {
-
+  const handleVerify = async () => {
   Keyboard.dismiss();
-
-  const enteredOtp = otp.join('');
-
+  const enteredOtp = otp.join("");
   if (enteredOtp.length !== 6) {
-
-    setError('Please enter complete OTP');
-
+    setError("Please enter complete OTP");
     return;
   }
-
-  if (enteredOtp !== MOCK_OTP) {
-
-    setError('Invalid OTP');
-
-    return;
+  try {
+    const response = await fetch(
+     "http://192.168.0.112:5000/api/auth/verify-otp",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: phoneNumber,
+          otp: enteredOtp,
+        }),
+      }
+    );
+    const data = await response.json();
+    console.log("Verify OTP:", data);
+    if (data.success) {
+      // Save JWT token
+      await AsyncStorage.setItem(
+        "token",
+        data.token
+      );
+      // Save login status
+      await AsyncStorage.setItem(
+        "isLoggedIn",
+        "true"
+      );
+      Alert.alert(
+        "Success",
+        "OTP Verified Successfully"
+      );
+      navigation.navigate("Location");
+    } else {
+      setError(data.message);
+    }
+  } catch (error) {
+    console.log("Verify OTP Error:", error);
+    Alert.alert(
+      "Error",
+      "Unable to verify OTP"
+    );
   }
-
- await AsyncStorage.setItem(
-  'isLoggedIn',
-  'true'
-);
-
-navigation.navigate('Location');
-
 };
-  
   return (
-
     <TouchableWithoutFeedback
-      onPress={Keyboard.dismiss}
-    >
+      onPress={Keyboard.dismiss}>
 
       <SafeAreaView style={styles.container}>
-
         <View style={styles.mainContainer}>
 
           {/* BACK */}
-
           <TouchableOpacity
             style={styles.backContainer}
-            onPress={() => navigation.goBack()}
-          >
-
-           <Ionicons
-           name="arrow-back"
-           size={24}
-           color="#000"
-           style={{
-            marginLeft:10
-           }}
-           />
-
+            onPress={() => navigation.goBack()}>
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="#000"
+              style={{
+                marginLeft: 10
+              }} />
             <Text style={styles.backText}>
               Verify Number
             </Text>
-
           </TouchableOpacity>
-
           {/* HEADING */}
-
           <Text style={styles.heading}>
             Verify Your Number
           </Text>
-
           <Text style={styles.subText}>
             Enter the 6-digit code sent to
           </Text>
-
           <Text style={styles.mobileText}>
             +91 {phoneNumber}
           </Text>
 
           {/* OTP */}
-
           <View style={styles.otpContainer}>
-
             {otp.map((digit, index) => (
-
               <TextInput
-  key={index}
-  ref={(ref) => {
-    inputRefs.current[index] = ref;
-  }}
-  style={styles.otpInput}
-  maxLength={1}
-  keyboardType="number-pad"
-  value={digit}
-  onChangeText={(text) =>
-    handleOtpChange(text, index)
-  }
-  onKeyPress={({ nativeEvent }) => {
-
-    if (
-      nativeEvent.key === 'Backspace' &&
-      otp[index] === '' &&
-      index > 0
-    ) {
-
-      inputRefs.current[index - 1]?.focus();
-
-    }
-
-  }}
-/>
-
+                key={index}
+                ref={(ref) => {
+                  inputRefs.current[index] = ref;
+                }}
+                style={styles.otpInput}
+                maxLength={1}
+                keyboardType="number-pad"
+                value={digit}
+                onChangeText={(text) =>
+                  handleOtpChange(text, index)
+                }
+                onKeyPress={({ nativeEvent }) => {
+                  if (
+                    nativeEvent.key === 'Backspace' &&
+                    otp[index] === '' &&
+                    index > 0
+                  ) {
+                    inputRefs.current[index - 1]?.focus();
+                  }
+                }}/>
             ))}
-
           </View>
-
           {/* ERROR */}
-
           {
             error ? (
               <Text style={styles.errorText}>
@@ -244,63 +170,42 @@ navigation.navigate('Location');
               </Text>
             ) : null
           }
-
           {/* RESEND */}
-
           {
             isResendVisible ? (
-
               <TouchableOpacity
-                onPress={handleResendOtp}
-              >
-
+                onPress={handleResendOtp}>
                 <Text style={styles.resendButtonText}>
                   Resend OTP
                 </Text>
-
               </TouchableOpacity>
-
             ) : (
-
               <Text style={styles.resendText}>
                 Resend OTP in 00:
                 {timer < 10 ? `0${timer}` : timer}
               </Text>
-
             )
           }
-
           {/* VERIFY BUTTON */}
-
           <TouchableOpacity
             style={styles.verifyButton}
-            onPress={handleVerify}
-          >
-
+            onPress={handleVerify}>
             <Text style={styles.verifyText}>
               Verify
             </Text>
-
           </TouchableOpacity>
-
           {/* EDIT */}
 
           <TouchableOpacity
-            onPress={() => navigation.goBack()}
-          >
-
+            onPress={() => navigation.goBack()}>
             <Text style={styles.editText}>
               Edit phone number
             </Text>
-
           </TouchableOpacity>
 
         </View>
-
       </SafeAreaView>
-
     </TouchableWithoutFeedback>
-
   );
 };
 
@@ -338,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#000',
     fontWeight: '500',
-    marginLeft:10
+    marginLeft: 10
   },
 
   heading: {

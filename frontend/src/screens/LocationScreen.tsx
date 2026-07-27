@@ -2,80 +2,46 @@ import React, { useState } from 'react';
 import * as Location from 'expo-location';
 import AsyncStorage
 from '@react-native-async-storage/async-storage';
-
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Keyboard,
-  TouchableWithoutFeedback,
-  Pressable,
-  Alert
-} from 'react-native';
-
+import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Keyboard,TouchableWithoutFeedback,Pressable,Alert} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { Ionicons } from '@expo/vector-icons';
-
 import { useNavigation } from '@react-navigation/native';
 
 const LocationScreen = () => {
-
- 
-
   const getCurrentLocation = async () => {
     setLoading(true);
-
   try {
-
     // Check if location service is enabled
-
     const enabled =
       await Location.hasServicesEnabledAsync();
-
    if (!enabled) {
-
   Alert.alert(
     'Location Disabled',
     'Please enable location services'
   );
-
   return;
 }
-
     // Ask permission
-
     const { status } =
       await Location.requestForegroundPermissionsAsync();
-
     if (status !== 'granted') {
-
       alert(
         'Location permission denied'
       );
-
       return;
     }
-
     // Get current location
-
     const location =
       await Location.getCurrentPositionAsync({
         accuracy:
           Location.Accuracy.High,
       });
-
       setLatitude(
   location.coords.latitude
 );
-
 setLongitude(
   location.coords.longitude
 );
-
       const addressData =
   await Location.reverseGeocodeAsync({
     latitude:
@@ -84,11 +50,8 @@ setLongitude(
     longitude:
       location.coords.longitude,
   });
-
   if (addressData.length > 0) {
-
   const place = addressData[0];
-
   const fullAddress = [
     place.street,
     place.district,
@@ -99,15 +62,11 @@ setLongitude(
 
   setAddress(fullAddress);
 }
-
-
   console.log(addressData);
-
     console.log(
       'Latitude:',
       location.coords.latitude
     );
-
     console.log(
       'Longitude:',
       location.coords.longitude
@@ -116,116 +75,102 @@ setLongitude(
 
   } catch (error) {
     setLoading(false);
-
     console.log(error);
-
   }
-
 };
-
 const serviceableAreas = [
   'Bolarum',
   'Kompally',
   'Nizampet',
 ];
-
 const handleConfirmLocation = async () => {
-
   if (!address.trim()) {
-
     Alert.alert(
-      'Location Required',
-      'Please select a location first'
+      "Location Required",
+      "Please select a location first"
     );
-
     return;
   }
-
   try {
-
-    await AsyncStorage.setItem(
-      'userLocation',
-
-      JSON.stringify({
-        address,
-        latitude,
-        longitude,
-      })
+    const token = await AsyncStorage.getItem("token");
+    if (!token) {
+      Alert.alert(
+        "Error",
+        "Token not found"
+      );
+      return;
+    }
+    const response = await fetch(
+     "http://192.168.0.112:5000/api/location",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":
+          `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          latitude: latitude,
+          longitude: longitude,
+          address: address
+        })
+      }
     );
-
-    Alert.alert(
-      'Success',
-      'Location Saved Successfully'
+    const data = await response.json();
+    console.log(
+      "Location API Response:",
+      data
     );
-
-    const data =
- await AsyncStorage.getItem(
-   'userLocation'
- );
-
-console.log(data);
-
-  const isDeliverable =
-  serviceableAreas.some(area =>
-    address.includes(area)
-  );
-
-if (isDeliverable) {
-
-  navigation.navigate('HomeScreen');
-
-} else {
-
-  navigation.navigate(
-    'LocationUnavailable'
-  );
-
-}
-
-  } catch (error) {
-
+    if(data.success){
+      await AsyncStorage.setItem(
+        "userLocation",
+        JSON.stringify({
+          address,
+          latitude,
+          longitude
+        })
+      );
+      Alert.alert(
+        "Success",
+        "Location Saved Successfully"
+      );
+      navigation.navigate(
+        "HomeScreen"
+      );
+    } else {
+      Alert.alert(
+        "Error",
+        data.message
+      );
+    }
+  } catch(error) {
     console.log(error);
-
     Alert.alert(
-      'Error',
-      'Unable to save location'
+      "Error",
+      "Unable to save location"
     );
-
   }
-
 };
-
-
   const navigation = useNavigation<any>();
-
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [latitude, setLatitude] =
   useState<number | null>(null);
-
-const [longitude, setLongitude] =
+   const [longitude, setLongitude] =
   useState<number | null>(null);
-
   return (
-
     <TouchableWithoutFeedback
-   onPress={() => Keyboard.dismiss()}
-    >
+   onPress={() => Keyboard.dismiss()}>
 
     <SafeAreaView style={styles.container}>
         <Pressable
       style={{ flex: 1 }}
-     onPress={() => Keyboard.dismiss()}
-    >
+     onPress={() => Keyboard.dismiss()}>
 
       {/* Header */}
-
       <View style={styles.header}>
-
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
-        >
+          onPress={() => navigation.goBack()}>
           <Ionicons
             name="arrow-back"
             size={24}

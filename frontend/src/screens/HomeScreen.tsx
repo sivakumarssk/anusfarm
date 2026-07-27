@@ -1,4 +1,7 @@
-
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../components/Header';
 import SearchBar from '../components/SearchBar';
 import BannerSection from '../components/BannerSection';
@@ -7,161 +10,99 @@ import ProductCarousel from '../components/ProductCarousel';
 import FeatureSection from '../components/FeaturesSection';
 import QualityTestingCard from '../components/QualityTestingCard';
 import SubscriptionCard from '../components/SubscriptionCard';
-import RecentProductsSection
-from '../components/RecentProductionsSection';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView
-} from 'react-native';
-
-import React, {
-  useEffect,
-  useState
-} from 'react';
-
-import AsyncStorage
-from '@react-native-async-storage/async-storage';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
+import RecentProductsSection from '../components/RecentProductionsSection';
 
 const GuestHomeScreen = () => {
- // const isLoggedIn = true;
-
- const [isLoggedIn, setIsLoggedIn] =
-  useState(false);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [location, setLocation] = useState("");
+  // Get login status
   useEffect(() => {
-
-  const getLoginStatus = async () => {
-
-    const status =
-      await AsyncStorage.getItem(
-        'isLoggedIn'
+    const getLoginStatus = async () => {
+      try {
+        const status = await AsyncStorage.getItem("isLoggedIn");
+        setIsLoggedIn(status === "true");
+      } catch (error) {
+        console.log("Login Status Error:", error);
+      }
+    };
+    getLoginStatus();
+  }, []);
+  // Get saved location
+  // 2. Add this (replace getSavedLocation with this)
+useEffect(() => {
+  const getUserLocation = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) return;
+      const response = await fetch(
+         "http://192.168.0.112:5000/api/location",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-
-    setIsLoggedIn(
-      status === 'true'
-    );
-
+      const data = await response.json();
+      if (data.success) {
+        setLocation(data.location.address);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
-
-  getLoginStatus();
-
+  getUserLocation();
 }, []);
-
   return (
-
     <SafeAreaView style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 100,
+        }}>
+        {/* Header */}
+        <Header location={location} />
 
+        {/* Search */}
+        <SearchBar />
 
-  <ScrollView
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-      paddingBottom: 100,
-    }}
-  >
+        {/* Banner */}
+        <BannerSection />
 
-      {/* Header */}
-      <Header />
+        {/* Subscription */}
+        {isLoggedIn && (
+          <SubscriptionCard />
+        )}
 
-      {/* Search Bar */}
-      <SearchBar/>
+        {/* Product Header */}
+        <ProductSectionHeader />
 
-      {/* Banner Section */}
-      <BannerSection/>
+        {/* Products */}
+        <ProductCarousel />
 
-      {isLoggedIn && (
-  <SubscriptionCard />
-)}
+        {/* Recent Products */}
+        {isLoggedIn && (
+          <RecentProductsSection />
+        )}
 
-      <ProductSectionHeader />
+        {/* Features */}
+        <FeatureSection />
 
+        {/* Quality */}
+        <QualityTestingCard />
 
-      {/* Products Section */}
-      <ProductCarousel />
-
-            {isLoggedIn && (
- <RecentProductsSection />
-)}
-
-      {/* Quality Section */}
-     <FeatureSection />
-     <QualityTestingCard />
-       </ScrollView>
-
-      
+      </ScrollView>
 
     </SafeAreaView>
-
   );
+
 };
-
 export default GuestHomeScreen;
-
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: '#F8F8F8',
     paddingHorizontal: 16,
-  },
-
-  header: {
-    marginTop: 15,
-  },
-
-  helloText: {
-    fontSize: 14,
-    color: '#000',
-  },
-
-  locationText: {
-    fontSize: 13,
-    color: '#555',
-    marginTop: 4,
-  },
-
-  searchBar: {
-    height: 50,
-    backgroundColor: '#EAF2EA',
-    borderRadius: 12,
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-    marginTop: 15,
-  },
-
-  searchText: {
-    color: '#999',
-    fontSize: 13,
-  },
-
-  bannerSection: {
-    height: 140,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    marginTop: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  productsSection: {
-    height: 120,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    marginTop: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  qualitySection: {
-    height: 80,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    marginTop: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
 });
