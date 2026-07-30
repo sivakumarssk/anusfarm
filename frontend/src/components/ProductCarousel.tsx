@@ -15,6 +15,7 @@ const ProductCarousel = () => {
         "http://192.168.0.112:5000/api/products"
       );
       const data = await response.json();
+      console.log("PRODUCT RESPONSE:", data);
       setProducts(data.products);
     } catch(error) {
       console.log(

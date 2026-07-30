@@ -3,6 +3,8 @@ const pool = require("../config/db");
 
 // ================= CREATE PRODUCT =================
 const addProduct = async (req, res) => {
+   console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
   try {
 
     const {
@@ -15,8 +17,8 @@ const addProduct = async (req, res) => {
 
 
     const image = req.file
-      ? req.file.filename
-      : null;
+  ? req.file.filename
+  : null;
 
 
     const result = await pool.query(
@@ -51,49 +53,87 @@ const addProduct = async (req, res) => {
 
   }
 };
-
-
-
-
 // ================= GET ALL PRODUCTS =================
 const getProducts = async (req, res) => {
 
   try {
 
-    const result = await pool.query(
-      `SELECT * FROM products
-       ORDER BY id DESC`
-    );
-
+    const result = await pool.query(`
+      SELECT
+        p.*,
+        c.name AS category
+      FROM products p
+      LEFT JOIN categories c
+      ON p.category_id = c.id
+      ORDER BY p.id DESC
+    `);
 
     const products = result.rows.map(product => ({
       ...product,
-
       image: product.image
         ? `${req.protocol}://${req.get("host")}/uploads/${product.image}`
         : null
     }));
 
-
     res.json({
-      success:true,
+      success: true,
       products
     });
 
-
-  } catch(error) {
+  } catch (error) {
 
     res.status(500).json({
-      success:false,
-      message:error.message
+      success: false,
+      message: error.message
     });
 
   }
 
 };
 
+// ================= GET PRODUCTS BY CATEGORY =================
+const getProductsByCategory = async (req, res) => {
 
+  try {
 
+    const { category } = req.params;
+
+    const result = await pool.query(
+      `
+      SELECT
+        p.*,
+        c.name AS category
+      FROM products p
+      LEFT JOIN categories c
+      ON p.category_id = c.id
+      WHERE LOWER(c.name) = LOWER($1)
+      ORDER BY p.id DESC
+      `,
+      [category]
+    );
+
+    const products = result.rows.map(product => ({
+      ...product,
+      image: product.image
+        ? `${req.protocol}://${req.get("host")}/uploads/${product.image}`
+        : null
+    }));
+
+    res.json({
+      success: true,
+      products
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+};
 
 
 // ================= GET PRODUCT BY ID =================
@@ -147,16 +187,10 @@ const getProductById = async (req,res)=>{
 
 };
 
-
-
-
-
-
 // ================= UPDATE PRODUCT =================
 const updateProduct = async(req,res)=>{
 
   try {
-
 
     const {id} = req.params;
 
@@ -166,7 +200,8 @@ const updateProduct = async(req,res)=>{
       price,
       category_id,
       stock,
-      description
+      description,
+      status
     } = req.body;
 
 
@@ -187,9 +222,10 @@ const updateProduct = async(req,res)=>{
         category_id=$3,
         image=$4,
         stock=$5,
-        description=$6
-       WHERE id=$7
-       RETURNING *`,
+        description=$6,
+        status=$7
+       WHERE id=$8
+//        RETURNING *`,
        [
         name,
         price,
@@ -197,6 +233,7 @@ const updateProduct = async(req,res)=>{
         image,
         stock,
         description,
+        status,
         id
        ]
     );
@@ -232,12 +269,39 @@ const updateProduct = async(req,res)=>{
   }
 
 };
+// ================= UPDATE STOCK =================
+const updateProductStock = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stock } = req.body;
 
+    const result = await pool.query(
+      `UPDATE products
+       SET stock = $1
+       WHERE id = $2
+       RETURNING *`,
+      [stock, id]
+    );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
 
-
-
-
+    res.json({
+      success: true,
+      message: "Stock updated successfully",
+      product: result.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 // ================= DELETE PRODUCT =================
 const deleteProduct = async(req,res)=>{
 
@@ -281,22 +345,55 @@ const deleteProduct = async(req,res)=>{
       success:false,
       message:error.message
     });
-
-
   }
 
+};
+  const toggleProductStatus = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const result = await pool.query(
+      `UPDATE products
+       SET status = $1
+       WHERE id = $2
+       RETURNING *`,
+      [status, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Status updated",
+      product: result.rows[0]
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
 };
 
 
 
-
-
 module.exports = {
-
   addProduct,
   getProducts,
+  getProductsByCategory,
   getProductById,
   updateProduct,
-  deleteProduct
-
+  updateProductStock,
+  deleteProduct,
+  toggleProductStatus,
 };

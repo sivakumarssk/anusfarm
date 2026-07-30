@@ -1,43 +1,31 @@
 import React from 'react';
-
-import {useNavigation} from '@react-navigation/native';
-
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
-
-const Header = ({location}:any) => {
+import { useNavigation } from '@react-navigation/native';
+import { View,Text,StyleSheet,TouchableOpacity, Image,} from 'react-native';
+  
+const Header = ({ location , userName }: any) => {
   const navigation = useNavigation<any>();
-
   return (
-
     <View style={styles.container}>
-
       {/* Left Section */}
-
       <View>
 
-        <Text style={styles.helloText}>
-          Hello !
-        </Text>
+       <Text style={styles.helloText}>
+  Hello {userName ? userName : "!"}
+</Text>
 
         <View style={styles.locationContainer}>
 
-  <Image
-    source={require('../../assets/icons/location.png')}
-    style={styles.locationIcon}
-    resizeMode="contain"
-  />
+          <Image
+            source={require('../../assets/icons/location.png')}
+            style={styles.locationIcon}
+            resizeMode="contain"
+          />
 
-  <Text style={styles.locationText}>
-  {location || "Select your location"}
-</Text>
+          <Text style={styles.locationText}>
+            {location || "Select your location"}
+          </Text>
 
-</View>
+        </View>
 
       </View>
 
@@ -59,7 +47,7 @@ const Header = ({location}:any) => {
 
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={()=>{
+          onPress={() => {
             navigation.navigate("Wallet");
           }}
         >
@@ -74,7 +62,7 @@ const Header = ({location}:any) => {
 
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={()=>{
+          onPress={() => {
             navigation.navigate("Cart")
           }}
         >
@@ -118,11 +106,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-    locationIcon: {
-  width: 16,
-  height: 16,
-  marginRight: 4,
-},
+  locationIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 4,
+  },
 
   locationText: {
     fontSize: 16,

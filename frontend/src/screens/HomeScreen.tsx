@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from "@react-navigation/native";
 import { StyleSheet, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +16,8 @@ import RecentProductsSection from '../components/RecentProductionsSection';
 const GuestHomeScreen = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [location, setLocation] = useState("");
+  const [userName, setUserName] = useState("");
+
   // Get login status
   useEffect(() => {
     const getLoginStatus = async () => {
@@ -53,6 +56,46 @@ useEffect(() => {
   };
   getUserLocation();
 }, []);
+
+useFocusEffect(
+  useCallback(() => {
+
+    const getUserProfile = async () => {
+
+      try {
+
+        const token = await AsyncStorage.getItem("token");
+
+        if (!token) return;
+
+        const response = await fetch(
+          "http://192.168.0.112:5000/api/users/profile",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        console.log("HOME PROFILE:", data);
+
+        if (data.success) {
+          setUserName(data.user.name || "");
+        }
+
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getUserProfile();
+
+  }, [])
+);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -61,7 +104,10 @@ useEffect(() => {
           paddingBottom: 100,
         }}>
         {/* Header */}
-        <Header location={location} />
+       <Header 
+  location={location}
+  userName={userName}
+/>
 
         {/* Search */}
         <SearchBar />

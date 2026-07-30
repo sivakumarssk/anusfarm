@@ -2,15 +2,28 @@ import React from 'react';
 import {View,Text,Image,TouchableOpacity,StyleSheet,} from 'react-native';
 
 const ProductCard = ({ item }: any) => {
+  
   return (
     <View style={styles.card}>
       {/* Product Image */}
       <View style={styles.imageContainer}>
         {item.image ? (
-          <Image
-            source={{ uri: item.image }}
-            style={styles.productImage}
-            resizeMode="contain"/>
+     <Image
+  source={{
+    uri: item.image
+  }}
+  style={styles.productImage}
+  resizeMode="contain"
+  onLoad={()=>{
+    console.log("IMAGE LOADED:", item.image);
+  }}
+  onError={(error)=>{
+    console.log(
+      "IMAGE ERROR:",
+      error.nativeEvent
+    );
+  }}
+/>
         ) : (
           <Text style={styles.noImage}>
             No Image
@@ -62,10 +75,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  productImage: {
-    width: 100,
-    height: 100,
-  },
+ productImage: {
+  width: 100,
+  height: 100,
+},
 
   noImage: {
     color: '#777',

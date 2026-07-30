@@ -29,7 +29,7 @@ import DeliveryScheduleScreen from '../screens/DeliveryScheduleScreen';
 import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
 import LocationUnavailableScreen from '../screens/LocationUnavailableScreen';
 import TrackOrderScreen from '../screens/TrackOrderScreen';
-
+import ProductDetailsScreen from '../screens/ProductDetailsScreen';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -157,6 +157,10 @@ component={BottomTabNavigator}
 <Stack.Screen
   name="TrackOrder"
   component={TrackOrderScreen}
+/>
+<Stack.Screen
+ name="ProductDetails"
+ component={ProductDetailsScreen}
 />
 
       </Stack.Navigator>

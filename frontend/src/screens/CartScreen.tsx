@@ -235,10 +235,14 @@ if (cartItems.length === 0) {
   >
 
     <Image
-      source={item.image}
-      style={styles.productImage}
-      resizeMode="contain"
-    />
+  source={
+    typeof item.image === "string"
+      ? { uri: item.image }
+      : item.image
+  }
+  style={styles.productImage}
+  resizeMode="contain"
+/>
 
   </View>
 

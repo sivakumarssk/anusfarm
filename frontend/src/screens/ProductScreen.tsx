@@ -26,7 +26,7 @@ import ProductCategoryTabs
 from '../components/ProductsCategoryTabs';
 
 const ProductsScreen = () => {
-
+  console.log("PRODUCT SCREEN LOADED");
   const [
     selectedCategory,
     setSelectedCategory,
