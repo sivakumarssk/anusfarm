@@ -38,18 +38,23 @@ const CartScreen = () => {
   removeItem,
 } = useCart();
 
-const subscriptionItems =
-  cartItems.filter(
-    item => item.category === 'Milk'
-  );
+// const subscriptionItems = cartItems.filter(
+//   item => item.type === "subscription"
+// );
 
-const instantItems =
-  cartItems.filter(
-    item => item.category !== 'Milk'
-  );
+// const instantItems = cartItems.filter(
+//   item => item.type === "instant"
+// );
+const subscriptionItems = cartItems;
 
-const hasSubscriptionItems =
-  subscriptionItems.length > 0;
+const instantItems = cartItems;
+
+const hasSubscriptionItems = cartItems.length > 0;
+// const hasSubscriptionItems =
+//   subscriptionItems.length > 0;
+
+  console.log("SUBSCRIPTION ITEMS:", subscriptionItems);
+console.log("HAS SUBSCRIPTION:", hasSubscriptionItems);
 
 const totalItems = cartItems.reduce(
   (sum, item) => sum + item.quantity,
@@ -471,7 +476,7 @@ if (cartItems.length === 0) {
 
 <View style={styles.bottomButtonContainer}>
 
-  {hasSubscriptionItems && (
+  {/* {hasSubscriptionItems && ( */}
 
     <TouchableOpacity
       style={styles.subscribeButton}
@@ -488,7 +493,7 @@ if (cartItems.length === 0) {
       </Text>
     </TouchableOpacity>
 
-  )}
+  {/* )} */}
 
   <TouchableOpacity
     style={styles.instantBuyButton}
@@ -857,7 +862,7 @@ billSummaryCard: {
   elevation: 5,
 },
 walletContainer:{
-  marginTop:80,
+  marginTop:20,
   backgroundColor:"#FFF",
 alignItems:"center",
   height:50,
@@ -887,10 +892,11 @@ WalletText:{
     marginLeft:10,
 },
 bottomButtonContainer: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
+  flexDirection: "row",
+  justifyContent: "space-between",
   marginHorizontal: 16,
-  marginBottom: 20,
+  marginTop: 15,
+  marginBottom: 30,
 },
 
 subscribeButton: {
@@ -961,3 +967,4 @@ instantBuyButtonText: {
 
 
 });
+

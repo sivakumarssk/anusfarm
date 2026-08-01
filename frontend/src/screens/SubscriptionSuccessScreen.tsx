@@ -320,15 +320,15 @@ const SubscriptionSuccessScreen = () => {
 
 
       <TouchableOpacity
-        style={styles.homeButton}
-        onPress={() =>
-          navigation.navigate('GuestHome')
-        }
-      >
-        <Text style={styles.homeButtonText}>
-          Go to Home
-        </Text>
-      </TouchableOpacity>
+  style={styles.homeButton}
+  onPress={() =>
+    navigation.navigate("MySubscriptions")
+  }
+>
+  <Text style={styles.homeButtonText}>
+    View My Subscription
+  </Text>
+</TouchableOpacity>
 
       </ScrollView>
 

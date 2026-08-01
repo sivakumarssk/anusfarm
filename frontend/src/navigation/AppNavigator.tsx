@@ -30,6 +30,11 @@ import TransactionHistoryScreen from '../screens/TransactionHistoryScreen';
 import LocationUnavailableScreen from '../screens/LocationUnavailableScreen';
 import TrackOrderScreen from '../screens/TrackOrderScreen';
 import ProductDetailsScreen from '../screens/ProductDetailsScreen';
+import MySubscriptionsScreen from "../screens/MySubscriptionsScreen";
+import PauseSubscriptionScreen from "../screens/PauseSubscriptionScreen";
+import EditSubscriptionScreen from "../screens/EditSubscriptionScreen";
+import CancelSubscriptionScreen from "../screens/CancelSubscriptionScreen";
+import DeliveryCalendarScreen from '../screens/DeliveryCalendarScreen';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -161,6 +166,26 @@ component={BottomTabNavigator}
 <Stack.Screen
  name="ProductDetails"
  component={ProductDetailsScreen}
+/>
+<Stack.Screen
+  name="MySubscriptions"
+  component={MySubscriptionsScreen}
+/>
+<Stack.Screen
+  name="PauseSubscription"
+  component={PauseSubscriptionScreen}
+/>
+<Stack.Screen
+  name="EditSubscription"
+  component={EditSubscriptionScreen}
+/>
+<Stack.Screen
+  name="CancelSubscription"
+  component={CancelSubscriptionScreen}
+/>
+<Stack.Screen
+ name="DeliveryCalendar"
+ component={DeliveryCalendarScreen}
 />
 
       </Stack.Navigator>

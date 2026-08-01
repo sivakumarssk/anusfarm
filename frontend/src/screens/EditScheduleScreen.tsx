@@ -38,7 +38,7 @@ const EditScheduleScreen = () => {
   const { order } = route.params;
 
   const product =
-    order.items?.[0];
+  order.items?.[0] || null;
 
   return (
     
@@ -115,10 +115,19 @@ resizeMode='contain'
        alignItems:'center',
        borderRadius:20,
      }}>
-         <Image
-          source={product.image}
-          style={styles.image}
-        />
+         {
+  product?.image ? (
+    <Image
+      source={{ uri: product.image }}
+      style={styles.image}
+      resizeMode="contain"
+    />
+  ) : (
+    <Text>
+      📅
+    </Text>
+  )
+}
         </View>
         
 
@@ -129,15 +138,21 @@ resizeMode='contain'
         >
 
           <Text style={styles.name}>
-            {product.name}
+           {product?.name || "Subscription Order"}
           </Text>
 
           <Text style={styles.info}>
-            {product.unit} | Qty {product.quantity}
+           
+            {
+ product
+ ? `${product.unit} | Qty ${product.quantity}`
+ : "Scheduled Subscription"
+}
           </Text>
 
           <Text style={styles.price}>
-            ₹{product.price}
+           
+            ₹{order.totalAmount ?? 0}
           </Text>
 
           <Text style={styles.schedule}>
@@ -219,7 +234,7 @@ resizeMode='contain'
         }}
       >
         Your schedule for {'\n'}
-        {product.name}
+        {product?.name || "Subscription Order"}
         {' '}is Paused.
       </Text>
 
@@ -308,7 +323,7 @@ resizeMode='contain'
         }}
       >
         Your schedule for {'\n'}
-        {product.name}
+        {product?.name || "Subscription Order"}
         {' '}is skipped on {selectedDate.toLocaleDateString()}.
       </Text>
    </TouchableOpacity>

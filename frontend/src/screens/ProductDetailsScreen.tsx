@@ -36,15 +36,18 @@ export default function ProductDetailsScreen({
 
       name: product.name,
 
-      category: product.category_id
-        ? String(product.category_id)
-        : "",
+      
+category:
+product.category ||
+(product.category_id === 1 ? "Milk":"Other"),
 
       unit: "1 Unit",
 
       price: Number(product.price),
 
-      image:String(product.image)
+      image:String(product.image),
+       quantity: 1,
+       type: product,
 
     });
 

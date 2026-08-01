@@ -17,6 +17,7 @@ export type CartItem = {
   price: number;
   image: string;
   quantity: number;
+  type: "subscription" | "instant";
 };
 
 type CartContextType = {
@@ -24,7 +25,7 @@ type CartContextType = {
   lastAddedItem: CartItem | null;
 
   addToCart: (
-    product: Omit<CartItem, 'quantity'>
+    product: CartItem
   ) => void;
 
   increaseQuantity: (
@@ -49,6 +50,7 @@ createContext<CartContextType | null>(
   null
 );
 
+
 const CART_STORAGE_KEY =
   '@anu_farm_cart';
 
@@ -69,6 +71,8 @@ export const CartProvider = ({
   lastAddedItem,
   setLastAddedItem,
 ] = useState<CartItem | null>(null);
+
+
 
   useEffect(() => {
 
@@ -115,6 +119,8 @@ useEffect(() => {
         JSON.stringify(cartItems)
       );
 
+
+
     } catch (error) {
 
       console.log(
@@ -130,9 +136,9 @@ useEffect(() => {
 
 }, [cartItems]);
 
-  const addToCart = (
-    product: Omit<CartItem, 'quantity'>
-  ) => {
+ const addToCart = (
+  product: CartItem
+) => {
  console.log("ADDING TO CART IMAGE:", product.image);
     setLastAddedItem({
   ...product,
@@ -235,10 +241,13 @@ useEffect(() => {
     );
 
   };
-
-  const clearCart = () => {
+const clearCart = async()=>{
 
   setCartItems([]);
+
+  await AsyncStorage.removeItem(
+    CART_STORAGE_KEY
+  );
 
 };
 

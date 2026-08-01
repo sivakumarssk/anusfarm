@@ -39,6 +39,8 @@ const MyOrdersScreen = () => {
 const { orders } =
   useOrderHistory();
 
+console.log("Orders in Context:", orders);
+
   const [
   selectedTab,
   setSelectedTab,
@@ -62,7 +64,8 @@ const { orders } =
           'subscription'
       );
 
-  
+  console.log("Selected Tab:", selectedTab);
+console.log("Filtered Orders:", filteredOrders);
 
   // const todayOrder =
   // filteredOrders.find(

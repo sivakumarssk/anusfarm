@@ -59,43 +59,35 @@ useEffect(() => {
 
 useFocusEffect(
   useCallback(() => {
-
     const getUserProfile = async () => {
-
       try {
-
         const token = await AsyncStorage.getItem("token");
-
         if (!token) return;
-
-        const response = await fetch(
-          "http://192.168.0.112:5000/api/users/profile",
-          {
+        const response = await fetch("http://192.168.0.112:5000/api/users/profile",{
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-
         const data = await response.json();
-
         console.log("HOME PROFILE:", data);
-
         if (data.success) {
           setUserName(data.user.name || "");
+           // save latest name
+          await AsyncStorage.setItem(
+            "userName",
+            data.user.name || ""
+          );
         }
-
       } catch (error) {
         console.log(error);
       }
     };
-
     getUserProfile();
-
   }, [])
 );
-
+console.log("USERNAME:", userName);
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -106,9 +98,7 @@ useFocusEffect(
         {/* Header */}
        <Header 
   location={location}
-  userName={userName}
-/>
-
+  userName={userName}/>
         {/* Search */}
         <SearchBar />
 

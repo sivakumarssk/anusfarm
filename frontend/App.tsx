@@ -7,6 +7,7 @@ import { CartProvider } from './src/context/CartContext';
 import { SubscriptionProvider,} from './src/context/SubscriptionContext';
 
 import { OrderHistoryProvider,} from './src/context/OrderHistoryContext';
+
 export default function App() {
 
   return (

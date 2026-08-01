@@ -1,16 +1,29 @@
 const express = require("express");
 const router = express.Router();
-const {getProfile,updateProfile,getAllUsers,} = require("../controllers/userController");
-
+const {createUser,getAllUsers,getUserById,getProfile,updateProfile,updateUser,deleteUser,} = require("../controllers/userController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-console.log("✅ userRoutes loaded");
-// GET PROFILE
-router.get("/profile",authMiddleware,getProfile);
 
+// Create User
+router.post("/", createUser);
+
+// Get All Users
 router.get("/", getAllUsers);
-// UPDATE NAME
-router.put( "/update-profile",authMiddleware,updateProfile);
+// Logged-in Profile
+// MUST come before /:id
+router.get("/profile", authMiddleware, getProfile);
+
+// Update Logged-in Profile
+router.put("/update-profile", authMiddleware, updateProfile);
+
+// Get User By ID
+// Keep this at the bottom
+router.get("/:id", getUserById);
+
+// Update User by ID (Admin)
+router.put("/:id", updateUser);
+// Delete User
+router.delete("/:id", deleteUser);
 
 
 module.exports = router;

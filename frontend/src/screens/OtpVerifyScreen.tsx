@@ -53,6 +53,8 @@ setError("Please enter complete OTP");
 return;
 }
 try{
+  console.log("Calling API...");
+
 const response = await fetch("http://192.168.0.112:5000/api/auth/verify-otp",{
 method:"POST",
 headers:{

@@ -7,7 +7,6 @@ const getLatestOrders = async () => {
     ORDER BY id DESC
     LIMIT 5
   `);
-
   return result.rows;
 };
 

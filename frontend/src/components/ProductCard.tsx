@@ -1,8 +1,8 @@
 import React from 'react';
 import {View,Text,Image,TouchableOpacity,StyleSheet,} from 'react-native';
-
+import { useCart } from "../context/CartContext";
 const ProductCard = ({ item }: any) => {
-  
+  const { addToCart } = useCart();
   return (
     <View style={styles.card}>
       {/* Product Image */}
@@ -41,12 +41,44 @@ const ProductCard = ({ item }: any) => {
         <Text style={styles.price}>
           ₹{item.price}
         </Text>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.button}>
           <Text style={styles.buttonText}>
             Grab Now
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+  style={styles.button}
+  onPress={() => {
+
+    console.log("ADDING CART ITEM:", {
+      id:item.id,
+      name:item.name,
+      category:item.category
+    });
+
+
+    addToCart({
+  id: item.id,
+  name: item.name,
+  price: Number(item.price),
+  image: item.image,
+  category: item.category,
+  unit: item.unit || "1 L",
+  quantity: 1,
+  type:
+  item.category?.toLowerCase().includes("milk")
+    ? "subscription"
+    : "instant",
+});
+
+  }}
+>
+<Text style={styles.buttonText}>
+ Grab Now
+</Text>
+
+</TouchableOpacity>
       </View>
     </View>
   );

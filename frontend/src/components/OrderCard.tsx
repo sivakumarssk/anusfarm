@@ -14,8 +14,10 @@ const OrderCard = ({
   showActionButton = false,
 }: any) => {
   const product =
-    order.items?.[0];
-
+  order.items &&
+  order.items.length > 0
+    ? order.items[0]
+    : null;
   return (
 
     <View style={styles.card}>
@@ -29,25 +31,47 @@ const OrderCard = ({
 }}>
 
 
-      <Image
-        source={product?.image}
-        style={styles.image}
-      />
+     {product?.image ? (
+  <Image
+    source={{ uri: product.image }}
+    style={styles.image}
+    resizeMode="contain"
+    onLoad={() => console.log("ORDER IMAGE:", product.image)}
+    onError={(e) =>
+      console.log("IMAGE ERROR:", e.nativeEvent.error)
+    }
+  />
+) : (
+  <View
+    style={[
+      styles.image,
+      {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#EEE",
+      },
+    ]}
+  >
+    <Text>No Image</Text>
+  </View>
+)}
       </View>
 
       <View style={styles.content}>
 
         <Text style={styles.name}>
-          {product?.name}
-        </Text>
+  {product?.name || "No Product"}
+</Text>
 
-        <Text style={styles.info}>
-          {product?.unit} | Qty {product?.quantity}
-        </Text>
+<Text style={styles.info}>
+  {product
+    ? `${product.unit} | Qty ${product.quantity}`
+    : "No items"}
+</Text>
 
-        <Text style={styles.price}>
-          ₹{product?.price}
-        </Text>
+<Text style={styles.price}>
+  ₹{product?.price ?? 0}
+</Text>
 
        <Text style={styles.status}>
   {

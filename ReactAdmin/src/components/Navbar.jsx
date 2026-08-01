@@ -1,39 +1,4 @@
-// import { Link, useNavigate } from "react-router-dom";
-// import { useState } from "react";
 
-// export default function Navbar() {
-//   const [search, setSearch] = useState("");
-//   const navigate = useNavigate();
-//   const logout = () => {
-//     localStorage.removeItem("token");
-//     navigate("/");
-//   };
-//   return (
-//     <div className="h-16 bg-white shadow flex items-center justify-between px-6">
-//       {/* Left */}
-//       <h2 className="text-2xl font-bold text-green-700">
-//         🌿 AnusFarm Admin
-//       </h2>
-//       {/* Center */}
-//       <input type="text"placeholder="🔍 Search Products..." value={search}
-//         onChange={(e) => {const value = e.target.value;
-//   setSearch(value);navigate(`/products?search=${encodeURIComponent(value)}`);}}
-// className="border border-gray-300 rounded-lg px-4 py-2 w-80  ml-[340px] focus:outline-none focus:border-green-600 "/>
-//       {/* Right */}
-//       <div className="flex items-center gap-4">
-//         {/* Notification */}
-//         <button className="text-2xl hover:scale-110">🔔</button>
-//         {/* Add Product */}
-//         <Link to="/products/add">
-//           <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold"> ➕ Add Product</button>
-//         </Link>
-//         {/* Logout */}
-//         <button onClick={logout}
-//           className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">🚪 Logout</button>
-//       </div>
-//     </div>
-//   );
-// }
 
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -110,9 +75,9 @@ export default function Navbar() {
         </div>
         {/* Add Product */}
 
-        <Link to="/products/add">
+        {/* <Link to="/products/add">
           <button   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">  ➕ Add Product</button>
-        </Link>
+        </Link> */}
         {/* Logout */}
         <button onClick={logout}  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"> 🚪 Logout</button>
       </div>

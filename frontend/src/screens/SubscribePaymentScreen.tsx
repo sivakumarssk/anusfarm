@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View,
   Text,
@@ -27,6 +28,7 @@ import {
 
 import { Ionicons }
 from '@expo/vector-icons';
+import axios from "axios";
 
 const SubscribePaymentScreen = () => {
 const minimumWalletAmount = 500;
@@ -57,16 +59,16 @@ const { addOrder } =
     setPaymentMethod,
   ] = useState('upi');
 
-  const subscriptionItems =
-  cartItems.filter(
-    item => item.category === 'Milk'
-  );
+ const subscriptionItems = cartItems.filter(
+  item => item.type === "subscription"
+);
 
-const instantItems =
-  cartItems.filter(
-    item => item.category !== 'Milk'
-  );
+const instantItems = cartItems.filter(
+  item => item.type === "instant"
+);
+// const subscriptionItems = cartItems;
 
+// const instantItems = cartItems;
 const instantTotal =
   instantItems.reduce(
     (sum, item) =>
@@ -79,12 +81,24 @@ const instantTotal =
 const walletAmount =
   Number(amount || 0);
 
+// const totalAmount =
+//   instantTotal +
+//   walletAmount;
+const subscriptionTotal = subscriptionItems.reduce(
+  (sum, item) => sum + item.price * item.quantity,
+  0
+);
+
 const totalAmount =
+  subscriptionTotal +
   instantTotal +
   walletAmount;
 
 
- const handleSubscribe = () => {
+const handleSubscribe = async () => {
+ console.log("========== SUBSCRIBE CLICKED ==========");
+  console.log("subscriptionData:", subscriptionData);
+  console.log("cartItems:", cartItems);
 
   if (
     subscriptionItems.length > 0 &&
@@ -98,91 +112,260 @@ const totalAmount =
     return;
   }
 
+
   setWalletError('');
 
+console.log("Before subscriptionData check");
+console.log("subscriptionData =", subscriptionData);
   if (!subscriptionData) {
-  return;
-}
+    return;
+  }
 
-setSubscriptionData({
-  ...subscriptionData,
 
-  paymentMethod:
-    paymentMethod === 'upi'
-      ? 'UPI AutoPay'
-      : 'Debit / Credit Card',
 
-  walletAmount,
+  try {
 
-  subscriptionStatus: 'Active',
 
-  nextDeliveryDate: 'Tomorrow',
+    const token =
+await AsyncStorage.getItem("token");
+
+
+
+    // SAVE SUBSCRIPTION IN BACKEND
+console.log("Cart Items:", cartItems);
+console.log("Subscription Items:", subscriptionItems);
+console.log("Instant Items:", instantItems);
+console.log("Calling Subscription API...");
+
+console.log({
+  plan: "Monthly Milk Plan",
+  frequency: subscriptionData.frequency || "Daily",
+  delivery_time: subscriptionData.deliveryTime || "Morning",
+  selected_days: subscriptionData.selectedDays || ["Mon","Tue","Wed"],
+  wallet_amount: walletAmount,
+  payment_method:
+    paymentMethod === "upi"
+      ? "UPI AutoPay"
+      : "Debit / Credit Card",
+  next_delivery_date: new Date(
+    Date.now() + 24 * 60 * 60 * 1000
+  ).toISOString(),
+  items: subscriptionItems,
 });
+   const response = await axios.post(
 
-addOrder({
-  orderId:
-    Date.now().toString(),
+"http://192.168.0.112:5000/api/subscriptions/create",
 
-  orderType:
-    'subscription',
 
-  items:
-    subscriptionItems,
+{
 
-  totalAmount:
-    walletAmount,
+plan:
+  subscriptionItems.length > 0
+    ? `${subscriptionItems[0].name} Subscription`
+    : "",
 
-  status:
-    'scheduled',
+frequency:
+subscriptionData.frequency || "Daily",
 
-  deliveryDate: new Date(
-  Date.now() + 24 * 60 * 60 * 1000
+delivery_time:
+subscriptionData.deliveryTime || "Morning",
+
+selected_days:
+subscriptionData.selectedDays || 
+["Mon","Tue","Wed"],
+
+wallet_amount:
+walletAmount,
+
+payment_method:
+paymentMethod === 'upi'
+? "UPI AutoPay"
+: "Debit / Credit Card",
+
+next_delivery_date:
+new Date(
+Date.now()+24*60*60*1000
 ).toISOString(),
 
-  paymentMethod:
-    paymentMethod === 'upi'
-      ? 'UPI AutoPay'
-      : 'Card AutoPay',
-});
 
-if (
-  instantItems.length > 0
-) {
+items: subscriptionItems
 
-  addOrder({
-    orderId:
-      `${Date.now()}-instant`,
+},
 
-    orderType:
-      'instant',
+{
+headers:{
+Authorization:`Bearer ${token}`
+}
+}
 
-    items:
-      instantItems,
+);
+    console.log(
+      "Subscription Created:",
+      response.data
+    );
 
-    totalAmount:
-      instantTotal,
 
-    status:
-      'delivered',
 
-    deliveryDate:
-      'Today',
 
-    paymentMethod:
-      paymentMethod === 'upi'
-        ? 'UPI'
-        : 'Card',
-  });
+
+    // UPDATE CONTEXT FOR SUCCESS SCREEN
+
+
+    setSubscriptionData({
+
+      ...subscriptionData,
+
+
+      paymentMethod:
+
+        paymentMethod === 'upi'
+          ? 'UPI AutoPay'
+          : 'Debit / Credit Card',
+
+
+      walletAmount,
+
+
+      subscriptionStatus:
+        'Active',
+
+
+      nextDeliveryDate:
+        'Tomorrow',
+
+    });
+
+console.log("API Success");
+
+
+
+    // SAVE ORDER HISTORY
+
+console.log(
+  "Subscription Items Full:",
+  JSON.stringify(subscriptionItems, null, 2)
+);
+
+console.log(
+  "Instant Items Full:",
+  JSON.stringify(instantItems, null, 2)
+);
+
+console.log("Before addOrder");
+    addOrder({
+
+      orderId:
+        Date.now().toString(),
+
+
+      orderType:
+        'subscription',
+
+items: subscriptionItems.map(item => ({
+  ...item,
+  image: item.image,
+})),
+
+
+      totalAmount:
+        walletAmount,
+     
+
+
+      status:
+        'scheduled',
+
+
+      deliveryDate:
+
+        new Date(
+          Date.now() +
+          24 * 60 * 60 * 1000
+        )
+        .toISOString(),
+
+
+      paymentMethod:
+
+        paymentMethod === 'upi'
+          ? 'UPI AutoPay'
+          : 'Card AutoPay',
+
+    });
+
+
+
+
+
+    if(
+      instantItems.length > 0
+    ){
+
+      addOrder({
+
+        orderId:
+          `${Date.now()}-instant`,
+
+
+        orderType:
+          'instant',
+
+
+        items: instantItems.map(item => ({
+  ...item,
+  image: item.image,
+})),
+
+
+        totalAmount:
+          instantTotal,
+
+
+        status:
+          'delivered',
+
+
+        deliveryDate:
+          'Today',
+
+
+        paymentMethod:
+
+          paymentMethod === 'upi'
+          ? 'UPI'
+          : 'Card',
+
+      });
+
+    }
+
+
+
+
+
+    clearCart();
+
+
+
+    navigation.navigate(
+      'SubscriptionSuccess'
+    );
+
+
+
+  }
+
+  catch(error:any){
+
+ console.log(
+   "Subscription API Error:",
+   error.response?.data || error.message
+ );
 
 }
 
-
-clearCart();
-
-navigation.navigate(
-  'SubscriptionSuccess'
-);
-
+console.log("Subscription Order Added");
+console.log("After addOrder");
 };
 
 return (
@@ -489,7 +672,10 @@ return (
 
   <TouchableOpacity
   style={styles.subscribeButton}
-  onPress={handleSubscribe}
+  onPress={() => {
+    console.log("BUTTON PRESSED");
+    handleSubscribe();
+  }}
 >
 
     <Text style={styles.subscribeText}>

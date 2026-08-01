@@ -1,6 +1,111 @@
+// const db = require("../config/db");
+
+// // Get user profile
+// const getUserById = async (id) => {
+//   const result = await db.query(
+//     `
+//     SELECT
+//       id,
+//       name,
+//       phone,
+//       email,
+//       profile_image,
+//       created_at
+//     FROM users
+//     WHERE id = $1
+//     `,
+//     [id]
+//   );
+
+//   return result.rows[0];
+// };
+
+// // Update profile
+// const updateUserProfile = async (
+//   id,
+//   name,
+//   email,
+//   profile_image
+// ) => {
+//   const result = await db.query(
+//     `
+//     UPDATE users
+//     SET
+//       name = $1,
+//       email = $2,
+//       profile_image = $3
+//     WHERE id = $4
+//     RETURNING
+//       id,
+//       name,
+//       phone,
+//       email,
+//       profile_image
+//     `,
+//     [
+//       name,
+//       email,
+//       profile_image,
+//       id,
+//     ]
+//   );
+
+//   return result.rows[0];
+// };
+
+// module.exports = {
+//   getUserById,
+//   updateUserProfile,
+// };
 const db = require("../config/db");
 
-// Get user profile
+// ======================
+// CREATE USER
+// ======================
+const createUser = async (name, phone, email) => {
+  const result = await db.query(
+    `
+    INSERT INTO users (name, phone, email)
+    VALUES ($1, $2, $3)
+    RETURNING id, name, phone, email
+    `,
+    [name, phone, email]
+  );
+
+  return result.rows[0];
+};
+
+// ======================
+// GET ALL USERS
+// ======================
+const getAllUsers = async () => {
+  const result = await db.query(
+    `
+    SELECT
+      u.id,
+      u.name,
+      u.phone,
+      u.email,
+      CASE
+        WHEN EXISTS (
+          SELECT 1
+          FROM subscriptions s
+          WHERE s.user_id = u.id
+        )
+        THEN 'Subscribed'
+        ELSE 'Not Subscribed'
+      END AS subscription
+    FROM users u
+    ORDER BY u.id DESC
+    `
+  );
+
+  return result.rows;
+};
+
+// ======================
+// GET USER BY ID
+// ======================
 const getUserById = async (id) => {
   const result = await db.query(
     `
@@ -8,9 +113,7 @@ const getUserById = async (id) => {
       id,
       name,
       phone,
-      email,
-      profile_image,
-      created_at
+      email
     FROM users
     WHERE id = $1
     `,
@@ -20,40 +123,93 @@ const getUserById = async (id) => {
   return result.rows[0];
 };
 
-// Update profile
-const updateUserProfile = async (
-  id,
-  name,
-  email,
-  profile_image
-) => {
+// ======================
+// UPDATE USER
+// ======================
+const updateUser = async (id, name, phone, email) => {
   const result = await db.query(
     `
     UPDATE users
     SET
       name = $1,
-      email = $2,
-      profile_image = $3
+      phone = $2,
+      email = $3
     WHERE id = $4
     RETURNING
       id,
       name,
       phone,
-      email,
-      profile_image
+      email
     `,
-    [
-      name,
-      email,
-      profile_image,
+    [name, phone, email, id]
+  );
+
+  return result.rows[0];
+};
+
+// ======================
+// DELETE USER
+// ======================
+const deleteUser = async (id) => {
+  const result = await db.query(
+    `
+    DELETE FROM users
+    WHERE id = $1
+    RETURNING id
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+};
+
+// ======================
+// GET PROFILE
+// ======================
+const getProfile = async (id) => {
+  const result = await db.query(
+    `
+    SELECT
       id,
-    ]
+      name,
+      phone,
+      email
+    FROM users
+    WHERE id = $1
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+};
+
+// ======================
+// UPDATE PROFILE
+// ======================
+const updateProfile = async (id, name) => {
+  const result = await db.query(
+    `
+    UPDATE users
+    SET name = $1
+    WHERE id = $2
+    RETURNING
+      id,
+      name,
+      phone,
+      email
+    `,
+    [name, id]
   );
 
   return result.rows[0];
 };
 
 module.exports = {
+  createUser,
+  getAllUsers,
   getUserById,
-  updateUserProfile,
+  updateUser,
+  deleteUser,
+  getProfile,
+  updateProfile,
 };
