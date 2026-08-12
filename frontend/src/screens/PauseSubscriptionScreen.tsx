@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert,} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
-
-const BASE_URL = "http://192.168.0.112:5000/api";
+import { API_URL } from "../config/api";
+// const BASE_URL = "http://192.168.0.112:5000/api";
 
 export default function PauseSubscriptionScreen() {
   const navigation = useNavigation<any>();
@@ -33,7 +26,7 @@ export default function PauseSubscriptionScreen() {
       const token = await AsyncStorage.getItem("token");
 
       const res = await fetch(
-        `${BASE_URL}/subscriptions/${id}/pause`,
+        `${API_URL}/subscriptions/${id}/pause`,
         {
           method: "PUT",
           headers: {

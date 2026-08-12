@@ -1,761 +1,1216 @@
 
-// const {
-//   getAllSubscriptions,
-//   updateSubscriptionStatus,
-//   getUserSubscriptions,
-//   pauseSubscription,
-//   resumeSubscription,
-//   cancelSubscription,
-//   getSubscriptionCalendar,
-//   generateDeliverySchedule,
-//   updateSubscriptionById
-// } = require("../models/subscriptionModel");
-
-
-// exports.getSubscriptions = async(req,res)=>{
-//     try{
-//         const data = await getAllSubscriptions();
-//         res.json({
-//             success:true,
-//             subscriptions:data
-//         });
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({
-//             success:false,
-//             message:"Server Error"
-//         });
-//     }
-// };
-// exports.changeStatus = async(req,res)=>{
-//     try{
-//         const {id}=req.params;
-//         const {status}=req.body;
-//         const result =
-//         await updateSubscriptionStatus(id,status);
-//         res.json({
-//             success:true,
-//             subscription:result
-//         });
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.status(500).json({
-//             success:false,
-//             message:"Server Error"
-//         });
-//     }
-// };
-// exports.createSubscription = async(req,res)=>{
-// try{
-// const user_id = req.user.id;
-// const {plan,frequency,delivery_time,selected_days,wallet_amount,payment_method,next_delivery_date,items}=req.body;
-// const result = await pool.query(
-// `INSERT INTO subscriptions
-// (user_id,plan,frequency,delivery_time,selected_days,wallet_amount,payment_method,start_date,next_delivery_date,status)
-// VALUES($1,$2,$3,$4,$5,$6,$7,CURRENT_DATE,$8,'Active')
-// RETURNING *
-// `,
-// [user_id,plan,frequency,delivery_time,selected_days,wallet_amount,payment_method,next_delivery_date]
-// );
-// const subscription = result.rows[0];
-// await generateDeliverySchedule(
-//   subscription.id,
-//   frequency,
-//   subscription.start_date,
-//   items
-// );
-// // SAVE SUBSCRIPTION ITEMS HERE
-// for(let item of items || []){
-// await pool.query(
-// `INSERT INTO subscription_items
-// (subscription_id,product_id,product_name,quantity,price)
-// VALUES($1,$2,$3,$4,$5)
-// `,
-// [subscription.id,item.id,item.name,item.quantity,item.price]
-// );
-// }
-// res.json({
-// success:true,
-// subscription:subscription
-// });
-// }
-// catch(error){
-// console.log(error);
-// res.status(500).json({
-// success:false,
-// message:error.message
-// });
-// }
-// };
-// exports.mySubscriptions = async (req, res) => {
-
-//   try {
-
-//     const data =
-//       await getUserSubscriptions(req.user.id);
-
-//     res.json({
-//       success: true,
-//       subscriptions: data,
-//     });
-
-//   } catch (err) {
-
-//     res.status(500).json({
-//       success: false,
-//       message: err.message,
-//     });
-
-//   }
-
-// };
-// exports.pause = async (req, res) => {
-
-//   const { id } = req.params;
-
-//   const {
-//     pause_from,
-//     pause_to,
-//   } = req.body;
-
-//   const data =
-//     await pauseSubscription(
-//       id,
-//       pause_from,
-//       pause_to
-//     );
-
-//   res.json({
-//     success: true,
-//     subscription: data,
-//   });
-
-// };
-// exports.resume = async (req, res) => {
-
-//   const data =
-//     await resumeSubscription(
-//       req.params.id
-//     );
-
-//   res.json({
-//     success: true,
-//     subscription: data,
-//   });
-
-// };
-// exports.cancel = async (req, res) => {
-
-//   const data =
-//     await cancelSubscription(
-//       req.params.id
-//     );
-
-//   res.json({
-//     success: true,
-//     subscription: data,
-//   });
-
-// };
-// exports.updateSubscription = async (req, res) => {
-
-//   try {
-
-//     const { id } = req.params;
-
-//     const {
-//       frequency,
-//       delivery_time,
-//       next_delivery_date
-//     } = req.body;
-
-//     const data = await updateSubscriptionById(
-//       id,
-//       frequency,
-//       delivery_time,
-//       next_delivery_date
-//     );
-
-//     res.json({
-//       success: true,
-//       subscription: data
-//     });
-
-//   } catch (err) {
-
-//     console.log(err);
-
-//     res.status(500).json({
-//       success: false,
-//       message: err.message
-//     });
-
-//   }
-
-// };
-// exports.calendar = async (req, res) => {
-
-//   try {
-
-//     const data =
-//       await getSubscriptionCalendar(
-//         req.params.id
-//       );
-
-//     res.json({
-//       success: true,
-//       calendar: data
-//     });
-
-//   } catch (err) {
-
-//     res.status(500).json({
-//       success: false,
-//       message: err.message
-//     });
-
-//   }
-
-// };
-
+const transactionModel = require("../models/subscriptionTransactionModel");
 const pool = require("../config/db");
 
 const {
-  getAllSubscriptions,
-  updateSubscriptionStatus,
-  getUserSubscriptions,
-  pauseSubscription,
-  resumeSubscription,
-  cancelSubscription,
-  getSubscriptionCalendar,
-  generateDeliverySchedule,
-  updateSubscriptionById
+    getAllSubscriptions,
+    updateSubscriptionStatus,
+    getUserSubscriptions,
+    getSubscriptionById,
+    pauseSubscription,
+    resumeSubscription,
+    cancelSubscription,
+    getSubscriptionCalendar,
+    generateDeliverySchedule,
+    updateSubscriptionById,
+    deleteSubscription,
+    skipDelivery: skipDeliveryModel,
+    assignSubscriptionDeliveryRider,
 } = require("../models/subscriptionModel");
 
 
-// ADMIN - Get All Subscriptions
+// ============================================================
+// ADMIN - GET ALL SUBSCRIPTIONS
+// ============================================================
+
 exports.getSubscriptions = async (req, res) => {
-  try {
+    try {
 
-    const data = await getAllSubscriptions();
+        const data = await getAllSubscriptions();
 
-    res.json({
-      success: true,
-      subscriptions: data
-    });
+        res.json({
+            success: true,
+            subscriptions: data
+        });
 
-  } catch (error) {
+    } catch (error) {
 
-    console.log(error);
+        console.log("GET ALL SUBSCRIPTIONS ERROR:", error);
 
-    res.status(500).json({
-      success: false,
-      message: "Server Error"
-    });
-
-  }
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// ADMIN - CHANGE SUBSCRIPTION STATUS
+// ============================================================
 
-// ADMIN - Change Subscription Status
 exports.changeStatus = async (req, res) => {
+    try {
 
-  try {
+        const { id } = req.params;
+        const { status } = req.body;
 
-    const { id } = req.params;
-    const { status } = req.body;
+        const result = await updateSubscriptionStatus(
+            id,
+            status
+        );
 
+        res.json({
+            success: true,
+            subscription: result
+        });
 
-    const result =
-      await updateSubscriptionStatus(
-        id,
-        status
-      );
+    } catch (error) {
 
+        console.log(
+            "CHANGE SUBSCRIPTION STATUS ERROR:",
+            error
+        );
 
-    res.json({
-      success: true,
-      subscription: result
-    });
-
-
-  } catch (error) {
-
-    console.log(error);
-
-    res.status(500).json({
-      success:false,
-      message:error.message
-    });
-
-  }
-
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - CREATE SUBSCRIPTION
+// ============================================================
+
+// exports.createSubscription = async (req, res) => {
+
+//     try {
+
+//         const user_id = req.user.id;
+
+//         const {
+//             plan,
+//             frequency,
+//             delivery_time,
+//             selected_days,
+//             wallet_amount,
+//             payment_method,
+//             next_delivery_date,
+//               address_id,
+//             items
+//         } = req.body;
+
+// const addressResult = await pool.query(
+//     `
+//     SELECT id
+//     FROM addresses
+//     WHERE id = $1
+//     AND user_id = $2
+//     `,
+//     [address_id, user_id]
+// );
+
+// if (addressResult.rows.length === 0) {
+//     return res.status(400).json({
+//         success: false,
+//         message: "Invalid address selected"
+//     });
+// }
+//         // ------------------------------------------------------
+//         // CREATE SUBSCRIPTION
+//         // ------------------------------------------------------
+
+//         const result = await pool.query(
+//             `
+//             INSERT INTO subscriptions
+//             (
+//                 user_id,
+//                 plan,
+//                 frequency,
+//                 delivery_time,
+//                 selected_days,
+//                 wallet_amount,
+//                 payment_method,
+//                 start_date,
+//                 next_delivery_date,
+//                 status,
+//                    address_id
+//             )
+//             VALUES
+//             (
+//                 $1,
+//                 $2,
+//                 $3,
+//                 $4,
+//                 $5,
+//                 $6,
+//                 $7,
+//                 CURRENT_DATE,
+//                 $8,
+//                 'Active',
+//                  $9
+//             )
+//             RETURNING *
+//             `,
+//             [
+//                 user_id,
+//                 plan,
+//                 frequency,
+//                 delivery_time,
+//                 selected_days,
+//                 wallet_amount,
+//                 payment_method,
+//                 next_delivery_date,
+//                  address_id
+//             ]
+//         );
 
 
-// USER - Create Subscription
-exports.createSubscription = async (req,res)=>{
-
-try{
+//         const subscription = result.rows[0];
 
 
-const user_id = req.user.id;
+//         // ------------------------------------------------------
+//         // GENERATE DELIVERY SCHEDULE
+//         // ------------------------------------------------------
+
+//         // await generateDeliverySchedule(
+//         //     subscription.id,
+//         //     frequency,
+//         //     subscription.start_date,
+//         //     items || []
+//         // );
+// await generateDeliverySchedule(
+//     subscription.id,
+//     frequency,
+//     subscription.next_delivery_date,
+//     items || []
+// );
+
+//         // ------------------------------------------------------
+//         // SAVE SUBSCRIPTION PRODUCTS
+//         // ------------------------------------------------------
+
+//         for (const item of items || []) {
+
+//             await pool.query(
+//                 `
+//                 INSERT INTO subscription_items
+//                 (
+//                     subscription_id,
+//                     product_id,
+//                     product_name,
+//                     quantity,
+//                     price
+//                 )
+//                 VALUES
+//                 (
+//                     $1,
+//                     $2,
+//                     $3,
+//                     $4,
+//                     $5
+//                 )
+//                 `,
+//                 [
+//                     subscription.id,
+//                     item.id,
+//                     item.name,
+//                     item.quantity,
+//                     item.price
+//                 ]
+//             );
+
+//         }
 
 
-const {
-plan,
-frequency,
-delivery_time,
-selected_days,
-wallet_amount,
-payment_method,
-next_delivery_date,
-items
-}=req.body;
+//         // ------------------------------------------------------
+//         // CREATE TRANSACTION
+//         // ------------------------------------------------------
+
+//         await transactionModel.createTransaction({
+
+//             subscription_id: subscription.id,
+
+//             user_id: user_id,
+
+//             transaction_type: "Initial Payment",
+
+//             amount: wallet_amount,
+
+//             payment_method: payment_method,
+
+//             payment_status: "Success",
+
+//             transaction_id:
+//                 "SUB" + Date.now(),
+
+//             description:
+//                 `${plan} Subscription Payment`
+//         });
 
 
+//         // ------------------------------------------------------
+//         // RESPONSE
+//         // ------------------------------------------------------
 
-const result = await pool.query(
-
-`
-INSERT INTO subscriptions
-(
-user_id,
-plan,
-frequency,
-delivery_time,
-selected_days,
-wallet_amount,
-payment_method,
-start_date,
-next_delivery_date,
-status
-)
-
-VALUES
-(
-$1,$2,$3,$4,$5,$6,$7,
-CURRENT_DATE,
-$8,
-'Active'
-)
-
-RETURNING *
-`,
-
-[
-user_id,
-plan,
-frequency,
-delivery_time,
-selected_days,
-wallet_amount,
-payment_method,
-next_delivery_date
-]
-
-);
+//         res.status(201).json({
+//             success: true,
+//             subscription
+//         });
 
 
+//     } catch (error) {
 
-const subscription = result.rows[0];
+//         console.log(
+//             "CREATE SUBSCRIPTION ERROR:",
+//             error
+//         );
 
+//         res.status(500).json({
+//             success: false,
+//             message: error.message
+//         });
+//     }
+// };
+exports.createSubscription = async (req, res) => {
+    try {
 
+        const user_id = req.user.id;
 
-// Generate delivery dates
+        const {
+            plan,
+            frequency,
+            delivery_time,
+            selected_days,
+            wallet_amount,
+            payment_method,
+            next_delivery_date,
+            address_id,
+            items
+        } = req.body;
 
-await generateDeliverySchedule(
+        console.log("========== CREATE SUBSCRIPTION ==========");
+        console.log("USER ID =", user_id);
+        console.log("ADDRESS ID =", address_id);
+        console.log("ITEMS =", items);
 
-subscription.id,
-frequency,
-subscription.start_date,
-items || []
+        // ==========================================
+        // VALIDATE ADDRESS
+        // ==========================================
 
-);
+        if (!address_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Address is required"
+            });
+        }
 
+        const addressResult = await pool.query(
+            `
+            SELECT
+                id,
+                user_id,
+                address_type,
+                full_address,
+                latitude,
+                longitude,
+                phone
+            FROM addresses
+            WHERE id = $1
+            AND user_id = $2
+            `,
+            [
+                address_id,
+                user_id
+            ]
+        );
 
+        if (addressResult.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid address selected"
+            });
+        }
 
-// Save subscription products
+        const selectedAddress = addressResult.rows[0];
 
-for(const item of items || []){
+        console.log(
+            "SELECTED ADDRESS =",
+            selectedAddress
+        );
 
+        // ==========================================
+        // CREATE SUBSCRIPTION
+        // ==========================================
 
-await pool.query(
+        const result = await pool.query(
+            `
+            INSERT INTO subscriptions
+            (
+                user_id,
+                plan,
+                frequency,
+                delivery_time,
+                selected_days,
+                wallet_amount,
+                payment_method,
+                start_date,
+                next_delivery_date,
+                status,
+                address_id
+            )
+            VALUES
+            (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                CURRENT_DATE,
+                $8,
+                'Active',
+                $9
+            )
+            RETURNING *
+            `,
+            [
+                user_id,
+                plan,
+                frequency,
+                delivery_time,
+                selected_days,
+                wallet_amount,
+                payment_method,
+                next_delivery_date,
+                address_id
+            ]
+        );
 
-`
-INSERT INTO subscription_items
-(
-subscription_id,
-product_id,
-product_name,
-quantity,
-price
-)
+        const subscription = result.rows[0];
 
-VALUES
-($1,$2,$3,$4,$5)
+        console.log(
+            "CREATED SUBSCRIPTION =",
+            subscription
+        );
 
-`,
+        // ==========================================
+        // SAVE SUBSCRIPTION PRODUCTS
+        // ==========================================
 
-[
-subscription.id,
-item.id,
-item.name,
-item.quantity,
-item.price
-]
+        for (const item of items || []) {
 
-);
+            await pool.query(
+                `
+                INSERT INTO subscription_items
+                (
+                    subscription_id,
+                    product_id,
+                    product_name,
+                    quantity,
+                    price
+                )
+                VALUES
+                (
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5
+                )
+                `,
+                [
+                    subscription.id,
+                    item.id,
+                    item.name,
+                    item.quantity,
+                    item.price
+                ]
+            );
+        }
 
+        // ==========================================
+        // GENERATE DELIVERY SCHEDULE
+        // ==========================================
 
-}
+        await generateDeliverySchedule(
+            subscription.id,
+            frequency,
+            subscription.next_delivery_date,
+            items || []
+        );
 
+        // ==========================================
+        // CREATE TRANSACTION
+        // ==========================================
 
+        await transactionModel.createTransaction({
 
-res.status(201).json({
+            subscription_id:
+                subscription.id,
 
-success:true,
+            user_id:
+                user_id,
 
-subscription
+            transaction_type:
+                "Initial Payment",
 
-});
+            amount:
+                wallet_amount,
 
+            payment_method:
+                payment_method,
 
-}
+            payment_status:
+                "Success",
 
-catch(error){
+            transaction_id:
+                "SUB" + Date.now(),
 
-console.log(error);
+            description:
+                `${plan} Subscription Payment`
+        });
 
+        // ==========================================
+        // RESPONSE
+        // ==========================================
 
-res.status(500).json({
+        res.status(201).json({
+            success: true,
+            subscription,
+            address: selectedAddress
+        });
 
-success:false,
+    } catch (error) {
 
-message:error.message
+        console.log(
+            "CREATE SUBSCRIPTION ERROR:",
+            error
+        );
 
-});
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
+// ============================================================
+// USER - MY SUBSCRIPTIONS
+// ============================================================
 
-}
+exports.mySubscriptions = async (req, res) => {
 
+    try {
 
+        const data =
+            await getUserSubscriptions(
+                req.user.id
+            );
+
+        res.json({
+            success: true,
+            subscriptions: data
+        });
+
+    } catch (error) {
+
+        console.log(
+            "MY SUBSCRIPTIONS ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - GET SINGLE SUBSCRIPTION DETAILS
+// ============================================================
+
+exports.getSubscriptionById = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        console.log(
+            "GET SUBSCRIPTION DETAILS ID:",
+            id
+        );
 
 
+        // ------------------------------------------------------
+        // VALIDATE ID
+        // ------------------------------------------------------
 
-// USER - My Subscriptions
+        if (!id || isNaN(Number(id))) {
 
-exports.mySubscriptions = async(req,res)=>{
-
-try{
-
-
-const data =
-await getUserSubscriptions(
-req.user.id
-);
-
+            return res.status(400).json({
+                success: false,
+                message: "Invalid subscription ID"
+            });
+        }
 
 
-res.json({
+        // ------------------------------------------------------
+        // GET SUBSCRIPTION
+        // ------------------------------------------------------
 
-success:true,
-
-subscriptions:data
-
-});
-
-
-}
-
-catch(error){
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
+        const data =
+            await getSubscriptionById(
+                Number(id)
+            );
 
 
-}
+        // ------------------------------------------------------
+        // NOT FOUND
+        // ------------------------------------------------------
+
+        if (!data) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Subscription not found"
+            });
+        }
 
 
+        // ------------------------------------------------------
+        // RESPONSE
+        // ------------------------------------------------------
+
+        console.log(
+            "SUBSCRIPTION DETAILS:",
+            JSON.stringify(
+                data,
+                null,
+                2
+            )
+        );
+
+        res.json({
+            success: true,
+            subscription: data
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "GET SUBSCRIPTION DETAILS ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - PAUSE SUBSCRIPTION
+// ============================================================
+
+exports.pause = async (req, res) => {
+
+    try {
+
+        const {
+            pause_from,
+            pause_to
+        } = req.body;
 
 
+        if (!pause_from || !pause_to) {
 
-// PAUSE SUBSCRIPTION
-
-exports.pause = async(req,res)=>{
-
-try{
-const {pause_from,pause_to}=req.body;
-
-
-
-const data =
-await pauseSubscription(
-
-req.params.id,
-
-pause_from,
-
-pause_to
-
-);
+            return res.status(400).json({
+                success: false,
+                message:
+                    "pause_from and pause_to are required"
+            });
+        }
 
 
-
-res.json({
-
-success:true,
-
-subscription:data
-
-});
+        const data =
+            await pauseSubscription(
+                req.params.id,
+                pause_from,
+                pause_to
+            );
 
 
-}
-
-catch(error){
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
-
-}
+        res.json({
+            success: true,
+            subscription: data
+        });
 
 
+    } catch (error) {
+
+        console.log(
+            "PAUSE SUBSCRIPTION ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - RESUME SUBSCRIPTION
+// ============================================================
+
+exports.resume = async (req, res) => {
+
+    try {
+
+        const data =
+            await resumeSubscription(
+                req.params.id
+            );
 
 
+        res.json({
+            success: true,
+            subscription: data
+        });
 
 
-// RESUME SUBSCRIPTION
+    } catch (error) {
 
-exports.resume = async(req,res)=>{
+        console.log(
+            "RESUME SUBSCRIPTION ERROR:",
+            error
+        );
 
-
-try{
-
-
-const data =
-await resumeSubscription(
-
-req.params.id
-
-);
-
-
-
-res.json({
-
-success:true,
-
-subscription:data
-
-});
-
-
-}
-
-catch(error){
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
-
-
-}
-
-
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - CANCEL SUBSCRIPTION
+// ============================================================
+
+exports.cancel = async (req, res) => {
+
+    try {
+
+        const data =
+            await cancelSubscription(
+                req.params.id
+            );
 
 
+        res.json({
+            success: true,
+            subscription: data
+        });
 
 
-// CANCEL SUBSCRIPTION
+    } catch (error) {
 
-exports.cancel = async(req,res)=>{
+        console.log(
+            "CANCEL SUBSCRIPTION ERROR:",
+            error
+        );
 
-
-try{
-
-
-const data =
-await cancelSubscription(
-
-req.params.id
-
-);
-
-
-
-res.json({
-
-success:true,
-
-subscription:data
-
-});
-
-
-}
-
-catch(error){
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
-
-
-}
-
-
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - UPDATE SUBSCRIPTION
+// ============================================================
+
+exports.updateSubscription = async (req, res) => {
+
+    try {
+
+        const {
+            frequency,
+            delivery_time,
+            next_delivery_date
+        } = req.body;
 
 
+        const data =
+            await updateSubscriptionById(
+                req.params.id,
+                frequency,
+                delivery_time,
+                next_delivery_date
+            );
 
 
-// UPDATE SUBSCRIPTION
-
-exports.updateSubscription = async(req,res)=>{
-
-
-try{
+        res.json({
+            success: true,
+            subscription: data
+        });
 
 
-const {
-frequency,
-delivery_time,
-next_delivery_date
-}=req.body;
+    } catch (error) {
 
+        console.log(
+            "UPDATE SUBSCRIPTION ERROR:",
+            error
+        );
 
-
-const data =
-await updateSubscriptionById(
-
-req.params.id,
-
-frequency,
-
-delivery_time,
-
-next_delivery_date
-
-);
-
-
-
-res.json({
-
-success:true,
-
-subscription:data
-
-});
-
-
-}
-
-catch(error){
-
-
-console.log(error);
-
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
-
-
-}
-
-
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
 
+// ============================================================
+// USER - DELIVERY CALENDAR
+// ============================================================
+
+exports.calendar = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        console.log(
+            "CALENDAR SUBSCRIPTION ID:",
+            id
+        );
 
 
+        if (!id || isNaN(Number(id))) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Invalid subscription ID"
+            });
+        }
 
 
-
-// DELIVERY CALENDAR
-
-exports.calendar = async(req,res)=>{
-
-
-try{
+        const data =
+            await getSubscriptionCalendar(
+                Number(id)
+            );
 
 
-const data =
-await getSubscriptionCalendar(
-
-req.params.id
-
-);
+        res.json({
+            success: true,
+            calendar: data
+        });
 
 
+    } catch (error) {
 
-res.json({
+        console.log(
+            "CALENDAR ERROR:",
+            error
+        );
 
-success:true,
-
-calendar:data
-
-});
-
-
-}
-
-catch(error){
-
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
 
-}
+// ============================================================
+// USER - DELETE SUBSCRIPTION
+// ============================================================
 
+exports.deleteSubscription = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+
+        const data =
+            await deleteSubscription(id);
+
+
+        if (!data) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Subscription not found"
+            });
+        }
+
+
+        res.json({
+            success: true,
+            message:
+                "Subscription deleted successfully",
+            subscription: data
+        });
+
+
+    } catch (error) {
+
+        console.log(
+            "DELETE SUBSCRIPTION ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+// ============================================================
+// USER - GET PAUSED SUBSCRIPTIONS
+// ============================================================
+
+exports.getPausedSubscriptions = async (
+    req,
+    res
+) => {
+
+    try {
+
+        console.log(
+            "USER FROM TOKEN:",
+            req.user
+        );
+
+
+        const userId =
+            req.user.id;
+
+
+        const result =
+            await pool.query(
+                `
+                SELECT
+
+                    s.id,
+                    s.plan,
+                    s.frequency,
+                    s.delivery_time,
+                    s.selected_days,
+                    s.wallet_amount,
+                    s.payment_method,
+                    s.status,
+                    s.start_date,
+                    s.next_delivery_date,
+                    s.pause_from,
+                    s.pause_to,
+
+                    COALESCE(
+                        json_agg(
+                            json_build_object(
+
+                                'product_name',
+                                si.product_name,
+
+                                'quantity',
+                                si.quantity,
+
+                                'price',
+                                si.price,
+
+                                'image',
+                                p.image
+                            )
+                        )
+                        FILTER (
+                            WHERE si.id IS NOT NULL
+                        ),
+                        '[]'
+                    ) AS items
+
+
+                FROM subscriptions s
+
+                LEFT JOIN subscription_items si
+                    ON s.id = si.subscription_id
+
+                LEFT JOIN products p
+                    ON si.product_id = p.id
+
+
+                WHERE s.user_id = $1
+                AND s.status = 'Paused'
+
+
+                GROUP BY s.id
+
+                ORDER BY s.id DESC
+                `,
+                [userId]
+            );
+
+
+        res.json({
+            success: true,
+            subscriptions:
+                result.rows
+        });
+
+
+    } catch (error) {
+
+        console.log(
+            "GET PAUSED SUBSCRIPTIONS ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+// ============================================================
+// USER - SKIP SINGLE DELIVERY
+// ============================================================
+
+exports.skipDelivery = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const {
+            deliveryId
+        } = req.params;
+
+        const {
+            subscriptionId
+        } = req.body;
+
+
+        console.log(
+            "SKIP DELIVERY:",
+            {
+                deliveryId,
+                subscriptionId
+            }
+        );
+
+
+        // ------------------------------------------------------
+        // VALIDATE IDs
+        // ------------------------------------------------------
+
+        if (
+            !deliveryId ||
+            isNaN(Number(deliveryId))
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Invalid delivery ID"
+            });
+        }
+
+
+        if (
+            !subscriptionId ||
+            isNaN(Number(subscriptionId))
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Invalid subscription ID"
+            });
+        }
+
+
+        // ------------------------------------------------------
+        // SKIP DELIVERY
+        // ------------------------------------------------------
+
+        const delivery =
+            await skipDeliveryModel(
+                Number(deliveryId),
+                Number(subscriptionId)
+            );
+
+
+        if (!delivery) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Delivery not found or cannot be skipped"
+            });
+        }
+
+
+        // ------------------------------------------------------
+        // RESPONSE
+        // ------------------------------------------------------
+
+        res.json({
+            success: true,
+            message:
+                "Delivery skipped successfully",
+            delivery
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "SKIP DELIVERY ERROR:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+// ============================================================
+// ADMIN - ASSIGN RIDER TO SUBSCRIPTION DELIVERY
+// ============================================================
+
+exports.assignRider = async (req, res) => {
+
+    try {
+
+        const { deliveryId } = req.params;
+        const { rider_id } = req.body;
+
+
+        // ------------------------------------------------------
+        // VALIDATE DELIVERY ID
+        // ------------------------------------------------------
+
+        if (
+            !deliveryId ||
+            isNaN(Number(deliveryId))
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid delivery ID"
+            });
+
+        }
+
+
+        // ------------------------------------------------------
+        // VALIDATE RIDER ID
+        // ------------------------------------------------------
+
+        if (
+            !rider_id ||
+            isNaN(Number(rider_id))
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Valid rider_id is required"
+            });
+
+        }
+
+
+        console.log(
+            "ASSIGN RIDER:",
+            {
+                deliveryId,
+                rider_id
+            }
+        );
+
+
+        // ------------------------------------------------------
+        // ASSIGN RIDER
+        // ------------------------------------------------------
+
+        const delivery =
+            await assignSubscriptionDeliveryRider(
+                Number(deliveryId),
+                Number(rider_id)
+            );
+
+
+        // ------------------------------------------------------
+        // DELIVERY / RIDER NOT FOUND
+        // ------------------------------------------------------
+
+        if (!delivery) {
+
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Delivery not found or rider is inactive"
+            });
+
+        }
+
+
+        // ------------------------------------------------------
+        // RESPONSE
+        // ------------------------------------------------------
+
+        res.json({
+
+            success: true,
+
+            message:
+                "Rider assigned successfully",
+
+            delivery
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "ASSIGN RIDER ERROR:",
+            error
+        );
+
+
+        res.status(500).json({
+
+            success: false,
+
+            message:
+                error.message
+
+        });
+
+    }
 
 };

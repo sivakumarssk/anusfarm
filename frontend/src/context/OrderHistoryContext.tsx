@@ -113,9 +113,12 @@ export type Order = {
   totalAmount:number;
 
   status:
-  | 'scheduled'
-  | 'delivered'
-  | 'cancelled';
+| 'placed'
+| 'scheduled'
+| 'packed'
+| 'out_for_delivery'
+| 'delivered'
+| 'cancelled';
 
   deliveryDate:string;
 
@@ -159,7 +162,6 @@ const loadOrders=async()=>{
 
 try{
 
-  await AsyncStorage.removeItem("order_history");
 const saved =await AsyncStorage.getItem("order_history");
 
 

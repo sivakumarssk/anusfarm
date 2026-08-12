@@ -121,7 +121,7 @@ const updateProduct = async(req,res)=>{
         description=$6,
         status=$7
        WHERE id=$8
-//        RETURNING *`,
+       RETURNING *`,
        [
         name,
         price,

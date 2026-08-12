@@ -1,39 +1,32 @@
 const pool = require("../config/db");
 
-const getLatestOrders = async () => {
-  const result = await pool.query(`
-    SELECT id
+const getAdminNotifications = async () => {
+
+    const result = await pool.query(`
+    
+    SELECT 
+        'order' AS type,
+        CONCAT('New order #', id, ' placed') AS message,
+        created_at
     FROM orders
-    ORDER BY id DESC
-    LIMIT 5
-  `);
-  return result.rows;
-};
 
-const getLatestUsers = async () => {
-  const result = await pool.query(`
-    SELECT id, name
+    UNION ALL
+
+    SELECT
+        'user' AS type,
+        CONCAT('New user registered: ', name) AS message,
+        created_at
     FROM users
-    ORDER BY id DESC
-    LIMIT 5
-  `);
 
-  return result.rows;
+    ORDER BY created_at DESC
+    LIMIT 20
+
+    `);
+
+    return result.rows;
 };
 
-const getLowStockProducts = async () => {
-  const result = await pool.query(`
-    SELECT id, name, stock
-    FROM products
-    WHERE stock <= 10
-    ORDER BY stock ASC
-  `);
-
-  return result.rows;
-};
 
 module.exports = {
-  getLatestOrders,
-  getLatestUsers,
-  getLowStockProducts
+    getAdminNotifications
 };

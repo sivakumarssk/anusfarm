@@ -1,13 +1,13 @@
-
-
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function Navbar() {
   const [search, setSearch] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
+const [notificationCount, setNotificationCount] = useState(0);
 
   const navigate = useNavigate();
   const logout = () => {
@@ -16,12 +16,16 @@ export default function Navbar() {
 
   // Get Notifications
   useEffect(() => {
-    getNotifications();
-  }, []);
 
+  getNotifications();
+  getNotificationCount();
+
+}, []);
   const getNotifications = async () => {
     try {
-      const response = await axios.get( "http://192.168.0.112:5000/api/admin/notifications");
+      const response = await axios.get( `${API_URL}/api/admin/notifications`);
+  
+
       console.log("Notification Response:", response.data);
       // safe data handling
       setNotifications(response.data.notifications || []);
@@ -30,6 +34,47 @@ export default function Navbar() {
       setNotifications([]);
     }
   };
+  const getNotificationCount = async () => {
+
+  try {
+
+    const response = await axios.get(
+      `${API_URL}/api/admin/notifications/count`
+    );
+
+
+console.log("COUNT RESPONSE:",response.data);
+
+setNotificationCount(response.data.count);
+    setNotificationCount(response.data.count);
+
+  } catch(error) {
+
+    console.log("Count Error:", error);
+
+  }
+
+};
+const markNotificationsRead = async()=>{
+
+try{
+
+await axios.put(
+`${API_URL}/api/admin/notifications/read`
+);
+
+setNotificationCount(0);
+
+}
+catch(error){
+
+console.log("Mark read error",error);
+
+}
+
+};
+  
+  
   return (
 <div className="h-16 bg-white shadow flex items-center justify-between px-6">
       {/* Left */}
@@ -44,14 +89,23 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         {/* Notification */}
         <div className="relative">
-          <button  onClick={()=>setShowNotification(!showNotification)}
-           className="text-2xl hover:scale-110 relative">🔔
-            {
-              notifications?.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
-{notifications.length} </span>
- )}
+      <button onClick={async()=>{
+const newState = !showNotification;
+setShowNotification(newState);
+if(newState){
+  await markNotificationsRead();
+  getNotificationCount();
+}
+}}    
+ className="text-2xl hover:scale-110 relative">🔔 {
+ notificationCount > 0 && (
+   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
+     {notificationCount}
+   </span>
+ )
+}
           </button>
+      
           {
             showNotification && (
               <div className="absolute right-0 mt-3 w-80 bg-white shadow-lg rounded-lg p-4 z-50">
@@ -63,22 +117,26 @@ export default function Navbar() {
                     notifications?.map((item,index)=>(
                       <div  key={index} className="border-b py-2">
                         { item.type==="user" && "👤 "}
-                          {item.type==="stock" && "⚠️ "}
-                         { item.type==="order" && "🛒 "}
-                           <b>{item.title}</b><br/>
-                        <span className="text-sm text-gray-500"> {item.message}</span>
+                        { item.type.toLowerCase().includes("order") && "🛒 " }
+                          <b>{item.type.toUpperCase()}</b>
+<br/>
+
+<span className="text-sm text-gray-500">
+ {item.message}
+</span>
+
+<br/>
+
+<span className="text-xs text-gray-400">
+ {new Date(item.created_at).toLocaleString()}
+</span>
                       </div>
                     ))
                   )}
               </div>
             )}
         </div>
-        {/* Add Product */}
-
-        {/* <Link to="/products/add">
-          <button   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold">  ➕ Add Product</button>
-        </Link> */}
-        {/* Logout */}
+        
         <button onClick={logout}  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"> 🚪 Logout</button>
       </div>
     </div>

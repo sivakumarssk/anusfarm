@@ -56,11 +56,11 @@ const SubscriptionSuccessScreen = () => {
         </Text>
 
         <Text style={styles.successSubtitle}>
-          Your milk delivery subscription is all set.
+         Your subscription is successful.
         </Text>
 
         <Text style={styles.successSubtitle}>
-          We'll deliver fresh milk as per your schedule.
+         We'll deliver your selected products as per your schedule.
         </Text>
 
         <Text style={styles.summaryHeading}>
@@ -152,7 +152,7 @@ const SubscriptionSuccessScreen = () => {
     </Text>
   </View>
 
-  <View style={styles.productsContainer}>
+  {/* <View style={styles.productsContainer}>
 
     {
       subscriptionData?.subscriptionItems?.map(
@@ -173,7 +173,34 @@ const SubscriptionSuccessScreen = () => {
       )
     }
 
-  </View>
+  </View> */}
+  <View style={styles.productsContainer}>
+
+{
+[
+  ...(subscriptionData?.subscriptionItems || []),
+  ...(subscriptionData?.instantItems || [])
+].map(
+  item => (
+    <View
+      key={item.id}
+      style={styles.productItemRow}
+    >
+
+      <Text style={styles.productItemName}>
+        {item.name}
+      </Text>
+
+      <Text style={styles.productItemQty}>
+        Qty {item.quantity}
+      </Text>
+
+    </View>
+  )
+)
+}
+
+</View>
 
 </View>
 

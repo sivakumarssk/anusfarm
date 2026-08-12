@@ -13,8 +13,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import {API_URL} from "../config/api";
 
-const BASE_URL = "http://192.168.0.112:5000/api";
+// const BASE_URL = "http://192.168.0.112:5000/api";
 
 export default function EditSubscriptionScreen() {
   const navigation = useNavigation<any>();
@@ -38,7 +39,7 @@ export default function EditSubscriptionScreen() {
       const token = await AsyncStorage.getItem("token");
 
       const res = await fetch(
-        `${BASE_URL}/subscriptions/my`,
+        `${API_URL}/api/subscriptions/my`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -71,7 +72,7 @@ export default function EditSubscriptionScreen() {
       const token = await AsyncStorage.getItem("token");
 
       const res = await fetch(
-        `${BASE_URL}/subscriptions/${id}`,
+        `${API_URL}/api/subscriptions/${id}`,
         {
           method: "PUT",
           headers: {

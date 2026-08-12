@@ -495,14 +495,21 @@ if (cartItems.length === 0) {
 
   {/* )} */}
 
-  <TouchableOpacity
+  {/* <TouchableOpacity
     style={styles.instantBuyButton}
     onPress={() =>
   navigation.navigate(
     'InstantBuyPayment'
   )
 }
-  >
+  > */}
+  <TouchableOpacity
+  style={styles.instantBuyButton}
+  onPress={() =>
+    navigation.navigate("Address")
+  }
+>
+  
     <Text
       style={
         styles.instantBuyButtonText

@@ -1,105 +1,61 @@
 import React, { useState } from 'react';
-import { useCart } from '../context/CartContext';
-
+import { useCart, CartItem } from "../context/CartContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  Image
-} from 'react-native';
-
-import {
-  useSubscription,
-} from '../context/SubscriptionContext';
-
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image,Alert} from 'react-native';
+import { useSubscription,} from '../context/SubscriptionContext';
 import { useOrderHistory,} from '../context/OrderHistoryContext';
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import {
-  useNavigation,
-} from '@react-navigation/native';
-
-import { Ionicons }
-from '@expo/vector-icons';
+import { SafeAreaView,} from 'react-native-safe-area-context';
+import {useNavigation,} from '@react-navigation/native';
+import { Ionicons }from '@expo/vector-icons';
 import axios from "axios";
+import { API_URL } from '../config/api';
 
-const SubscribePaymentScreen = () => {
+// const SubscribePaymentScreen = () => {
+const SubscribePaymentScreen = ({ route }: any) => {
+  const { address } = route.params || {};
+
+console.log("========== SUBSCRIPTION ADDRESS ==========");
+console.log("SELECTED ADDRESS =", address);
+console.log("ADDRESS ID =", address?.id);
+console.log("ADDRESS TEXT =", address?.full_address);
+console.log("ADDRESS PHONE =", address?.phone);
+console.log("==========================================");
 const minimumWalletAmount = 500;
-  const navigation =
-    useNavigation<any>();
+  const navigation =useNavigation<any>();
+  const {subscriptionData,setSubscriptionData,} = useSubscription();
+  const { addOrder } =useOrderHistory();
+  const {cartItems,clearCart,} = useCart();
+    const [walletError, setWalletError] = useState('');
+  const [amount, setAmount] = useState('');
+  const [ paymentMethod,setPaymentMethod,] = useState('upi');
 
-  const {
-  subscriptionData,
-  setSubscriptionData,
-} = useSubscription();
+ const subscriptionItems: CartItem[] =cartItems.filter(
+ item => item.type === "subscription");
 
-const { addOrder } =
-  useOrderHistory();
+const instantItems: CartItem[] =cartItems.filter(
+ item => item.type === "instant");
 
-  const {
-  cartItems,
-  clearCart,
-} = useCart();
+const instantTotal =instantItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,0);
 
-    const [walletError, setWalletError] =
-  useState('');
+const walletAmount =Number(amount || 0);
 
-  const [amount, setAmount] =
-    useState('');
 
-  const [
-    paymentMethod,
-    setPaymentMethod,
-  ] = useState('upi');
-
- const subscriptionItems = cartItems.filter(
-  item => item.type === "subscription"
-);
-
-const instantItems = cartItems.filter(
-  item => item.type === "instant"
-);
-// const subscriptionItems = cartItems;
-
-// const instantItems = cartItems;
-const instantTotal =
-  instantItems.reduce(
-    (sum, item) =>
-      sum +
-      item.price *
-        item.quantity,
-    0
-  );
-
-const walletAmount =
-  Number(amount || 0);
-
-// const totalAmount =
-//   instantTotal +
-//   walletAmount;
 const subscriptionTotal = subscriptionItems.reduce(
-  (sum, item) => sum + item.price * item.quantity,
-  0
-);
+  (sum, item) => sum + item.price * item.quantity,0);
 
-const totalAmount =
-  subscriptionTotal +
-  instantTotal +
-  walletAmount;
+const totalAmount =subscriptionTotal +instantTotal +walletAmount;
 
 
 const handleSubscribe = async () => {
- console.log("========== SUBSCRIBE CLICKED ==========");
-  console.log("subscriptionData:", subscriptionData);
-  console.log("cartItems:", cartItems);
 
+   if (!address?.id) {
+    Alert.alert(
+      "Address Required",
+      "Please select an address before subscribing."
+    );
+    return;
+  }
   if (
     subscriptionItems.length > 0 &&
     walletAmount < minimumWalletAmount
@@ -108,62 +64,27 @@ const handleSubscribe = async () => {
     setWalletError(
       `Minimum wallet balance required is ₹${minimumWalletAmount}`
     );
-
     return;
   }
-
-
   setWalletError('');
-
-console.log("Before subscriptionData check");
-console.log("subscriptionData =", subscriptionData);
   if (!subscriptionData) {
     return;
   }
-
-
-
   try {
-
-
-    const token =
-await AsyncStorage.getItem("token");
-
-
-
-    // SAVE SUBSCRIPTION IN BACKEND
-console.log("Cart Items:", cartItems);
-console.log("Subscription Items:", subscriptionItems);
-console.log("Instant Items:", instantItems);
-console.log("Calling Subscription API...");
-
-console.log({
-  plan: "Monthly Milk Plan",
-  frequency: subscriptionData.frequency || "Daily",
-  delivery_time: subscriptionData.deliveryTime || "Morning",
-  selected_days: subscriptionData.selectedDays || ["Mon","Tue","Wed"],
-  wallet_amount: walletAmount,
-  payment_method:
-    paymentMethod === "upi"
-      ? "UPI AutoPay"
-      : "Debit / Credit Card",
-  next_delivery_date: new Date(
-    Date.now() + 24 * 60 * 60 * 1000
-  ).toISOString(),
-  items: subscriptionItems,
-});
-   const response = await axios.post(
-
-"http://192.168.0.112:5000/api/subscriptions/create",
-
-
-{
-
+    const token =await AsyncStorage.getItem("token");
+    console.log("========== DEBUG ==========");
+console.log("ADDRESS:", address);
+console.log("ADDRESS ID:", address?.id);
+console.log("TOKEN:", token ? "YES" : "NO");
+  
+   const response = await axios.post(`${API_URL}/api/subscriptions/create`,{
 plan:
-  subscriptionItems.length > 0
-    ? `${subscriptionItems[0].name} Subscription`
-    : "",
-
+[
+ ...subscriptionItems,
+ ...instantItems
+]
+.map(item=>item.name)
+.join(" + ") + " Subscription",
 frequency:
 subscriptionData.frequency || "Daily",
 
@@ -173,6 +94,8 @@ subscriptionData.deliveryTime || "Morning",
 selected_days:
 subscriptionData.selectedDays || 
 ["Mon","Tue","Wed"],
+
+  address_id: address.id,
 
 wallet_amount:
 walletAmount,
@@ -188,7 +111,10 @@ Date.now()+24*60*60*1000
 ).toISOString(),
 
 
-items: subscriptionItems
+items:[
+ ...subscriptionItems,
+ ...instantItems
+]
 
 },
 
@@ -215,6 +141,17 @@ Authorization:`Bearer ${token}`
 
       ...subscriptionData,
 
+ subscriptionItems: [...subscriptionItems],
+
+  instantItems: [...instantItems],
+
+  frequency: subscriptionData.frequency,
+
+  deliveryTime: subscriptionData.deliveryTime,
+
+  selectedDays:
+    subscriptionData.selectedDays || [],
+
 
       paymentMethod:
 
@@ -234,6 +171,7 @@ Authorization:`Bearer ${token}`
         'Tomorrow',
 
     });
+   
 
 console.log("API Success");
 
@@ -261,15 +199,17 @@ console.log("Before addOrder");
       orderType:
         'subscription',
 
-items: subscriptionItems.map(item => ({
-  ...item,
-  image: item.image,
+
+items:[
+ ...subscriptionItems,
+ ...instantItems
+].map(item=>({
+ ...item,
+ image:item.image
 })),
 
-
       totalAmount:
-        walletAmount,
-     
+ totalAmount,
 
 
       status:
@@ -367,6 +307,10 @@ items: subscriptionItems.map(item => ({
 console.log("Subscription Order Added");
 console.log("After addOrder");
 };
+console.log(
+  "SUCCESS SCREEN DATA",
+  subscriptionData
+);
 
 return (
    <SafeAreaView style={styles.container}>

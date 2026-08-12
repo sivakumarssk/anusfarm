@@ -145,9 +145,12 @@ const handleContinue = () => {
   nextDeliveryDate: '',
 });
 
-  navigation.navigate(
-    'SubscribePayment'
-  );
+  // navigation.navigate(
+  //   'SubscribePayment'
+  // );
+  navigation.navigate("Address", {
+    fromSubscription: true,
+  });
 
 };
 
@@ -426,10 +429,14 @@ const handleContinue = () => {
 
     <View style={styles.productLeft}>
 
-      <Image
+      {/* <Image
         source={item.image}
         style={styles.productImage}
-      />
+      /> */}
+      <Image
+  source={{ uri: item.image }}
+  style={styles.productImage}
+/>
 
       <View>
 
@@ -493,11 +500,14 @@ const handleContinue = () => {
 
     <View style={styles.productLeft}>
 
-      <Image
+      {/* <Image
         source={item.image}
         style={styles.productImage}
-      />
-
+      /> */}
+<Image
+  source={{ uri: item.image }}
+  style={styles.productImage}
+/>
       <View>
 
         <Text style={styles.productName}>

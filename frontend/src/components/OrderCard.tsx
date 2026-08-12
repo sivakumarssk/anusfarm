@@ -1,26 +1,24 @@
 import React from 'react';
 
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { View,  Text,  StyleSheet,  TouchableOpacity,  Image,} from 'react-native';
 
-const OrderCard = ({
-  order,
-  onPressAction,
-  showActionButton = false,
-}: any) => {
-  const product =
-  order.items &&
-  order.items.length > 0
-    ? order.items[0]
-    : null;
+  const OrderCard = ({order,  onPress,  onPressAction,  showActionButton = false,}: any) => {
+  
+  const products = order.products || [];
+const firstProduct = products[0];
+
   return (
-
-    <View style={styles.card}>
+  <TouchableOpacity
+  style={styles.card}
+  activeOpacity={0.8}
+  onPress={() => {
+    console.log("ORDER CARD CLICKED");
+    // onPress && onPress();
+    if(onPress){
+   onPress(order);
+ }
+  }}>
+  
 <View style={{
   backgroundColor:'#F5F5F5',
   height:120,
@@ -31,24 +29,22 @@ const OrderCard = ({
 }}>
 
 
-     {product?.image ? (
+     {firstProduct?.image ? (
   <Image
-    source={{ uri: product.image }}
-    style={styles.image}
-    resizeMode="contain"
-    onLoad={() => console.log("ORDER IMAGE:", product.image)}
-    onError={(e) =>
-      console.log("IMAGE ERROR:", e.nativeEvent.error)
-    }
-  />
+  source={{
+    uri: firstProduct.image,
+  }}
+  style={styles.image}
+  resizeMode="contain"
+/>
 ) : (
   <View
     style={[
       styles.image,
       {
+        backgroundColor: "#EEE",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#EEE",
       },
     ]}
   >
@@ -59,30 +55,36 @@ const OrderCard = ({
 
       <View style={styles.content}>
 
-        <Text style={styles.name}>
-  {product?.name || "No Product"}
+       
+  
+{
+products.map((item:any,index:number)=>(
+
+<View key={index}>
+
+<Text style={styles.name}>
+ {item.product_name}
 </Text>
 
 <Text style={styles.info}>
-  {product
-    ? `${product.unit} | Qty ${product.quantity}`
-    : "No items"}
+ Qty {item.quantity}
 </Text>
 
 <Text style={styles.price}>
-  ₹{product?.price ?? 0}
+ ₹{item.price}
 </Text>
 
-       <Text style={styles.status}>
-  {
-    order.status === 'scheduled'
-      ? `Scheduled ${
-          new Date(
-            order.deliveryDate
-          ).toDateString()
-        }`
-      : 'Delivered'
-  }
+</View>
+
+))
+}
+
+      <Text style={styles.status}>
+  Status: {order.status}
+</Text>
+
+<Text style={styles.status}>
+  Ordered: {new Date(order.created_at).toLocaleDateString()}
 </Text>
 
       {
@@ -102,7 +104,7 @@ const OrderCard = ({
 
       </View>
 
-    </View>
+    </TouchableOpacity>
 
   );
 

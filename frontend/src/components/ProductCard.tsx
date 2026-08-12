@@ -2,6 +2,7 @@ import React from 'react';
 import {View,Text,Image,TouchableOpacity,StyleSheet,} from 'react-native';
 import { useCart } from "../context/CartContext";
 const ProductCard = ({ item }: any) => {
+
   const { addToCart } = useCart();
   return (
     <View style={styles.card}>
@@ -66,10 +67,7 @@ const ProductCard = ({ item }: any) => {
   category: item.category,
   unit: item.unit || "1 L",
   quantity: 1,
-  type:
-  item.category?.toLowerCase().includes("milk")
-    ? "subscription"
-    : "instant",
+ type: "subscription",
 });
 
   }}

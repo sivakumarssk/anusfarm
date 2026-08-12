@@ -1,4 +1,3 @@
-
 import React, {useState} from 'react';
 import {View,Text,TouchableOpacity,StyleSheet,ScrollView,Image,TextInput} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
@@ -6,7 +5,7 @@ import {useNavigation, useFocusEffect} from '@react-navigation/native';
 import {useCallback} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { API_URL } from '../config/api';
 
 type UserProfile = {id:number;name:string; phone:string;};
 
@@ -29,7 +28,7 @@ if(!token){
 console.log("TOKEN NOT FOUND");
 return;
 }
-const response = await fetch("http://192.168.0.112:5000/api/users/profile",{
+const response = await fetch(`${API_URL}/api/users/profile`,{
 method:"GET",
 headers:{
 Authorization:`Bearer ${token}`
@@ -54,7 +53,7 @@ try{
  if(!token){
  return;
 }
-const response = await fetch("http://192.168.0.112:5000/api/users/update-profile",{
+const response = await fetch(`${API_URL}/api/users/update-profile`,{
 method:"PUT",
 headers:{"Content-Type":"application/json",
 Authorization:`Bearer ${token}`
@@ -84,6 +83,7 @@ console.log(error);
 const menuItems = [
 {
 title:'My Subscriptions',
+screen:'MySubscriptions',
 image:require("../../assets/icons/MySubscription.png")
 },
 

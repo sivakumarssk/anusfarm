@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-
+import { API_URL } from "../config/api";
 
 export default function AddProduct(){
 
@@ -29,7 +29,7 @@ formData.append("description",description);
 if(image){
  formData.append("image",image);
 }
-const response=await axios.post("http://192.168.0.112:5000/api/products",formData,{
+const response=await axios.post(`${API_URL}/api/products`,formData,{
 headers:{
 "Content-Type":"multipart/form-data"
 }

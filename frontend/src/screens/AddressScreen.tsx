@@ -1,276 +1,258 @@
-import React from 'react';
+import {  View,Text,TouchableOpacity,StyleSheet, ScrollView,} from "react-native";
+import { SafeAreaView,} from "react-native-safe-area-context";
+import { useNavigation,} from "@react-navigation/native";
+import { Ionicons} from "@expo/vector-icons";
+import React, { useCallback, useState} from "react";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {API_URL} from "../config/api";
+import { useFocusEffect} from "@react-navigation/native";
 
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
 
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
+interface Address {
+  id:number;
+  address_type:string;
+  full_address:string;
+  phone:string;
+  latitude:string;
+  longitude:string;
+}
 
-import {
-  useNavigation,
-} from '@react-navigation/native';
+const AddressScreen = ({route}:any)=>{
+const navigation = useNavigation<any>();
 
-import { Ionicons }
-from '@expo/vector-icons';
+// receive instant buy data
+// const { items, type} = route.params || {};
+const { items, type, fromSubscription } = route.params || {};
 
-const addresses = [
-  {
-    id: 1,
-    type: 'Home',
-    address:
-      '1-49/6, Old National Highway 9, Opposite Ranga Theatre, Azad Nagar, Kodad - 508206.',
-    phone: '+91 6985741230',
-  },
-  {
-    id: 2,
-    type: 'Work',
-    address:
-      '1-49/6, Old National Highway 9, Opposite Ranga Theatre, Azad Nagar, Kodad - 508206.',
-    phone: '+91 6985741230',
-  },
-  {
-    id: 3,
-    type: 'Other',
-    address:
-      '1-49/6, Old National Highway 9, Opposite Ranga Theatre, Azad Nagar, Kodad - 508206.',
-    phone: '+91 6985741230',
-  },
-];
+const [addresses,setAddresses]=useState<Address[]>([]);
+const [selectedAddress,setSelectedAddress]=useState<Address|null>(null);
+const [loading,setLoading]=useState(false);
 
-const AddressScreen = () => {
+useFocusEffect(
+useCallback(()=>{
+fetchAddresses();
+},[])
 
-  const navigation =
-    useNavigation<any>();
+);
 
-  return (
 
-    <SafeAreaView style={styles.container}>
+const fetchAddresses = async()=>{
+try{
+setLoading(true);
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 40,
-        }}
-      >
+const token =await AsyncStorage.getItem("token");
 
-        {/* Header */}
+const res =await axios.get(`${API_URL}/api/addresses`,{
+headers:{
+Authorization:`Bearer ${token}`
+}
+});
+setAddresses(res.data.addresses);
+}
+catch(error){
+console.log(error);
+}
+finally{
+setLoading(false);
+}
+};
+return (
 
-        <View style={styles.header}>
+<SafeAreaView style={styles.container}>
 
-          <TouchableOpacity
-            onPress={() =>
-              navigation.goBack()
-            }
-          >
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color="#000"
-            />
-          </TouchableOpacity>
+<ScrollView
+showsVerticalScrollIndicator={false}
+contentContainerStyle={{
+paddingBottom:40
+}}>
+<View style={styles.header}>
+<TouchableOpacity
+onPress={()=>navigation.goBack()}>
+<Ionicons
+name="arrow-back"
+size={24}
+color="#000"/>
 
-          <Text style={styles.headerTitle}>
-            Address
-          </Text>
+</TouchableOpacity>
+<Text style={styles.headerTitle}>Address</Text>
+</View>
+{loading &&<Text style={styles.message}>Loading...</Text>}
 
-        </View>
+{addresses.length===0 && !loading &&
+<Text style={styles.message}>No Address Found</Text>}
+{addresses.map(item=>(
+<TouchableOpacity key={item.id}
+style={[
+styles.addressCard,
+selectedAddress?.id===item.id &&
+{
+borderColor:"#0A8A2A",
+borderWidth:2
+}
+]}
+onPress={()=>setSelectedAddress(item)}>
+<View style={styles.row}>
+<View style={styles.leftSection}>
+<View style={styles.iconCircle}>
+<Ionicons
+name="location-outline"
+size={20}
+color="#0A8A2A"/>
+</View>
 
-        {/* Address Cards */}
+<View style={{flex:1}}>
+<Text style={styles.type}>{item.address_type}</Text>
+<Text style={styles.address}>{item.full_address}</Text>
+<Text style={styles.phone}>{item.phone}</Text>
+</View>
+</View>
+<Text style={styles.edit}>Edit</Text>
+</View>
+</TouchableOpacity>
+))
+}
 
-        {addresses.map(item => (
+{/* <TouchableOpacity style={styles.addButton}
+onPress={()=>{
+if(!selectedAddress){
+alert("Please select address");
+return;
+}
+// send only selected product
 
-          <View
-            key={item.id}
-            style={styles.addressCard}
-          >
+navigation.navigate("InstantBuyPayment",{
+address:selectedAddress,
+items:items,
+type:type
+}
+);
+}}>
+<Text style={styles.addButtonText}>Continue</Text>
+</TouchableOpacity> */}
+<TouchableOpacity
+  style={styles.addButton}
+  onPress={() => {
+    if (!selectedAddress) {
+      alert("Please select address");
+      return;
+    }
 
-            <View style={styles.row}>
+    console.log("ADDRESS SELECTED:", selectedAddress);
 
-              <View style={styles.leftSection}>
+    if (fromSubscription) {
+      navigation.navigate("SubscribePayment", {
+        address: selectedAddress,
+      });
+      return;
+    }
 
-                <View
-                  style={styles.iconCircle}
-                >
-                  <Ionicons
-                    name="location-outline"
-                    size={20}
-                    color="#0A8A2A"
-                  />
-                </View>
+    navigation.navigate("InstantBuyPayment", {
+      address: selectedAddress,
+      items: items,
+      type: type,
+    });
+  }}
+>
+  <Text style={styles.addButtonText}>Continue</Text>
+</TouchableOpacity>
 
-                <View style={{ flex: 1 }}>
+<TouchableOpacity style={styles.addButton}
+onPress={()=>navigation.navigate("AddAddress")}>
+<Text style={styles.addButtonText}>Add New Address</Text>
+</TouchableOpacity>
 
-                  <Text style={styles.type}>
-                    {item.type}
-                  </Text>
-
-                  <Text style={styles.address}>
-                    {item.address}
-                  </Text>
-
-                  <Text style={styles.phone}>
-                    {item.phone}
-                  </Text>
-
-                </View>
-
-              </View>
-
-              <TouchableOpacity>
-
-                <Text style={styles.edit}>
-                  Edit
-                </Text>
-
-              </TouchableOpacity>
-
-            </View>
-
-          </View>
-
-        ))}
-
-        {/* Add Address */}
-
-        <TouchableOpacity
-          style={styles.addButton}
-        >
-
-          <Text style={styles.addButtonText}>
-            Add New Address
-          </Text>
-
-        </TouchableOpacity>
-
-      </ScrollView>
-
-    </SafeAreaView>
-
-  );
+</ScrollView>
+</SafeAreaView>
+);
 };
 
 export default AddressScreen;
 
 const styles = StyleSheet.create({
 
-  container: {
-    flex: 1,
-    backgroundColor: '#F8F8F8',
-  },
+container:{
+flex:1,
+backgroundColor:"#F8F8F8"
+},
+header:{
+flexDirection:"row",
+alignItems:"center",
+paddingHorizontal:16,
+paddingTop:12,
+marginBottom:20
+},
+headerTitle:{
+fontSize:18,
+fontWeight:"600",
+marginLeft:12,
+color:"#000"
+},
+addressCard:{
+backgroundColor:"#FFF",
+marginHorizontal:16,
+marginBottom:12,
+borderRadius:16,
+padding:16,
+borderWidth:1,
+borderColor:"#E5E5E5"
+},
+row:{
+flexDirection:"row",
+justifyContent:"space-between"
+},
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    marginBottom: 20,
-  },
-
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginLeft: 12,
-  },
-
-  addressCard: {
-    backgroundColor: '#FFFFFF',
-
-    marginHorizontal: 16,
-    marginBottom: 12,
-
-    borderRadius: 16,
-
-    padding: 16,
-
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-
-    elevation: 2,
-  },
-
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  leftSection: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-
-  iconCircle: {
-    width: 40,
-    height: 40,
-
-    borderRadius: 20,
-
-    backgroundColor: '#E8F5E9',
-
-    justifyContent: 'center',
-    alignItems: 'center',
-
-    marginRight: 12,
-  },
-
-  type: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 6,
-  },
-
-  address: {
-    fontSize: 12,
-    color: '#666',
-    lineHeight: 18,
-  },
-
-  phone: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-
-  edit: {
-    fontSize: 14,
-    color: '#0A8A2A',
-    fontWeight: '500',
-  },
-
-  addButton: {
-    height: 52,
-
-    backgroundColor: '#000',
-
-    borderRadius: 10,
-
-    marginHorizontal: 16,
-    marginTop: 220,
-    marginBottom: 20,
-
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  addButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
+leftSection:{
+flexDirection:"row",
+flex:1
+},
+iconCircle:{
+width:40,
+height:40,
+borderRadius:20,
+backgroundColor:"#E8F5E9",
+justifyContent:"center",
+alignItems:"center",
+marginRight:12
+},
+type:{
+fontSize:16,
+fontWeight:"600",
+color:"#000"
+},
+address:{
+fontSize:12,
+color:"#666",
+marginTop:5
+},
+phone:{
+fontSize:12,
+color:"#666",
+marginTop:4
+},
+edit:{
+color:"#0A8A2A"
+},
+addButton:{
+height:52,
+backgroundColor:"#000",
+borderRadius:10,
+marginHorizontal:16,
+marginTop:20,
+justifyContent:"center",
+alignItems:"center"
+},
+addButtonText:{
+color:"#FFF",
+fontSize:16,
+fontWeight:"600"
+},
+message:{
+textAlign:"center",
+marginTop:40,
+color:"#666"
+}
 });
+
+
+

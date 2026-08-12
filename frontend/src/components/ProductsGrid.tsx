@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import ProductsGridCard from './ProductsGridCard';
+import { API_URL } from "../config/api";
 
 type Props = {
   selectedCategory: string;
@@ -27,28 +28,77 @@ const ProductsGrid = ({
   }, [selectedCategory]);
 
 
-  const fetchProducts = async () => {
-    try {
+//   const fetchProducts = async () => {
+//     try {
+// console.log(
+//  "CALLING PRODUCT API:",
+//  `${API_URL}/api/products/category/${selectedCategory}`
+// );
+//       const response = await fetch(
+      
+//   `${API_URL}/api/products/category/${selectedCategory}`
+  
+// );
 
-      const response = await fetch(
-        `http://192.168.0.112:5000/api/products/category/${selectedCategory}`
-      );
+//       const data = await response.json();
 
-      const data = await response.json();
+//           console.log("PRODUCTS DATA:", data);
 
-          console.log("PRODUCTS DATA:", data);
+//       if(data.success){
+//         setProducts(data.products);
+//       }
 
-      if(data.success){
-        setProducts(data.products);
-      }
+//     } catch(error){
+//       console.log(
+//         "Fetch Products Error:",
+//         error
+//       );
+//     }
+//   };
 
-    } catch(error){
-      console.log(
-        "Fetch Products Error:",
-        error
-      );
-    }
-  };
+
+const fetchProducts = async () => {
+
+try {
+
+console.log(
+"PRODUCT API URL:",
+`${API_URL}/api/products/category/${selectedCategory}`
+);
+
+const response = await fetch(
+`${API_URL}/api/products/category/${selectedCategory}`
+);
+
+console.log(
+"STATUS:",
+response.status
+);
+
+const data = await response.json();
+
+console.log(
+"PRODUCT RESPONSE:",
+data
+);
+
+
+if(data.success){
+ setProducts(data.products);
+}
+
+
+}
+catch(error){
+
+console.log(
+"PRODUCT FETCH ERROR:",
+error
+);
+
+}
+
+};
 
 
   return (

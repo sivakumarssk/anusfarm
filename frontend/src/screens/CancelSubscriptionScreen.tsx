@@ -1,17 +1,12 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import {View,Text,StyleSheet,TouchableOpacity,Alert,} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import {API_URL} from "../config/api";
 
-const BASE_URL = "http://192.168.0.112:5000/api";
+// const BASE_URL = "http://192.168.0.112:5000/api";
 
 export default function CancelSubscriptionScreen() {
   const navigation = useNavigation<any>();
@@ -23,8 +18,7 @@ export default function CancelSubscriptionScreen() {
     try {
       const token = await AsyncStorage.getItem("token");
 
-      const res = await fetch(
-        `${BASE_URL}/subscriptions/${id}/cancel`,
+      const res = await fetch(`${API_URL}/api/subscriptions/${id}/cancel`,
         {
           method: "PUT",
           headers: {

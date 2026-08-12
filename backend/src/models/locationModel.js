@@ -1,17 +1,37 @@
 
 const pool = require("../config/db");
 
+// const saveLocation = async (userId, latitude, longitude, address) => {
+//   const result = await pool.query(
+//     `INSERT INTO user_locations (user_id, latitude, longitude, address)
+//      VALUES ($1,$2,$3,$4)
+//      RETURNING *`,
+//     [userId, latitude, longitude, address]
+//   );
+
+//   return result.rows[0];
+// };
 const saveLocation = async (userId, latitude, longitude, address) => {
-  const result = await pool.query(
-    `INSERT INTO user_locations (user_id, latitude, longitude, address)
-     VALUES ($1,$2,$3,$4)
-     RETURNING *`,
-    [userId, latitude, longitude, address]
-  );
+    const result = await pool.query(
+        `
+        INSERT INTO user_locations
+        (user_id, latitude, longitude, address)
+        VALUES ($1, $2, $3, $4)
 
-  return result.rows[0];
+        ON CONFLICT (user_id)
+        DO UPDATE SET
+            latitude = EXCLUDED.latitude,
+            longitude = EXCLUDED.longitude,
+            address = EXCLUDED.address,
+            updated_at = CURRENT_TIMESTAMP
+
+        RETURNING *
+        `,
+        [userId, latitude, longitude, address]
+    );
+
+    return result.rows[0];
 };
-
 const getLocationByUserId = async (userId) => {
   const result = await pool.query(
     `SELECT *

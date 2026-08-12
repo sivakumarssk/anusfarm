@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {View,Text,TouchableOpacity,TextInput,StyleSheet,Alert,Keyboard,TouchableWithoutFeedback} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useNavigation,useRoute} from '@react-navigation/native';
-
+import { API_URL } from '../config/api';
 
 const OtpVerifyScreen =()=>{
 const navigation = useNavigation<any>();
@@ -55,7 +55,7 @@ return;
 try{
   console.log("Calling API...");
 
-const response = await fetch("http://192.168.0.112:5000/api/auth/verify-otp",{
+const response = await fetch(`${API_URL}/api/auth/verify-otp`,{
 method:"POST",
 headers:{
 "Content-Type":"application/json"

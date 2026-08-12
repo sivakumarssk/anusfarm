@@ -12,6 +12,7 @@ import FeatureSection from '../components/FeaturesSection';
 import QualityTestingCard from '../components/QualityTestingCard';
 import SubscriptionCard from '../components/SubscriptionCard';
 import RecentProductsSection from '../components/RecentProductionsSection';
+import {API_URL} from "../config/api";
 
 const GuestHomeScreen = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,7 +39,7 @@ useEffect(() => {
       const token = await AsyncStorage.getItem("token");
       if (!token) return;
       const response = await fetch(
-         "http://192.168.0.112:5000/api/location",
+         `${API_URL}/api/location`,
         {
           method: "GET",
           headers: {
@@ -63,7 +64,7 @@ useFocusEffect(
       try {
         const token = await AsyncStorage.getItem("token");
         if (!token) return;
-        const response = await fetch("http://192.168.0.112:5000/api/users/profile",{
+        const response = await fetch(`${API_URL}/api/users/profile`,{
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -71,7 +72,6 @@ useFocusEffect(
           }
         );
         const data = await response.json();
-        console.log("HOME PROFILE:", data);
         if (data.success) {
           setUserName(data.user.name || "");
            // save latest name

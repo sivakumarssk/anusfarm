@@ -1,6 +1,6 @@
 import React, {useEffect, useRef,useState,} from 'react';
 import {View, FlatList, StyleSheet,Dimensions,} from 'react-native';
-  
+  import { API_URL } from '../config/api';
 import ProductCard from './ProductCard';
 const { width } = Dimensions.get('window');
 const ProductCarousel = () => {
@@ -12,8 +12,7 @@ const ProductCarousel = () => {
   const fetchProducts = async () => {
     try {
       const response = await fetch(
-        "http://192.168.0.112:5000/api/products"
-      );
+        `${API_URL}/api/products`);
       const data = await response.json();
       console.log("PRODUCT RESPONSE:", data);
       setProducts(data.products);

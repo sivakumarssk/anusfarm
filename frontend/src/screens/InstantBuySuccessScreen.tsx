@@ -1,57 +1,35 @@
 import React from 'react';
-
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-
-
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import {
-  useNavigation,
-} from '@react-navigation/native';
-
-import { Ionicons }
-from '@expo/vector-icons';
+import {useRoute} from '@react-navigation/native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView,} from 'react-native';
+import {SafeAreaView,} from 'react-native-safe-area-context';
+import {useNavigation,} from '@react-navigation/native';
+import { Ionicons }from '@expo/vector-icons';
 
 const InstantBuySuccessScreen = () => {
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
 
-  const navigation =
-    useNavigation<any>();
-
+const {orderId,total,subtotal,itemCount,paymentMethod}=route.params || {};
+const paymentNames: Record<string, string> = {
+  upi: "UPI",
+  card: "Debit / Credit Card",
+  netbanking: "Net Banking",
+  wallet: "Wallet",
+  cod: "Cash on Delivery",
+};
   return (
+    <SafeAreaView style={styles.container}>
 
-    <SafeAreaView
-      style={styles.container}
-    >
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Header */}
 
         <View style={styles.header}>
 
-          <TouchableOpacity
-            onPress={() =>
-              navigation.goBack()
-            }
-          >
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color="#000"
-            />
+          <TouchableOpacity onPress={() =>
+              navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#000"/>
           </TouchableOpacity>
-
           <Text style={styles.headerTitle}>
             Instant Buy
           </Text>
@@ -79,10 +57,9 @@ const InstantBuySuccessScreen = () => {
           <Text style={styles.orderLabel}>
             Order Id
           </Text>
-
-          <Text style={styles.orderId}>
-            #ODI1847589
-          </Text>
+<Text style={styles.orderId}>
+ #{orderId}
+</Text>
 
         </View>
 
@@ -95,8 +72,13 @@ const InstantBuySuccessScreen = () => {
         <View style={styles.summaryCard}>
 
           <View style={styles.summaryRow}>
-            <Text>Subtotal (4 items)</Text>
-            <Text>₹973</Text>
+            <Text>
+Subtotal ({itemCount} items)
+</Text>
+
+<Text>
+₹{subtotal}
+</Text>
           </View>
 
           <View style={styles.dashedLine} />
@@ -128,7 +110,7 @@ const InstantBuySuccessScreen = () => {
                 fontWeight:'700'
               }}
             >
-              ₹973
+              ₹{total}
             </Text>
           </View>
 
@@ -144,7 +126,7 @@ const InstantBuySuccessScreen = () => {
 
           <View style={styles.summaryRow}>
             <Text>Total Amount</Text>
-            <Text>₹973</Text>
+            <Text>₹{total}</Text>
           </View>
 
           <View style={styles.dashedLine} />
@@ -152,22 +134,28 @@ const InstantBuySuccessScreen = () => {
           <View style={styles.summaryRow}>
             <Text>Paid Via</Text>
 
-            <Text
-              style={{
-                color:'#0A8A2A'
-              }}
-            >
-              UPI
-            </Text>
+          <Text
+  style={{
+    color: "#0A8A2A",
+    fontWeight: "600",
+  }}
+>
+  {paymentNames[paymentMethod] || paymentMethod}
+</Text>
           </View>
 
         </View>
 
         <TouchableOpacity
           style={styles.trackButton}
-          onPress={()=>{
-            navigation.navigate("TrackOrder")
-          }}
+         onPress={()=>{
+ navigation.navigate(
+   "TrackOrder",
+   {
+     orderId: orderId
+   }
+ )
+}}
         >
           <Text style={styles.trackText}>
             Track Order

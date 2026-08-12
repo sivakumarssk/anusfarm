@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
-
+import { API_URL } from "../config/api";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -10,7 +10,7 @@ export default function Products() {
   const [stockQty, setStockQty] = useState("");
 
   const location = useLocation();
-  const API = "http://192.168.0.112:5000/api";
+  const API = `${API_URL}/api`;
   const fetchProducts = async () => {
     try {
       const response = await axios.get( `${API}/products`);

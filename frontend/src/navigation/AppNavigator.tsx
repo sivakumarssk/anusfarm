@@ -35,6 +35,12 @@ import PauseSubscriptionScreen from "../screens/PauseSubscriptionScreen";
 import EditSubscriptionScreen from "../screens/EditSubscriptionScreen";
 import CancelSubscriptionScreen from "../screens/CancelSubscriptionScreen";
 import DeliveryCalendarScreen from '../screens/DeliveryCalendarScreen';
+import OrderSuccessScreen from '../screens/OrderSuccessScreen';
+import NotificationScreen from '../screens/NotificationScreen';
+import AddMoneyScreen from '../screens/AddMoneyScreen';
+import AddAddressScreen from '../screens/AddAddressScreen';
+import OrderDetailsScreen from '../screens/OrderDetailsScreen';
+import SubscriptionDetailsScreen from "../screens/SubscriptionDetailsScreen";
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -158,6 +164,14 @@ component={BottomTabNavigator}
   name="EditSchedule"
   component={EditScheduleScreen}
 />
+<Stack.Screen
+name="OrderSuccess"
+component={OrderSuccessScreen}
+/>
+<Stack.Screen
+  name="OrderDetails"
+  component={OrderDetailsScreen}
+/>
 
 <Stack.Screen
   name="TrackOrder"
@@ -170,6 +184,10 @@ component={BottomTabNavigator}
 <Stack.Screen
   name="MySubscriptions"
   component={MySubscriptionsScreen}
+/>
+<Stack.Screen
+  name="SubscriptionDetails"
+  component={SubscriptionDetailsScreen}
 />
 <Stack.Screen
   name="PauseSubscription"
@@ -187,6 +205,21 @@ component={BottomTabNavigator}
  name="DeliveryCalendar"
  component={DeliveryCalendarScreen}
 />
+<Stack.Screen
+  name="Notification"
+  component={NotificationScreen}
+/>
+<Stack.Screen
+  name="AddMoney"
+  component={AddMoneyScreen}
+/>
+<Stack.Screen
+  name="AddAddress"
+  component={AddAddressScreen}
+/>
+
+
+
 
       </Stack.Navigator>
 

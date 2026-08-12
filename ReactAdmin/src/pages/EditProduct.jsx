@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { API_URL } from "../config/api";
 
 export default function EditProduct(){
 const {id}=useParams();
@@ -21,7 +22,7 @@ getProduct();
 const getProduct = async()=>{
 try{
 const response = await axios.get(
-`http://192.168.0.112:5000/api/products/${id}`
+`${API_URL}/api/products/${id}`
 );
 const product=response.data.product;
 setName(product.name);
@@ -37,7 +38,7 @@ setOldImage(product.image);
 }
 else{
 setOldImage(
-`http://192.168.0.112:5000/uploads/${product.image}`
+`${API_URL}/uploads/${product.image}`
 );
 }
 }
@@ -65,7 +66,7 @@ formData.append("image",image);
 }
 
 const response = await axios.put(
-`http://192.168.0.112:5000/api/products/${id}`,
+`${API_URL}/api/products/${id}`,
 formData,
 {
 headers:{

@@ -17,7 +17,7 @@ return(
 
 <Link className="mb-6 text-xl font-semibold hover:text-green-600"to="/subscriptions">🔄 Subscriptions</Link>
 
-{/* <Link className="mb-6 text-xl font-semibold hover:text-green-600"to="/users">👥 Users</Link> */}
+ <Link  className="mb-6 text-xl font-semibold hover:text-green-600" to="/riders"  >  🚚 Riders </Link>
 
 </div>
 )

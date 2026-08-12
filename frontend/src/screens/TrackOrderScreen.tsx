@@ -1,520 +1,764 @@
-import React from 'react';
+import React, { useState } from "react";
+import {View,Text,StyleSheet,TouchableOpacity,Image, ScrollView,ActivityIndicator,} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import {useNavigation,useRoute,useFocusEffect,} from "@react-navigation/native";
+import { API_URL } from "../config/api";
 
-import {
-  View,
-  Text,
-  StyleSheet,
-TouchableOpacity,
-Image,
- ScrollView,
-} from 'react-native';
 
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
+const TimelineItem = ({ title,active,time,}: {title:string; active:boolean; time?:string;}) => {
 
-import {
-  Ionicons,
-} from '@expo/vector-icons';
+return (
 
-import {
-  useNavigation,
-} from '@react-navigation/native';
+<View style={styles.timelineItem}>
+<View style={styles.timelineLeft}>
 
-const TrackOrderScreen = () => {
-
-    const navigation = useNavigation<any>();
-
-  return (
-
-    <SafeAreaView style={styles.container}>
-
-        <ScrollView
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-      paddingBottom: 40,
-    }}
-  >
-
-      <View style={styles.header}>
-
-  <TouchableOpacity
-    onPress={() =>
-      navigation.goBack()
-    }
-  >
-
-    <Ionicons
-      name="arrow-back"
-      size={24}
-      color="#000"
-    />
-
-  </TouchableOpacity>
-
-  <Text style={styles.headerTitle}>
-    Track Order
-  </Text>
-
+<View style={active? styles.completedCircle: styles.pendingCircle}>
+{active &&
+<Ionicons name="checkmark" size={14} color="#fff"/>}
 </View>
-
-<View style={styles.statusCard}>
-
-  <View style={styles.badge}>
-
-    <Text style={styles.badgeText}>
-      Order Confirmed
-    </Text>
-
-  </View>
-
-  <Text style={styles.arrivalText}>
-    Arriving in 30 mins
-  </Text>
-
-</View>
-
-<View style={styles.partnerCard}>
-
-  <View
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-    }}
-  >
-
-    <Image
-      source={require('../../assets/icons/cart.png')}
-      style={styles.partnerImage}
-    />
-
-    <View>
-
-      <Text style={styles.partnerName}>
-        Nani
-      </Text>
-
-      <Text style={styles.partnerRating}>
-        ★ 4.9 (2k+ orders)
-      </Text>
-
-    </View>
-
-  </View>
-
-  <TouchableOpacity
-    style={styles.callButton}
-  >
-
-    <Ionicons
-      name="call"
-      size={20}
-      color="#FFF"
-    />
-
-  </TouchableOpacity>
-
-</View>
-
-<View style={styles.addressRow}>
-
-  <Ionicons
-    name="location-outline"
-    size={22}
-    color="#777"
-    style={{
-        marginTop:10,
-    }}
-  />
-
-  <View
-    style={{
-      marginLeft: 6,
-    }}
-  >
-
-    <Text>
-      Delivery Address
-    </Text>
-
-    <Text>
-      143 Colony,
-      Azad Nagar,
-      Kodad
-    </Text>
-
-  </View>
-
-</View>
-
-
-<Text style={styles.sectionTitle}>
-  ORDER STATUS
-</Text>
-
-<View style={styles.timelineContainer}>
-
- <View style={styles.timelineItem}>
-
- <View style={styles.timelineLeft}>
-
-  <View style={styles.completedCircle}>
-    <Ionicons
-      name="checkmark"
-      size={14}
-      color="#FFF"
-    />
-  </View>
-
-  <View style={styles.timelineLine} />
-
+<View style={styles.timelineLine}/>
 </View>
 
 <View style={styles.timelineContent}>
-    <Text style={styles.completedText}>
-      Order Confirmed
-    </Text>
-
-    <Text style={styles.timelineTime}>
-      4:30 PM
-    </Text>
-  </View>
-
+<Text style={active? styles.completedText: styles.pendingText}>{title}</Text>
+<Text style={styles.timelineTime}>{time || "Pending"}</Text>
 </View>
 </View>
+);
+};
+
+const TrackOrderScreen =()=>{
+const navigation = useNavigation<any>();
+const route = useRoute<any>();
+const {orderId}=route.params;
+const [order,setOrder]=useState<any>(null);
+const [loading,setLoading]=useState(true);
 
 
+useFocusEffect(
+React.useCallback(()=>{
+fetchOrder();
+},[orderId])
+);
 
-  <View style={styles.timelineItem}>
+const fetchOrder=async()=>{
+try{
+setLoading(true);
+const token =await AsyncStorage.getItem("token");
+const response =await fetch(`${API_URL}/api/orders/${orderId}`,{
+headers:{
+Authorization:`Bearer ${token}`,
+"Content-Type":"application/json"
+}
+}
+);
+const data =await response.json();
+console.log("ORDER DATA",JSON.stringify(data,null,2));
 
-  <View style={styles.timelineLeft}>
+if(data.success){
+setOrder(data.order);
+}
 
-    <View style={styles.activeCircle} />
+}
+catch(error){
+console.log(error);
+}
+finally{
+setLoading(false);
+}
+};
+if(loading){
+return(
 
-    <View style={styles.timelineLine} />
+<SafeAreaView style={styles.container}>
+<ActivityIndicator size="large" color="#0A8A2A"/>
+</SafeAreaView>
+);
+}
+const status =(order?.status || "Pending").toLowerCase().trim();
+return(
 
-  </View>
+<SafeAreaView style={styles.container}>
 
-  <View style={styles.timelineContent}>
-    <Text style={styles.activeText}>
-      Freshly Packed
-    </Text>
+<ScrollView
+showsVerticalScrollIndicator={false}
+contentContainerStyle={{paddingBottom:40}}>
 
-    <Text style={styles.timelineTime}>
-      4:45 PM
-    </Text>
-  </View>
-
+<View style={styles.header}>
+<TouchableOpacity onPress={()=>navigation.goBack()}>
+<Ionicons name="arrow-back" size={24}/>
+</TouchableOpacity>
+<Text style={styles.headerTitle}>Track Order</Text>
 </View>
 
-
-  <View style={styles.timelineItem}>
-
-  <View style={styles.timelineLeft}>
-
-    <View style={styles.pendingCircle} />
-
-    <View style={styles.timelineLine} />
-
-  </View>
-
-  <View style={styles.timelineContent}>
-    <Text style={styles.pendingText}>
-      Out for Delivery
-    </Text>
-
-    <Text style={styles.timelineTime}>
-      Pending
-    </Text>
-  </View>
-
-</View>
-
-
-
-  <View style={styles.timelineItem}>
-
-  <View style={styles.timelineLeft}>
-
-    <View style={styles.pendingCircle} />
-
-  </View>
-
-  <View style={styles.timelineContent}>
-    <Text style={styles.pendingText}>
-      Arrived
-    </Text>
-
-    <Text style={styles.timelineTime}>
-      Pending
-    </Text>
-  </View>
-
-</View>
-
-<Text style={styles.summaryTitle}>
-  Order Summary
+<View style={styles.statusCard}>
+<View style={styles.badge}>
+<Text style={styles.badgeText}>
+{status==="pending"?"Order Confirmed":status.charAt(0).toUpperCase()+status.slice(1)}
 </Text>
+</View>
+
+
+
+
+<Text style={styles.arrivalText}>
+{status==="delivered"?"Order Delivered":status==="out for delivery"?"Out for Delivery":
+status==="packed"?"Order Packed":"Arriving Soon"}
+</Text>
+</View>
+
+
+
+
+
+<View style={styles.infoCard}>
+
+
+<Text style={styles.sectionTitle}>
+Order Information
+</Text>
+
+
+
+<View style={styles.row}>
+
+
+<Text>
+Order ID
+</Text>
+
+
+<Text>
+#{order?.order_id}
+</Text>
+
+
+</View>
+
+
+
+<View style={styles.row}>
+
+
+<Text>
+Payment
+</Text>
+
+
+<Text>
+{
+(order?.payment_method || "COD")
+.toUpperCase()
+}
+</Text>
+
+
+</View>
+
+
+
+
+<View style={styles.row}>
+
+
+<Text>
+Ordered On
+</Text>
+
+
+<Text>
+{
+new Date(order?.created_at)
+.toLocaleString()
+}
+</Text>
+
+
+</View>
+
+
+
+</View>
+
+
+
+
+
+<View style={styles.addressCard}>
+
+
+<Ionicons
+name="location-outline"
+size={22}
+color="#777"
+/>
+
+
+<View style={{marginLeft:10}}>
+
+
+<Text>
+Delivery Address
+</Text>
+
+
+<Text>
+{
+order?.address ||
+"Address not available"
+}
+</Text>
+
+
+</View>
+
+
+
+</View>
+
+
+
+
+
+<Text style={styles.sectionTitle}>
+ORDER STATUS
+</Text>
+
+
+
+
+<View style={styles.timelineContainer}>
+<View style={styles.timelineContainer}>
+
+
+<TimelineItem
+
+title="Order Placed"
+
+active={[
+"pending",
+"accepted",
+"packed",
+"out for delivery",
+"delivered"
+].includes(status)}
+
+time={
+order?.created_at
+}
+
+/>
+
+
+
+<TimelineItem
+
+title="Accepted"
+
+active={[
+"accepted",
+"packed",
+"out for delivery",
+"delivered"
+].includes(status)}
+
+time={
+[
+"accepted",
+"packed",
+"out for delivery",
+"delivered"
+].includes(status)
+?
+"Accepted by store"
+:
+"Pending"
+}
+
+/>
+
+
+
+
+<TimelineItem
+
+title="Packed"
+
+active={[
+"packed",
+"out for delivery",
+"delivered"
+].includes(status)}
+
+time={
+[
+"packed",
+"out for delivery",
+"delivered"
+].includes(status)
+?
+"Packed"
+:
+"Pending"
+}
+
+/>
+
+
+
+
+<TimelineItem
+
+title="Out for Delivery"
+
+active={[
+"out for delivery",
+"delivered"
+].includes(status)}
+
+time={
+[
+"out for delivery",
+"delivered"
+].includes(status)
+?
+"Driver is on the way"
+:
+"Pending"
+}
+
+/>
+
+
+
+
+<TimelineItem
+
+title="Delivered"
+
+active={
+status==="delivered"
+}
+
+time={
+status==="delivered"
+?
+"Delivered successfully"
+:
+"Pending"
+}
+
+/>
+
+
+</View>
+
+</View>
+{/* PRODUCTS */}
+
+<Text style={styles.sectionTitle}>
+  Products
+</Text>
+
+
+<View style={styles.productCard}>
+
+
+{
+order?.products?.map(
+(item:any,index:number)=>(
+
+<View
+key={index}
+style={styles.productRow}
+>
+
+
+<Image
+source={{
+uri: encodeURI(
+`${API_URL}/uploads/${item.image}`
+)
+}}
+style={styles.productImage}
+/>
+
+
+
+<View style={{flex:1}}>
+
+
+<Text style={styles.productName}>
+{item.product_name}
+</Text>
+
+
+
+<Text style={styles.productText}>
+Quantity : {item.quantity}
+</Text>
+
+
+
+<Text style={styles.priceText}>
+₹{item.price}
+</Text>
+
+
+
+</View>
+
+
+</View>
+
+)
+
+)
+
+}
+
+
+</View>
+
+
+
+
+
+{/* ORDER SUMMARY */}
+
+
+<Text style={styles.sectionTitle}>
+Order Summary
+</Text>
+
+
 
 <View style={styles.summaryCard}>
 
-  <View style={styles.summaryRow}>
-    <Text>
-      Subtotal (4 items)
-    </Text>
-    <Text>
-      ₹973
-    </Text>
-  </View>
 
-  <View style={styles.dashedLine} />
+<View style={styles.summaryRow}>
 
-  <View style={styles.summaryRow}>
-    <Text>
-      Delivery
-    </Text>
-    <Text
-      style={{
-        color: '#0A8A2A',
-      }}
-    >
-      Free
-    </Text>
-  </View>
 
-  <View style={styles.dashedLine} />
+<Text>
+Subtotal
+</Text>
 
-  <View style={styles.summaryRow}>
-    <Text
-      style={{
-        fontWeight: '700',
-      }}
-    >
-      Total Amount
-    </Text>
 
-    <Text
-      style={{
-        fontWeight: '700',
-      }}
-    >
-      ₹973
-    </Text>
-  </View>
+<Text>
+₹{order?.total_amount}
+</Text>
+
 
 </View>
+
+
+
+<View style={styles.dashedLine}/>
+
+
+
+<View style={styles.summaryRow}>
+
+
+<Text>
+Delivery
+</Text>
+
+
+<Text style={{color:"#0A8A2A"}}>
+Free
+</Text>
+
+
+</View>
+
+
+
+<View style={styles.dashedLine}/>
+
+
+
+<View style={styles.summaryRow}>
+
+
+<Text style={{fontWeight:"700"}}>
+Total Amount
+</Text>
+
+
+<Text style={{fontWeight:"700"}}>
+₹{order?.total_amount}
+</Text>
+
+
+</View>
+
+
+
+</View>
+
+
 </ScrollView>
 
 
-    </SafeAreaView>
+</SafeAreaView>
 
-  );
+
+);
 
 };
 
-export default TrackOrderScreen;
 
+export default TrackOrderScreen;
 const styles = StyleSheet.create({
 
-  container: {
-  flex: 1,
-  backgroundColor: '#F8F8F8',
-  paddingHorizontal: 16,
+container:{
+flex:1,
+backgroundColor:"#F8F8F8",
+paddingHorizontal:16,
 },
 
-timelineContainer: {
-  marginTop: 12,
+
+header:{
+flexDirection:"row",
+alignItems:"center",
+marginTop:10,
+marginBottom:20,
 },
 
-timelineItem: {
-  flexDirection: 'row',
-  alignItems: 'flex-start',
+
+headerTitle:{
+fontSize:24,
+fontWeight:"700",
+marginLeft:12,
 },
 
-timelineContent: {
-  marginLeft: 14,
+
+
+statusCard:{
+backgroundColor:"#fff",
+borderRadius:14,
+padding:16,
+marginBottom:15,
 },
 
-completedCircle: {
-  width: 22,
-  height: 22,
-  borderRadius: 11,
-  backgroundColor: '#0A8A2A',
-  justifyContent: 'center',
-  alignItems: 'center',
+
+
+badge:{
+backgroundColor:"#DDF5DD",
+paddingHorizontal:12,
+paddingVertical:6,
+borderRadius:20,
+alignSelf:"flex-start",
 },
 
-activeCircle: {
-  width: 22,
-  height: 22,
-  borderRadius: 11,
-  backgroundColor: '#245AA8',
+
+badgeText:{
+color:"#0A8A2A",
+fontWeight:"600",
 },
 
-pendingCircle: {
-  width: 22,
-  height: 22,
-  borderRadius: 11,
-  backgroundColor: '#D4D4D4',
+
+
+arrivalText:{
+fontSize:20,
+fontWeight:"700",
+marginTop:10,
 },
 
-verticalLine: {
-  width: 2,
-  height: 34,
-  backgroundColor: '#D4D4D4',
-  marginLeft: 10,
+
+
+
+infoCard:{
+backgroundColor:"#fff",
+padding:16,
+borderRadius:14,
+marginBottom:15,
 },
 
-completedText: {
-  fontSize: 16,
-  color: '#000',
+
+
+row:{
+flexDirection:"row",
+justifyContent:"space-between",
+marginBottom:12,
 },
 
-activeText: {
-  fontSize: 16,
-  color: '#245AA8',
+
+
+addressCard:{
+backgroundColor:"#fff",
+padding:16,
+borderRadius:14,
+flexDirection:"row",
+marginBottom:20,
 },
 
-pendingText: {
-  fontSize: 16,
-  color: '#999',
+
+
+
+sectionTitle:{
+fontSize:18,
+fontWeight:"700",
+marginBottom:15,
+marginTop:10,
 },
 
-timelineTime: {
-  fontSize: 12,
-  color: '#888',
-  marginTop: 2,
+
+
+
+timelineContainer:{
+marginBottom:20,
 },
 
-summaryTitle: {
-  fontSize: 20,
-  fontWeight: '600',
-  marginTop: 24,
-  marginBottom: 12,
+
+
+timelineItem:{
+flexDirection:"row",
 },
 
-summaryCard: {
-  backgroundColor: '#FFF',
-  borderRadius: 14,
-  padding: 16,
-  borderWidth: 1,
-  borderColor: '#E5E5E5',
+
+
+timelineLeft:{
+width:25,
+alignItems:"center",
 },
 
-summaryRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
+
+
+completedCircle:{
+width:22,
+height:22,
+borderRadius:11,
+backgroundColor:"#0A8A2A",
+justifyContent:"center",
+alignItems:"center",
 },
 
-dashedLine: {
-  borderStyle: 'dashed',
-  borderWidth: 0.5,
-  borderColor: '#D6D6D6',
-  marginVertical: 12,
+
+
+pendingCircle:{
+width:22,
+height:22,
+borderRadius:11,
+backgroundColor:"#D5D5D5",
 },
 
-header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginTop: 10,
-  marginBottom: 20,
+
+
+timelineLine:{
+width:2,
+height:45,
+backgroundColor:"#DDD",
 },
 
-headerTitle: {
-  fontSize: 24,
-  fontWeight: '600',
-  marginLeft: 12,
+
+
+
+timelineContent:{
+marginLeft:15,
+marginBottom:10,
 },
 
-statusCard: {
-  backgroundColor: '#FFF',
-  borderRadius: 12,
-  padding: 14,
-  borderWidth: 1,
-  borderColor: '#E8E8E8',
-  marginBottom: 12,
+
+
+completedText:{
+fontSize:16,
+fontWeight:"600",
 },
 
-badge: {
-  backgroundColor: '#DDF5DD',
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  borderRadius: 12,
-  alignSelf: 'flex-start',
+
+
+pendingText:{
+fontSize:16,
+color:"#999",
 },
 
-badgeText: {
-  color: '#0A8A2A',
-  fontSize: 12,
-  fontWeight: '500',
+
+
+timelineTime:{
+fontSize:12,
+color:"#888",
+marginTop:3,
 },
 
-arrivalText: {
-  fontSize: 18,
-  fontWeight: '600',
-  marginTop: 8,
+
+
+
+
+productCard:{
+backgroundColor:"#fff",
+padding:15,
+borderRadius:14,
+marginBottom:20,
 },
 
-partnerCard: {
-  backgroundColor: '#FFF',
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: '#E8E8E8',
-  padding: 14,
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 16,
+
+
+productRow:{
+flexDirection:"row",
+alignItems:"center",
+marginBottom:15,
 },
 
-partnerImage: {
-  width: 50,
-  height: 50,
-  borderRadius: 25,
-  marginRight: 12,
+
+
+productImage:{
+width:70,
+height:70,
+borderRadius:10,
+marginRight:12,
 },
 
-partnerName: {
-  fontSize: 18,
-  fontWeight: '600',
+
+
+productName:{
+fontSize:16,
+fontWeight:"700",
 },
 
-partnerRating: {
-  color: '#0A8A2A',
-  fontSize: 13,
-  marginTop: 2,
+
+
+productText:{
+color:"#666",
+marginTop:5,
 },
 
-callButton: {
-  width: 44,
-  height: 44,
-  borderRadius: 22,
-  backgroundColor: '#000',
-  justifyContent: 'center',
-  alignItems: 'center',
+
+
+priceText:{
+color:"#0A8A2A",
+fontWeight:"700",
+marginTop:5,
 },
 
-addressRow: {
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  marginBottom: 20,
+
+
+
+summaryCard:{
+backgroundColor:"#fff",
+padding:16,
+borderRadius:14,
+marginBottom:30,
 },
 
-sectionTitle: {
-  fontSize: 18,
-  fontWeight: '700',
-  marginBottom: 16,
+
+
+summaryRow:{
+flexDirection:"row",
+justifyContent:"space-between",
+alignItems:"center",
 },
 
-timelineLeft: {
-  alignItems: 'center',
-  width: 22,
-},
 
-timelineLine: {
-  width: 2,
-  height: 42,
-  backgroundColor: '#D4D4D4',
+
+dashedLine:{
+borderWidth:0.5,
+borderStyle:"dashed",
+borderColor:"#ccc",
+marginVertical:12,
 },
 
 

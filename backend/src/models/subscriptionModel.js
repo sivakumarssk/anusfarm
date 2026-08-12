@@ -124,6 +124,36 @@ ORDER BY s.id DESC
 return result.rows;
 
 };
+exports.pauseSubscription = async (
+  id,
+  pause_from,
+  pause_to
+) => {
+
+  const result = await pool.query(
+    `
+    UPDATE subscriptions
+
+    SET
+      status='Paused',
+      pause_from=$1,
+      pause_to=$2
+
+    WHERE id=$3
+
+    RETURNING *
+    `,
+    [
+      pause_from,
+      pause_to,
+      id
+    ]
+  );
+
+
+  return result.rows[0];
+
+};
 exports.resumeSubscription = async (id) => {
 
   const result = await pool.query(
@@ -185,289 +215,739 @@ exports.updateSubscriptionById = async (
   return result.rows[0];
 
 };
-// exports.getSubscriptionCalendar = async (id) => {
 
-//   const result = await pool.query(
-//     `
-//     SELECT
-//       id,
-//       frequency,
+   exports.getSubscriptionCalendar = async (id) => {
 
-//       TO_CHAR(start_date,'YYYY-MM-DD') 
-//       AS start_date,
+const result = await pool.query(
+`
+SELECT
+id,
+delivery_date,
+status
 
-//       TO_CHAR(next_delivery_date,'YYYY-MM-DD') 
-//       AS next_delivery_date,
+FROM subscription_delivery_schedule
 
-//       TO_CHAR(pause_from,'YYYY-MM-DD') 
-//       AS pause_from,
+WHERE subscription_id=$1
 
-//       TO_CHAR(pause_to,'YYYY-MM-DD') 
-//       AS pause_to,
+ORDER BY delivery_date ASC
+`,
+[id]
+);
 
-//       status
 
-//     FROM subscriptions
-
-//     WHERE id=$1
-
-//     `,
-//     [id]
-//   );
-
-
-//   return result.rows[0];
-
-// };
-
-exports.getSubscriptionCalendar = async (id) => {
-
-  const result = await pool.query(
-    `
-    SELECT
-      id,
-      frequency,
-      start_date,
-      next_delivery_date,
-      pause_from,
-      pause_to,
-      status
-    FROM subscriptions
-    WHERE id=$1
-    `,
-    [id]
-  );
-
-
-  const subscription = result.rows[0];
-
-
-  if(!subscription){
-    return null;
-  }
-
-
-  let deliveries = [];
-
-
-  let currentDate =
-    new Date(subscription.next_delivery_date);
-
-
-  const today = new Date();
-
-
-  // generate next 30 days
-
-  for(let i=0;i<30;i++){
-
-
-    let date =
-      new Date(currentDate);
-
-
-    date.setDate(
-      currentDate.getDate()+i
-    );
-
-
-    let dateString =
-      date.toISOString()
-      .split("T")[0];
-
-
-
-    // skip paused dates
-
-    if(
-      subscription.pause_from &&
-      subscription.pause_to
-    ){
-
-      let pauseFrom =
-        new Date(subscription.pause_from);
-
-      let pauseTo =
-        new Date(subscription.pause_to);
-
-
-      if(
-        date >= pauseFrom &&
-        date <= pauseTo
-      ){
-        continue;
-      }
-
-    }
-
-
-
-    if(subscription.frequency==="Daily"){
-
-      deliveries.push(dateString);
-
-    }
-
-
-
-    else if(
-      subscription.frequency==="Weekly"
-    ){
-
-      if(date.getDay() === currentDate.getDay()){
-        deliveries.push(dateString);
-      }
-
-    }
-
-
-
-    else if(
-      subscription.frequency==="Monthly"
-    ){
-
-      if(date.getDate() === currentDate.getDate()){
-        deliveries.push(dateString);
-      }
-
-    }
-
-
-  }
-
-
-
-  return {
-
-    ...subscription,
-
-    deliveries
-
-  };
-
+return result.rows;
 
 };
 
 exports.generateDeliverySchedule = async (
-  subscriptionId,
-  frequency,
-  startDate,
-  items=[]
+    subscriptionId,
+    frequency,
+    startDate,
+    items = []
 ) => {
+    try {
+        const date = new Date(startDate);
 
-  let dates = [];
+        if (isNaN(date.getTime())) {
+            throw new Error("Invalid subscription start date");
+        }
 
-  let date = new Date(startDate);
+        const normalizedFrequency = frequency?.trim().toLowerCase();
 
+        // Convert subscription start datetime to the intended
+        // India calendar date.
+        const start = new Date(
+            date.toLocaleString("en-US", {
+                timeZone: "Asia/Kolkata"
+            })
+        );
 
-  for(let i=0;i<30;i++){
+        for (let i = 0; i < 30; i++) {
 
-    let deliveryDate = new Date(date);
+            const deliveryDate = new Date(start);
 
+            // ==============================
+            // CALCULATE DELIVERY DATE
+            // ==============================
 
-    if(frequency === "Daily"){
+            if (
+                normalizedFrequency === "daily" ||
+                normalizedFrequency === "every day"
+            ) {
+                deliveryDate.setDate(
+                    start.getDate() + i
+                );
 
-      deliveryDate.setDate(
-        date.getDate()+i
-      );
+            } else if (
+                normalizedFrequency === "weekly" ||
+                normalizedFrequency === "every week"
+            ) {
+                deliveryDate.setDate(
+                    start.getDate() + (i * 7)
+                );
 
-    }
+            } else if (
+                normalizedFrequency === "alternative days" ||
+                normalizedFrequency === "alternate days"
+            ) {
+                deliveryDate.setDate(
+                    start.getDate() + (i * 2)
+                );
 
+            } else if (
+                normalizedFrequency === "monthly" ||
+                normalizedFrequency === "every month"
+            ) {
+                deliveryDate.setMonth(
+                    start.getMonth() + i
+                );
 
-    else if(frequency === "Weekly"){
+            } else {
+                throw new Error(
+                    `Unsupported subscription frequency: ${frequency}`
+                );
+            }
 
-      deliveryDate.setDate(
-        date.getDate()+(i*7)
-      );
+            // ==============================
+            // FORMAT AS YYYY-MM-DD
+            // ==============================
 
-    }
+            const year = deliveryDate.getFullYear();
 
+            const month = String(
+                deliveryDate.getMonth() + 1
+            ).padStart(2, "0");
 
-    else if(frequency === "Monthly"){
+            const day = String(
+                deliveryDate.getDate()
+            ).padStart(2, "0");
 
-      deliveryDate.setMonth(
-        date.getMonth()+i
-      );
+            const formattedDate =
+                `${year}-${month}-${day}`;
 
-    }
+            console.log(
+                "GENERATING DELIVERY:",
+                formattedDate
+            );
 
+            // ==============================
+            // CREATE / GET SCHEDULE
+            // ==============================
 
-    dates.push(
-      deliveryDate
-      .toISOString()
-      .split("T")[0]
-    );
+            // const scheduleResult = await pool.query(
+            //     `
+            //     INSERT INTO subscription_delivery_schedule
+            //     (
+            //         subscription_id,
+            //         delivery_date,
+            //         status
+            //     )
+            //     VALUES
+            //     (
+            //         $1,
+            //         $2,
+            //         'Pending'
+            //     )
 
-  }
+            //     ON CONFLICT
+            //     (
+            //         subscription_id,
+            //         delivery_date
+            //     )
 
+            //     DO UPDATE SET
+            //         status =
+            //         CASE
+            //             WHEN subscription_delivery_schedule.status = 'Skipped'
+            //             THEN 'Skipped'
 
+            //             ELSE subscription_delivery_schedule.status
+            //         END
 
-  for(let d of dates){
+            //     RETURNING id
+            //     `,
+            //     [
+            //         subscriptionId,
+            //         formattedDate
+            //     ]
+            // );
 
+            // const deliveryScheduleId =
+            //     scheduleResult.rows[0].id;
 
-    const scheduleResult =
-    await pool.query(
-      `
-      INSERT INTO delivery_schedule
-      (
+            // console.log(
+            //     "Delivery Schedule:",
+            //     deliveryScheduleId,
+            //     formattedDate
+            // );
+// const scheduleResult = await pool.query(
+//     `
+//     INSERT INTO subscription_delivery_schedule
+//     (
+//         subscription_id,
+//         delivery_date,
+//         status,
+//         rider_id
+//     )
+//     SELECT
+//         $1,
+//         $2,
+//         'Pending',
+//         r.id
+//     FROM riders r
+//     WHERE r.is_active = true
+//       AND r.status = 'Online'
+//     ORDER BY r.id
+//     LIMIT 1
+
+//     ON CONFLICT
+//     (
+//         subscription_id,
+//         delivery_date
+//     )
+
+//     DO UPDATE SET
+//         status =
+//         CASE
+//             WHEN subscription_delivery_schedule.status = 'Skipped'
+//             THEN 'Skipped'
+//             ELSE subscription_delivery_schedule.status
+//         END
+
+//     RETURNING id, rider_id
+//     `,
+//     [
+//         subscriptionId,
+//         formattedDate
+//     ]
+// );
+const scheduleResult = await pool.query(
+    `
+    INSERT INTO subscription_delivery_schedule
+    (
         subscription_id,
         delivery_date,
-        status
-      )
+        status,
+        rider_id
+    )
+    VALUES
+    (
+        $1,
+        $2,
+        'Pending',
+        (
+            SELECT r.id
+            FROM riders r
+            WHERE r.is_active = true
+              AND r.status = 'Online'
+            ORDER BY r.id
+            LIMIT 1
+        )
+    )
 
-      VALUES
-      ($1,$2,'Pending')
+    ON CONFLICT
+    (
+        subscription_id,
+        delivery_date
+    )
 
-      RETURNING id
-      `,
-      [
+    DO UPDATE SET
+        status =
+        CASE
+            WHEN subscription_delivery_schedule.status = 'Skipped'
+            THEN 'Skipped'
+            ELSE subscription_delivery_schedule.status
+        END
+
+    RETURNING id, rider_id
+    `,
+    [
         subscriptionId,
-        d
-      ]
+        formattedDate
+    ]
+);
+
+if (scheduleResult.rows.length === 0) {
+    throw new Error(
+        `Unable to create delivery schedule for ${formattedDate}`
     );
+}
 
 
-    const deliveryScheduleId =
-    scheduleResult.rows[0].id;
+const deliveryScheduleId = scheduleResult.rows[0].id;
+
+console.log(
+    "Delivery Schedule:",
+    deliveryScheduleId,
+    formattedDate,
+    "Rider:",
+    scheduleResult.rows[0].rider_id
+);
+            // ==============================
+            // INSERT DELIVERY ITEMS
+            // ==============================
+
+            for (const item of items) {
+
+                await pool.query(
+                    `
+                    INSERT INTO delivery_items
+                    (
+                        delivery_schedule_id,
+                        product_id,
+                        product_name,
+                        quantity,
+                        price,
+                        image
+                    )
+
+                    SELECT
+                        $1,
+                        $2,
+                        $3,
+                        $4,
+                        $5,
+                        $6
+
+                    WHERE NOT EXISTS
+                    (
+                        SELECT 1
+                        FROM delivery_items
+                        WHERE delivery_schedule_id = $1
+                        AND product_id = $2
+                    )
+                    `,
+                    [
+                        deliveryScheduleId,
+                        item.id,
+                        item.name,
+                        item.quantity,
+                        item.price,
+                        item.image
+                    ]
+                );
+            }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "GENERATE DELIVERY SCHEDULE ERROR:",
+            error
+        );
+
+        throw error;
+    }
+};
 
 
+exports.deleteSubscription = async (id) => {
 
-    // insert delivery products
+    const client = await pool.connect();
 
-    for(const item of items){
+    try {
+
+        await client.query("BEGIN");
 
 
-      await pool.query(
-      `
-      INSERT INTO delivery_items
-      (
-        delivery_schedule_id,
-        product_id,
-        product_name,
-        quantity,
-        price,
-        image
-      )
+        // Delete delivery items
+        await client.query(
+            `
+            DELETE FROM delivery_items
+            WHERE delivery_schedule_id IN
+            (
+                SELECT id
+                FROM subscription_delivery_schedule
+                WHERE subscription_id = $1
+            )
+            `,
+            [id]
+        );
 
-      VALUES
-      ($1,$2,$3,$4,$5,$6)
 
-      `,
-      [
-        deliveryScheduleId,
-        item.id,
-        item.name,
-        item.quantity,
-        item.price,
-        item.image
-      ]
+        // Delete delivery schedules
+        await client.query(
+            `
+            DELETE FROM subscription_delivery_schedule
+            WHERE subscription_id = $1
+            `,
+            [id]
+        );
 
-      );
+
+        // Delete subscription items
+        await client.query(
+            `
+            DELETE FROM subscription_items
+            WHERE subscription_id = $1
+            `,
+            [id]
+        );
+
+
+        // Delete subscription
+        const result = await client.query(
+            `
+            DELETE FROM subscriptions
+            WHERE id = $1
+            RETURNING *
+            `,
+            [id]
+        );
+
+
+        await client.query("COMMIT");
+
+
+        return result.rows[0];
+
+    } catch (error) {
+
+        await client.query("ROLLBACK");
+
+        throw error;
+
+    } finally {
+
+        client.release();
 
     }
 
+};
 
-  }
+exports.getPausedSubscriptions = async (userId) => {
 
+    const result = await pool.query(
+        `
+        SELECT
+            s.id,
+            s.plan,
+            s.frequency,
+            s.delivery_time,
+            s.selected_days,
+            s.wallet_amount,
+            s.payment_method,
+            s.status,
+            s.start_date,
+            s.next_delivery_date,
+
+
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'product_name', si.product_name,
+                        'quantity', si.quantity,
+                        'price', si.price,
+                        'image', p.image
+                    )
+                )
+                FILTER (WHERE si.id IS NOT NULL),
+                '[]'
+            ) AS items
+
+
+        FROM subscriptions s
+
+
+        LEFT JOIN subscription_items si
+        ON s.id = si.subscription_id
+
+
+        LEFT JOIN products p
+        ON si.product_id = p.id
+
+
+        WHERE s.user_id=$1
+        AND s.status='Paused'
+
+
+        GROUP BY s.id
+
+        ORDER BY s.id DESC
+        `,
+        [userId]
+    );
+
+
+    return result.rows;
+
+};
+exports.skipDelivery = async (deliveryId, subscriptionId) => {
+    const result = await pool.query(
+        `
+        UPDATE subscription_delivery_schedule
+        SET status = 'Skipped'
+        WHERE id = $1
+          AND subscription_id = $2
+          AND status = 'Pending'
+        RETURNING *
+        `,
+        [deliveryId, subscriptionId]
+    );
+
+    return result.rows[0];
+};
+exports.getSubscriptionById = async (id) => {
+  const result = await pool.query(
+    `
+    SELECT
+      s.id,
+      s.user_id,
+      s.plan,
+      s.frequency,
+      s.delivery_time,
+      s.selected_days,
+      s.start_date,
+      s.next_delivery_date,
+      s.wallet_amount,
+      s.payment_method,
+      s.status,
+      s.pause_from,
+      s.pause_to,
+      s.cancel_date,
+
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'id', si.id,
+            'product_id', si.product_id,
+            'product_name', si.product_name,
+            'name', si.product_name,
+            'quantity', si.quantity,
+            'price', si.price,
+            'image', p.image
+          )
+        ) FILTER (WHERE si.id IS NOT NULL),
+        '[]'
+      ) AS products
+
+    FROM subscriptions s
+
+    LEFT JOIN subscription_items si
+      ON s.id = si.subscription_id
+
+    LEFT JOIN products p
+      ON si.product_id = p.id
+
+    WHERE s.id = $1
+
+    GROUP BY s.id
+    `,
+    [id]
+  );
+
+  return result.rows[0];
+};
+
+// ============================================================
+// ASSIGN RIDER TO SUBSCRIPTION DELIVERY
+// ============================================================
+// exports.getSubscriptionDeliveryByIdForRider = async (
+//     deliveryId,
+//     riderId
+// ) => {
+//     try {
+//         const result = await pool.query(
+//             `
+//             SELECT
+//                 sds.id AS delivery_id,
+//                 sds.subscription_id,
+//                 sds.delivery_date,
+//                 sds.status AS delivery_status,
+//                 sds.rider_id,
+
+//                 s.plan,
+//                 s.frequency,
+//                 s.delivery_time,
+
+//                 u.id AS user_id,
+//                 u.name AS customer_name,
+//                 u.phone AS customer_phone,
+
+//                 -- ADDRESS
+//                 a.full_address AS customer_address,
+//                 a.latitude AS customer_latitude,
+//                 a.longitude AS customer_longitude,
+//                 a.phone AS address_phone,
+
+//                 -- PRODUCTS
+//                 COALESCE(
+//                     json_agg(
+//                         json_build_object(
+//                             'product_id', p.id,
+//                             'product_name', p.name,
+//                             'quantity', si.quantity,
+//                             'price', p.price,
+//                             'image', p.image
+//                         )
+//                     ) FILTER (
+//                         WHERE si.id IS NOT NULL
+//                     ),
+//                     '[]'::json
+//                 ) AS products
+
+//             FROM subscription_delivery_schedule sds
+
+//             INNER JOIN subscriptions s
+//                 ON sds.subscription_id = s.id
+
+//             INNER JOIN users u
+//                 ON s.user_id = u.id
+
+//             LEFT JOIN addresses a
+//                 ON a.user_id = u.id
+
+//             LEFT JOIN subscription_items si
+//                 ON si.subscription_id = s.id
+
+//             LEFT JOIN products p
+//                 ON p.id = si.product_id
+
+//             WHERE
+//                 sds.id = $1
+//                 AND sds.rider_id = $2
+
+//             GROUP BY
+//                 sds.id,
+//                 sds.subscription_id,
+//                 sds.delivery_date,
+//                 sds.status,
+//                 sds.rider_id,
+
+//                 s.plan,
+//                 s.frequency,
+//                 s.delivery_time,
+
+//                 u.id,
+//                 u.name,
+//                 u.phone,
+
+//                 a.full_address,
+//                 a.latitude,
+//                 a.longitude,
+//                 a.phone
+//             `,
+//             [deliveryId, riderId]
+//         );
+
+//         return result.rows[0];
+
+//     } catch (error) {
+//         console.error(
+//             "GET SUBSCRIPTION DELIVERY BY ID MODEL ERROR:",
+//             error
+//         );
+
+//         throw error;
+//     }
+// };
+
+exports.getSubscriptionDeliveryByIdForRider = async (
+    deliveryId,
+    riderId
+) => {
+    try {
+
+        const result = await pool.query(
+            `
+            SELECT
+                sds.id AS delivery_id,
+                sds.subscription_id,
+                sds.delivery_date,
+                sds.status AS delivery_status,
+                sds.rider_id,
+
+                s.plan,
+                s.frequency,
+                s.delivery_time,
+
+                u.id AS user_id,
+                u.name AS customer_name,
+                u.phone AS customer_phone,
+
+                -- SUBSCRIPTION ADDRESS
+                a.id AS address_id,
+                a.full_address AS customer_address,
+                a.latitude AS customer_latitude,
+                a.longitude AS customer_longitude,
+                a.phone AS address_phone,
+
+                -- PRODUCTS
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'product_id', p.id,
+                            'product_name', p.name,
+                            'quantity', si.quantity,
+                            'price', p.price,
+                            'image', p.image
+                        )
+                    ) FILTER (
+                        WHERE si.id IS NOT NULL
+                    ),
+                    '[]'::json
+                ) AS products
+
+            FROM subscription_delivery_schedule sds
+
+            INNER JOIN subscriptions s
+                ON sds.subscription_id = s.id
+
+            INNER JOIN users u
+                ON s.user_id = u.id
+
+            -- GET THE ADDRESS SELECTED FOR THIS SUBSCRIPTION
+            LEFT JOIN addresses a
+                ON a.id = s.address_id
+                AND a.user_id = u.id
+
+            LEFT JOIN subscription_items si
+                ON si.subscription_id = s.id
+
+            LEFT JOIN products p
+                ON p.id = si.product_id
+
+            WHERE
+                sds.id = $1
+                AND sds.rider_id = $2
+
+            GROUP BY
+                sds.id,
+                sds.subscription_id,
+                sds.delivery_date,
+                sds.status,
+                sds.rider_id,
+
+                s.plan,
+                s.frequency,
+                s.delivery_time,
+
+                u.id,
+                u.name,
+                u.phone,
+
+                a.id,
+                a.full_address,
+                a.latitude,
+                a.longitude,
+                a.phone
+            `,
+            [
+                deliveryId,
+                riderId
+            ]
+        );
+
+        return result.rows[0];
+
+    } catch (error) {
+
+        console.error(
+            "GET SUBSCRIPTION DELIVERY BY ID MODEL ERROR:",
+            error
+        );
+
+        throw error;
+    }
 
 };

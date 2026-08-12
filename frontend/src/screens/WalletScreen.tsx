@@ -1,39 +1,83 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  ScrollView
-} from 'react-native';
-
+import {View,Text,TouchableOpacity,StyleSheet,Image,ScrollView} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import TransactionCard
-from '../components/TransacrtionCard';
+import TransactionCard from '../components/TransacrtionCard';
+import { SafeAreaView,} from 'react-native-safe-area-context';
+import SubscriptionPlanCard from '../components/SubscriptionPlanCard';
+import {subscriptionPlans,} from '../data/subscriptionPlans';
+import { useNavigation,} from '@react-navigation/native';
+import {  useState, useCallback  } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../config/api";
+import { useFocusEffect } from "@react-navigation/native";
+import React from "react";
+interface Wallet {
+  id: number;
+  user_id: number;
+  balance: string;
+  created_at: string;
+  updated_at: string;
+}
 
-import {
-  walletTransactions,
-} from '../data/walletTransactions';
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import SubscriptionPlanCard
-from '../components/SubscriptionPlanCard';
-
-import {
-  subscriptionPlans,
-} from '../data/subscriptionPlans';
-
-import {
-  useNavigation,
-} from '@react-navigation/native';
-
+interface Transaction {
+  id: number;
+  wallet_id: number;
+  user_id: number;
+    type: "credit" | "debit";
+  amount: string;
+  description: string;
+  created_at: string;
+}
 const WalletScreen = () => {
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const navigation = useNavigation<any>();
+useFocusEffect(
+  useCallback(() => {
+    fetchWallet();
+    fetchTransactions();
+  }, [])
+);
+const fetchWallet = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
 
-  const navigation =
-    useNavigation<any>();
+    const response = await fetch(`${API_URL}/api/wallet`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setWallet(data.wallet);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+const fetchTransactions = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/api/wallet/transactions`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+      setTransactions(data.transactions);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   return (
 
@@ -118,7 +162,7 @@ const WalletScreen = () => {
           <View>
 
             <Text style={styles.balanceAmount}>
-              ₹ 0.00
+            ₹ {wallet?.balance || "0.00"}
             </Text>
 
             <Text style={styles.balanceText}>
@@ -132,8 +176,9 @@ const WalletScreen = () => {
         {/* Add Money Card */}
 
         <TouchableOpacity
-          style={styles.addMoneyCard}
-        >
+  style={styles.addMoneyCard}
+  onPress={() => navigation.navigate("AddMoney")}
+>
 
           <View
             style={styles.addMoneyLeft}
@@ -206,36 +251,63 @@ const WalletScreen = () => {
 
 <View style={styles.transactionContainer}>
 
- {walletTransactions.map(item => (
-  <TransactionCard
-    key={item.id}
-    type={item.type}
-    title={item.title}
-    subtitle={item.subtitle}
-    amount={item.amount}
-    date={item.date}
+  {transactions.length === 0 ? (
+   <View
+  style={{
+    paddingVertical: 30,
+    alignItems: "center",
+  }}
+>
+  <Ionicons
+    name="wallet-outline"
+    size={40}
+    color="#999"
   />
-))}
+  <Text
+    style={{
+      marginTop: 10,
+      color: "#777",
+    }}
+  >
+    No Transactions Yet
+  </Text>
+</View>
+  ) : (
+   transactions.slice() .reverse().slice(0, 3).map(item => (
+      <TransactionCard
+        key={item.id}
+        type={item.type}
+        title={item.description}
+        subtitle={item.type}
+        amount={item.amount}
+        date={new Date(item.created_at).toLocaleDateString()}
+      />
+    ))
+  )}
+
+
 
   
 
 </View>
 
-<View style={styles.sectionHeader}>
 
+<View style={styles.sectionHeader}>
   <Text style={styles.sectionTitle}>
     Subscription Plans
   </Text>
-
-  <TouchableOpacity>
-
-    <Text style={styles.viewAll}>
-      View Plans
-    </Text>
-
-  </TouchableOpacity>
-
+  
+<TouchableOpacity
+  onPress={() => navigation.navigate("SubscriptionPlans")}
+>
+  <Text style={styles.viewAll}>
+    View Plans
+  </Text>
+</TouchableOpacity>
 </View>
+ 
+
+
 
 <View
   style={{

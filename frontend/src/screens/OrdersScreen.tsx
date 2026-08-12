@@ -1,77 +1,104 @@
-import React, { useState } from 'react';
-import { useNavigation }
-from '@react-navigation/native';
-
+import React, { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation }from '@react-navigation/native';
 import OrderCard from '../components/OrderCard';
-
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from 'react-native';
-
-import DateSelector
-from '../components/DateSelector';
-
-import { Ionicons }
-from '@expo/vector-icons';
-
-import {useOrderHistory,} from '../context/OrderHistoryContext';
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import OrdersHeader
-from '../components/OrderHeader';
-
+import {View,Text,StyleSheet,TouchableOpacity,Image,ScrollView,} from 'react-native';
+import DateSelector from '../components/DateSelector';
+import { Ionicons }from '@expo/vector-icons';
+import {  SafeAreaView,} from 'react-native-safe-area-context';
+import OrdersHeader from '../components/OrderHeader';
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { API_URL } from "../config/api";
 const MyOrdersScreen = () => {
+  const [selectedDate, setSelectedDate] =useState(new Date());
+  const navigation =useNavigation<any>();
+   const [orders, setOrders] = useState<any[]>([]);
 
-  const [selectedDate, setSelectedDate] =
-  useState(new Date());
-
-  const navigation =
-  useNavigation<any>();
-
-const { orders } =
-  useOrderHistory();
-
-console.log("Orders in Context:", orders);
-
-  const [
-  selectedTab,
-  setSelectedTab,
-] = useState<
-  'instant' | 'subscription'
->('instant');
-
+  const [selectedTab,setSelectedTab,] = useState<'instant' | 'subscription'>('instant');
+    
+  // const BASE_URL = "http://192.168.0.112:5000/api";
  
+   useFocusEffect(
+  useCallback(() => {
+    loadOrders();
+  }, [])
+);
+
+  const loadOrders = async () => {
+
+try {
+
+const token = await AsyncStorage.getItem("token");
+
+const res = await fetch(`${API_URL}/api/orders/my`,{
+headers:{
+Authorization:`Bearer ${token}`
+}
+}
+);
 
 
-  const filteredOrders =
-  selectedTab === 'instant'
-    ? orders.filter(
-        order =>
-          order.orderType ===
-          'instant'
-      )
-    : orders.filter(
-        order =>
-          order.orderType ===
-          'subscription'
-      );
+const json = await res.json();
+
+console.log("MY ORDERS:",json);
+
+
+if(json.success){
+
+const backendOrders = json.orders.map((order:any)=>({
+
+id:order.id,
+
+orderId:order.id.toString(),
+
+orderType:"instant",
+
+deliveryDate:order.created_at,
+
+created_at:order.created_at,
+
+status:order.status.toLowerCase(),
+
+products:order.products.map((item:any)=>({
+
+...item,
+
+image:encodeURI(
+`${API_URL.replace("/api","")}/uploads/${item.image}`
+)
+
+})),
+
+total:order.total_amount
+
+}));
+
+
+setOrders(backendOrders);
+
+}
+
+
+}
+catch(error){
+
+console.log(
+"LOAD ORDERS ERROR:",
+error
+);
+
+}
+
+};
+    
+const filteredOrders = selectedTab === 'instant' ? orders.filter(
+   order => order.orderType ==='instant'  ): orders.filter(
+        order =>order.orderType ==='subscription');
 
   console.log("Selected Tab:", selectedTab);
 console.log("Filtered Orders:", filteredOrders);
 
-  // const todayOrder =
-  // filteredOrders.find(
-  //   order =>
-  //     order.deliveryDate === 'Today'
-  // ) || null;
 
  const todayOrders =
   filteredOrders.filter(order => {
@@ -106,29 +133,21 @@ selectedDate.toDateString()
 
     }
   );
-
-const filteredDeliveredOrders =
-  filteredOrders
-    .filter(
-      order =>
-        order.status === 'delivered'
-    )
-    .sort(
-      (a, b) =>
-        Number(
-          b.orderId.split('-')[0]
-        ) -
-        Number(
-          a.orderId.split('-')[0]
-        )
-    );
-
- 
+  const pendingOrders = filteredOrders.filter(
+  order => order.status === "pending"
+);
 
 
 
-  // const hasScheduledOrders =
-  // filteredOrders.length > 0;
+ const filteredDeliveredOrders =
+ filteredOrders
+ .filter(order => order.status === "delivered")
+ .sort(
+   (a,b)=>Number(b.orderId)-Number(a.orderId)
+ );
+
+
+
 
   return (
 
@@ -145,17 +164,7 @@ const filteredDeliveredOrders =
 
       <OrdersHeader />
 </View>
-  
 
-      {/* <Text
-  style={{
-    fontSize: 20,
-    color: 'red',
-    marginVertical: 10,
-  }}
->
-  Orders Count: {orders.length}
-</Text> */}
 
       <View
         style={styles.reminderContainer}
@@ -210,9 +219,20 @@ const filteredDeliveredOrders =
       'EditSchedule',
       {
         order,
-      }
-    )
+      })
   }
+
+//   onPress={() =>
+//  navigation.navigate("OrderDetails", {
+//    orderId: order.id
+//  })
+//   }
+
+onPress={() =>
+ navigation.navigate("OrderDetails", {
+   order: order
+ })
+}
 />
 
         ))
@@ -396,16 +416,18 @@ const filteredDeliveredOrders =
           filteredScheduledOrders.map(order => (
 
             <OrderCard
-              key={order.orderId}
-              order={order}
-              showActionButton={true}
-              onPressAction={() =>
-                navigation.navigate(
-                  'EditSchedule',
-                  { order }
-                )
-              }
-            />
+  key={order.orderId}
+  order={order}
+  showActionButton={true}
+  onPressAction={() =>
+    navigation.navigate('EditSchedule', { order })
+  }
+  onPress={() =>
+ navigation.navigate("TrackOrder", {
+ orderId: order.id
+ })
+}
+/>
           ))
 
         )
@@ -413,6 +435,63 @@ const filteredDeliveredOrders =
     </>
   )
 }
+{/* Pending Orders */}
+
+<Text
+  style={{
+    fontSize:16,
+    fontWeight:"600",
+    marginTop:20,
+    marginBottom:12,
+  }}
+>
+  Pending Orders
+</Text>
+
+
+{
+  pendingOrders.length === 0 ? (
+
+    <Text
+      style={{
+        color:"#777",
+        marginBottom:10
+      }}
+    >
+      No Pending Orders
+    </Text>
+
+  ) : (
+
+    pendingOrders.map(order => (
+
+//      <OrderCard
+//   key={order.orderId}
+//   order={order}
+//   showActionButton={false}
+//   onPress={() =>
+//     navigation.navigate("TrackOrder", {
+//       orderId: order.orderId,
+//     })
+//   }
+// />
+<OrderCard
+  key={order.orderId}
+  order={order}
+  showActionButton={false}
+  onPress={() => {
+    console.log("Navigate to:", order.orderId);
+    navigation.navigate("TrackOrder", {
+     orderId: order.id,
+    });
+  }}
+/>
+
+    ))
+
+  )
+}
+
   {/* Delivered Orders */}
 
  <View
@@ -456,6 +535,11 @@ onPress={()=>{
   key={order.orderId}
   order={order}
   showActionButton={false}
+  onPress={() =>
+    navigation.navigate("TrackOrder", {
+      orderId: order.id
+    })
+  }
 />
 
     ))
@@ -646,3 +730,5 @@ contentContainer:{
 }
 
 });
+
+

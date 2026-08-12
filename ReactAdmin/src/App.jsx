@@ -14,7 +14,7 @@ import EditProduct from "./pages/EditProduct";
 import Orders from "./pages/Orders";
 import Subscriptions from "./pages/Subscriptions";
 import Users from "./pages/Users";
-
+import Riders from "./pages/Riders";
 
 
 export default function App(){
@@ -43,7 +43,7 @@ return(
 
 <Route path="/users" element={<Users/>}/>
 
-
+<Route  path="/riders"element={<Riders />}/>
 
 
 </Route>

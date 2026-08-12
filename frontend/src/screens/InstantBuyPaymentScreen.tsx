@@ -1,11 +1,8 @@
 import React, {useState} from 'react';
 import { useCart } from '../context/CartContext';
 import {useOrderHistory,} from '../context/OrderHistoryContext';
-
-import {
-  View,
-  Text,
-  StyleSheet,
+import {API_URL} from "../config/api";
+import {View,Text, StyleSheet,
   TouchableOpacity,
   ScrollView,
   Image
@@ -21,8 +18,17 @@ import {
 
 import { Ionicons }
 from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
-const InstantBuyPaymentScreen = () => {
+const InstantBuyPaymentScreen = ({route}: any) => {
+const address = route?.params?.address;
+console.log("ORDER ADDRESS =", address);
+console.log("ROUTE =", route);
+console.log("PARAMS =", route?.params);
+console.log("ADDRESS =", route?.params?.address);
+  console.log("ORDER ADDRESS =", address);
+  const [loading,setLoading] = useState(false);
 const [
   paymentMethod,
   setPaymentMethod,
@@ -35,19 +41,29 @@ const [
     const { addOrder } =
   useOrderHistory();
 
-  const {
-  cartItems,
+
+
+  
+//    const {cartItems,clearCart,} = useCart();
+// const allItems = cartItems;
+const {
   clearCart,
 } = useCart();
 
-  const subtotal =
-    cartItems.reduce(
-      (sum, item) =>
-        sum +
-        item.price *
-          item.quantity,
-      0
-    );
+
+const instantItems = route?.params?.items || [];
+
+const orderType = route?.params?.type;
+
+
+const allItems:any[] = instantItems;
+console.log("PAYMENT SCREEN ITEMS =", allItems);
+console.log("ORDER TYPE =", orderType);
+
+// const subtotal =allItems.reduce((sum, item) =>  sum +item.price * item.quantity,0);
+
+   const subtotal =allItems.reduce((sum:number,item:any) =>
+      sum +  Number(item.price) * Number(item.quantity), 0);
 
   const deliveryCharge = 0;
 
@@ -82,12 +98,11 @@ const [
   },
 
   {
-    id: 'wallet',
-    title: 'Wallets',
-    subtitle:
-      'Paytm, PhonePe, Amazon Pay',
-    icon: require('../../assets/icons/wallet.png'),
-  },
+  id: 'wallet',
+  title: 'AnusFarm Wallet',
+  subtitle: 'Pay using your wallet balance',
+  icon: require('../../assets/icons/wallet.png'),
+},
 
   {
     id: 'cod',
@@ -100,37 +115,244 @@ const [
 ];
 
 
-const handlePayNow = () => {
+// const handlePayNow = () => {
 
-  addOrder({
-    orderId:
-      Date.now().toString(),
+//   addOrder({
+//     orderId:
+//       Date.now().toString(),
 
-    orderType:
-      'instant',
+//     orderType:
+//       'instant',
 
-    items:
-      cartItems,
+//     items:
+//       cartItems,
 
-    totalAmount:
-      totalAmount,
+//     totalAmount:
+//       totalAmount,
 
-    status:
-      'delivered',
+//     status:
+//       'delivered',
 
-    deliveryDate: new Date().toISOString(),
+//     deliveryDate: new Date().toISOString(),
 
-    paymentMethod:
-      paymentMethod,
+//     paymentMethod:
+//       paymentMethod,
+//   });
+
+//   clearCart();
+
+//   navigation.navigate(
+//     'InstantBuySuccess'
+//   );
+
+// };
+ 
+  const handlePayNow = async () => {
+
+if(loading) return;
+
+setLoading(true);
+
+try {
+
+const token = await AsyncStorage.getItem("token");
+if (allItems.length === 0) {
+  alert("Cart is empty");
+  return;
+}
+
+// const requestItems = allItems.map(item => ({
+//   product_id: item.id,
+//   quantity: item.quantity,
+//   price: item.price,
+// }));
+const requestItems = allItems.map(
+(item:any)=>({
+
+  product_id:item.id,
+
+  quantity:item.quantity,
+
+  price:Number(item.price)
+
+})
+);
+
+console.log("ALL ITEMS =", allItems);
+console.log("REQUEST ITEMS =", requestItems);
+
+if (requestItems.length === 0) {
+  alert("No products selected");
+  return;
+}
+
+if (paymentMethod === "wallet") {
+  const walletResponse = await fetch(`${API_URL}/api/wallet/pay`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      amount: totalAmount,
+      items: requestItems,
+      payment_method: "wallet",
+       address_id: address.id,
+    }),
   });
 
-  clearCart();
+  const walletData = await walletResponse.json();
 
-  navigation.navigate(
-    'InstantBuySuccess'
-  );
+  console.log("WALLET PAYMENT:", walletData);
+
+  if (!walletData.success) {
+    alert(walletData.message);
+    setLoading(false);
+    return;
+  }
+
+  const orderId = walletData.order_id;
+
+  addOrder({
+    orderId: orderId.toString(),
+    orderType: "instant",
+    items: allItems,
+    totalAmount,
+    status: "placed",
+    deliveryDate: new Date().toISOString(),
+    paymentMethod: "wallet",
+  });
+
+  // clearCart();
+  
+   if(orderType !== "instant"){
+   clearCart();
+}
+
+
+  navigation.navigate("InstantBuySuccess", {
+    orderId,
+    total: totalAmount,
+    subtotal,
+    itemCount: allItems.length,
+    paymentMethod: "wallet",
+  });
+
+  return;
+}
+  
+
+
+
+// const response = await fetch(`${API_URL}/api/orders`, {
+//   method: "POST",
+//   headers: {
+//     "Content-Type": "application/json",
+//     "Authorization": `Bearer ${token}`,
+//   },
+//   body: JSON.stringify({
+//     total_amount: totalAmount,
+//     payment_method: paymentMethod,
+//     items: requestItems,
+//      address_id: address.id
+//   }),
+// });
+const finalPaymentMethod =
+  paymentMethod === "cod"
+    ? "COD"
+    : paymentMethod;
+
+
+const response = await axios.post(
+  `${API_URL}/api/orders`,
+  {
+    total_amount: totalAmount,
+    payment_method: finalPaymentMethod,
+    items: requestItems,
+    address_id: address.id
+  },
+  {
+    headers:{
+      "Content-Type":"application/json",
+      Authorization:`Bearer ${token}`
+    }
+  }
+);
+
+
+const data = response.data;
+// const data = await response.json();
+
+
+console.log("ORDER RESPONSE:",data);
+
+
+
+if(data.success){
+
+
+const orderId = data.order_id;
+
+
+addOrder({
+  orderId: orderId.toString(),
+  orderType: "instant",
+  items: allItems,
+
+totalAmount:totalAmount,
+
+status:"placed",
+
+deliveryDate:new Date().toISOString(),
+
+// paymentMethod:paymentMethod,
+paymentMethod:finalPaymentMethod,
+
+});
+
+
+// clearCart();
+if(orderType !== "instant"){
+   clearCart();
+}
+
+// navigation.navigate(
+// "InstantBuySuccess",
+// {
+// orderId,
+// total:totalAmount,
+// paymentMethod
+// }
+// );
+navigation.navigate(
+  "InstantBuySuccess",
+  {
+    orderId,
+    total: totalAmount,
+    subtotal,
+    itemCount: allItems.length,
+    paymentMethod,
+  }
+);
+
+
+}
+
+
+}
+catch(error){
+
+console.log(error);
+
+}
+finally{
+
+setLoading(false);
+
+}
 
 };
+   
 
   return (
 
@@ -178,11 +400,11 @@ const handlePayNow = () => {
 
           <View style={styles.summaryRow}>
 
-            <Text style={styles.label}>
-              Subtotal (
-              {cartItems.length}
-              {' '}items)
-            </Text>
+           <Text style={styles.label}>
+  Subtotal (
+  {allItems.length}
+  {' '}items)
+</Text>
 
             <Text style={styles.value}>
               ₹{subtotal}
@@ -332,11 +554,12 @@ const handlePayNow = () => {
 
 <TouchableOpacity
   style={styles.payButton}
+  disabled={loading}
   onPress={handlePayNow}
 >
   <Text style={styles.payText}>
-    Pay Now
-  </Text>
+ {loading ? "Processing..." : "Pay Now"}
+</Text>
 </TouchableOpacity>
 
       </ScrollView>
@@ -592,3 +815,5 @@ payText: {
 },
 
 });
+
+

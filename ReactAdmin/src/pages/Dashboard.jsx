@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  FaUsers,
-  FaBoxOpen,
-  FaShoppingCart,
-  FaClipboardList,
-  FaBell,
-  FaExclamationTriangle,
-  FaTruck,
-  FaTimesCircle,
-} from "react-icons/fa";
+import {FaUsers,FaBoxOpen,FaShoppingCart,FaClipboardList,FaBell,FaExclamationTriangle,FaTruck,FaTimesCircle,} from "react-icons/fa";
+import { API_URL } from "../config/api";
 
 export default function Dashboard() {
   const [users, setUsers] = useState([]);
@@ -43,11 +35,11 @@ return () => clearInterval(interval);
         subscriptionsRes,
         notificationsRes,
       ] = await Promise.all([
-        axios.get("http://localhost:5000/api/users"),
-        axios.get("http://localhost:5000/api/products"),
-        axios.get("http://localhost:5000/api/orders"),
-        axios.get("http://localhost:5000/api/subscriptions"),
-        axios.get("http://localhost:5000/api/admin/notifications"),
+        axios.get(`${API_URL}/api/users`),
+        axios.get(`${API_URL}/api/products`),
+        axios.get(`${API_URL}/api/orders`),
+        axios.get(`${API_URL}/api/subscriptions`),
+        axios.get(`${API_URL}/api/admin/notifications`),
       ]);
 
       setUsers(usersRes.data.users || []);

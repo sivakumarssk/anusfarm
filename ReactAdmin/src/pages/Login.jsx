@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import AdminLayout from "../components/AdminLayout";
-
+import { API_URL } from "../config/api";
 
 export default function EditProduct(){
 
@@ -22,7 +22,7 @@ getProduct();
 const getProduct=async()=>{
 try{
 const response=await axios.get(
-`http://192.168.0.112:5000/api/products/${id}`
+`${API_URL}/api/products/${id}`
 );
 
 
@@ -53,7 +53,7 @@ image
 
 }
 const response=await axios.put(
-`http://192.168.0.112:5000/api/products/${id}`,formData,{
+`${API_URL}/api/products/${id}`,formData,{
 headers:{
 "Content-Type":"multipart/form-data"
 }

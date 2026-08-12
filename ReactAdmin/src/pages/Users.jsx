@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../config/api";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -10,7 +11,7 @@ export default function Users() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/users"); // Change if your backend URL is different
+      const res = await axios.get(`${API_URL}/api/users`); // Change if your backend URL is different
       setUsers(res.data.users);
     } catch (error) {
       console.error(error);

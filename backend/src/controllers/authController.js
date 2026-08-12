@@ -49,11 +49,24 @@ exports.verifyOTP = async (req,res)=>{
                 userName,
                 phone
             );
+           await pool.query(
+`
+INSERT INTO wallets
+(user_id, balance)
+VALUES($1,$2)
+ON CONFLICT (user_id) DO NOTHING
+`,
+[
+    user.id,
+    0
+]
+);
             // Create notification for admin
-            await notificationModel.createNotification(
-                "user",
-                `New user ${userName} (${phone}) joined AnusFarm`
-            );
+          await notificationModel.createNotification(
+    user.id,
+    "user",
+    `Welcome ${user.name}! Your account has been created successfully.`
+);
         }
         const token = generateToken(user);
         res.json({

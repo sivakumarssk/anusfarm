@@ -47,7 +47,7 @@ product.category ||
 
       image:String(product.image),
        quantity: 1,
-       type: product,
+     type: "subscription",
 
     });
 
@@ -58,8 +58,69 @@ product.category ||
 
   };
 
+// const handleInstantBuy = () => {
+
+//   const instantItem = {
+//     id: product.id,
+
+//     name: product.name,
+
+//     category:
+//       product.category ||
+//       (product.category_id === 1 ? "Milk" : "Other"),
+
+//     price: Number(product.price),
+
+//     image: String(product.image),
+
+//     quantity: 1,
+
+//     type: "instant" as const,
+
+//     unit: "1 Unit",
+//   };
 
 
+//   addToCart(instantItem);
+
+
+//  navigation.navigate("Address");
+
+// };
+const handleInstantBuy = () => {
+
+  const instantItem = [
+    {
+      id: product.id,
+
+      name: product.name,
+
+      category:
+        product.category ||
+        (product.category_id === 1 ? "Milk" : "Other"),
+
+      price: Number(product.price),
+
+      image: String(product.image),
+
+      quantity: 1,
+
+      type: "instant",
+
+      unit: "1 Unit",
+    }
+  ];
+
+
+  navigation.navigate(
+    "Address",
+    {
+      items: instantItem,
+      type: "instant"
+    }
+  );
+
+};
   return (
 
     <View style={styles.container}>
@@ -115,7 +176,15 @@ product.category ||
         </Text>
 
       </TouchableOpacity>
-
+        
+        <TouchableOpacity
+  style={styles.buyButton}
+  onPress={handleInstantBuy}
+>
+  <Text style={styles.cartText}>
+    Instant Buy
+  </Text>
+</TouchableOpacity>
 
     </View>
 
@@ -189,7 +258,12 @@ cartButton:{
   borderRadius:10,
   marginTop:30
 },
-
+buyButton:{
+  backgroundColor:"black",
+  padding:15,
+  borderRadius:10,
+  marginTop:15
+},
 
 
 cartText:{
