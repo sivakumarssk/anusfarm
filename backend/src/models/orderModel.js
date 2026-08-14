@@ -1,61 +1,6 @@
 
 const pool = require("../config/db");
 
-// const getAllOrders = async()=>{
-
-//   const result = await pool.query(`
-//     SELECT
-//     o.id AS order_id,
-//     o.total_amount,
-//     o.status,
-//     o.payment_method,
-//     o.created_at,
-
-//     u.name AS customer_name,
-
-//     COALESCE(
-//       json_agg(
-//         json_build_object(
-//           'product_name', p.name,
-//           'quantity', oi.quantity,
-//           'price', oi.price,
-//           'image', p.image
-//         )
-//       ) FILTER (WHERE oi.id IS NOT NULL),
-//       '[]'::json
-//     ) AS products,
-
-//     a.full_address AS address
-
-//     FROM orders o
-
-//     LEFT JOIN users u
-//     ON o.user_id = u.id
-
-//     LEFT JOIN order_items oi
-//     ON o.id = oi.order_id
-
-//     LEFT JOIN products p
-//     ON oi.product_id = p.id
-
-//     LEFT JOIN addresses a
-//     ON o.address_id = a.id
-
-//     GROUP BY
-//     o.id,
-//     u.name,
-//     a.full_address,
-//     o.total_amount,
-//     o.status,
-//     o.payment_method,
-//     o.created_at
-
-//     ORDER BY o.id DESC;
-//   `);
-
-
-//   return result.rows;   // IMPORTANT
-// };
 
 const getAllOrders = async () => {
 
@@ -153,7 +98,163 @@ const getOrderStats = async()=>{
 
 };
 
-  const createOrder = async (
+  const getPendingStats = async () => {
+
+    const result = await pool.query(`
+        SELECT
+
+        (
+            SELECT COUNT(*)
+            FROM orders
+            WHERE LOWER(status) = 'pending'
+        ) AS instant_pending,
+
+        (
+            SELECT COUNT(*)
+            FROM subscription_delivery_schedule
+            WHERE LOWER(status) = 'pending'
+        ) AS subscription_pending
+    `);
+
+    return {
+        instant_pending: Number(result.rows[0].instant_pending),
+        subscription_pending: Number(result.rows[0].subscription_pending)
+    };
+};
+//   const createOrder = async ( userId,  items,paymentMethod,addressId) => {
+
+//     const client = await pool.connect();
+
+//     try {
+
+//         await client.query("BEGIN");
+
+//         let totalAmount = 0;
+
+//         // Calculate total
+//         for (const item of items) {
+
+//             console.log("ITEM =", item);
+//             console.log("PRODUCT ID =", item.product_id);
+
+//             const product = await client.query(
+//                 `
+//                 SELECT price
+//                 FROM products
+//                 WHERE id = $1
+//                 `,
+//                 [item.product_id]
+//             );
+
+//             if (product.rows.length === 0) {
+//                 throw new Error("Product not found");
+//             }
+
+//             totalAmount +=
+//                 Number(product.rows[0].price) *
+//                 item.quantity;
+//         }
+
+
+// const orderResult = await client.query(
+//     `
+//     INSERT INTO orders
+//     (
+//         user_id,
+//         total_amount,
+//         status,
+//         payment_method,
+//         address_id
+//     )
+//     VALUES
+//     (
+//         $1,
+//         $2,
+//         $3,
+//         $4,
+//         $5
+//     )
+//     RETURNING id
+//     `,
+//     [
+//         userId,
+//         totalAmount,
+//         "Pending",
+//         paymentMethod,
+//         addressId
+//     ]
+// );
+//         const orderId =
+//             orderResult.rows[0].id;
+
+
+//         // ==========================================
+//         // INSERT ORDER ITEMS
+//         // ==========================================
+
+//         for (const item of items) {
+
+//             const product = await client.query(
+//                 `
+//                 SELECT price
+//                 FROM products
+//                 WHERE id = $1
+//                 `,
+//                 [item.product_id]
+//             );
+
+
+//             await client.query(
+//                 `
+//                 INSERT INTO order_items
+//                 (
+//                     order_id,
+//                     product_id,
+//                     quantity,
+//                     price
+//                 )
+//                 VALUES
+//                 ($1, $2, $3, $4)
+//                 `,
+//                 [
+//                     orderId,
+//                     item.product_id,
+//                     item.quantity,
+//                     product.rows[0].price
+//                 ]
+//             );
+
+//         }
+
+
+//         await client.query("COMMIT");
+
+
+//       console.log(
+//     "ORDER CREATED:",
+//     orderId,
+//     "RIDER: Not Assigned"
+// );
+
+
+//         return orderId;
+
+
+//     } catch (error) {
+
+//         await client.query("ROLLBACK");
+
+//         throw error;
+
+//     } finally {
+
+//         client.release();
+
+//     }
+
+// };
+
+   const createOrder = async (
     userId,
     items,
     paymentMethod,
@@ -168,67 +269,120 @@ const getOrderStats = async()=>{
 
         let totalAmount = 0;
 
-        // Calculate total
         for (const item of items) {
 
-            console.log("ITEM =", item);
-            console.log("PRODUCT ID =", item.product_id);
+            const requestedQuantity = Number(item.quantity);
 
-            const product = await client.query(
+            if (!Number.isInteger(requestedQuantity) || requestedQuantity <= 0) {
+                throw new Error("Invalid product quantity");
+            }
+
+            // Get product stock and price
+            const productResult = await client.query(
                 `
-                SELECT price
+                SELECT id, price, stock
                 FROM products
                 WHERE id = $1
+                FOR UPDATE
                 `,
                 [item.product_id]
             );
 
-            if (product.rows.length === 0) {
+            if (productResult.rows.length === 0) {
                 throw new Error("Product not found");
             }
 
-            totalAmount +=
-                Number(product.rows[0].price) *
-                item.quantity;
-        }
+            const product = productResult.rows[0];
 
+            const totalStock = Number(product.stock);
 
-const orderResult = await client.query(
-    `
-    INSERT INTO orders
-    (
-        user_id,
-        total_amount,
-        status,
-        payment_method,
-        address_id
-    )
-    VALUES
-    (
-        $1,
-        $2,
-        $3,
-        $4,
-        $5
-    )
-    RETURNING id
-    `,
-    [
-        userId,
-        totalAmount,
-        "Pending",
-        paymentMethod,
-        addressId
-    ]
-);
-        const orderId =
-            orderResult.rows[0].id;
+            // Get active subscription reserved quantity
+            const subscriptionResult = await client.query(
+                `
+                SELECT COALESCE(SUM(si.quantity), 0) AS reserved_quantity
+                FROM subscription_items si
+                INNER JOIN subscriptions s
+                    ON s.id = si.subscription_id
+                WHERE si.product_id = $1
+                AND LOWER(s.status) = 'active'
+                `,
+                [item.product_id]
+            );
 
+            const subscriptionReserved = Number(
+                subscriptionResult.rows[0].reserved_quantity
+            );
 
-        // ==========================================
-        // INSERT ORDER ITEMS
-        // ==========================================
+            // Stock available for instant purchase
+            const availableForInstant = Math.max(
+                0,
+                totalStock - subscriptionReserved
+            );
 
+            console.log(
+                "PRODUCT:",
+                item.product_id,
+                "TOTAL STOCK:",
+                totalStock,
+                "SUBSCRIPTION RESERVED:",
+                subscriptionReserved,
+                "INSTANT AVAILABLE:",
+                availableForInstant,
+                "REQUESTED:",
+                requestedQuantity
+            );
+
+            // Check instant purchase quantity
+        //     if (requestedQuantity > availableForInstant) {
+        //         throw new Error(
+        //             `Only ${availableForInstant} units are available for instant purchase.`
+        //         );
+        //     }
+        //     totalAmount += Number(product.price) * requestedQuantity;
+        // }
+        // Check instant purchase quantity
+if (requestedQuantity > availableForInstant) {
+
+    const error = new Error(
+        `Only ${availableForInstant} units are available for instant purchase.`
+    );
+
+    error.statusCode = 400;
+
+    throw error;
+}
+
+totalAmount +=
+    Number(product.price) * requestedQuantity;
+}
+
+        // Create order
+        const orderResult = await client.query(
+            `
+            INSERT INTO orders
+            (
+                user_id,
+                total_amount,
+                status,
+                payment_method,
+                address_id
+            )
+            VALUES
+            ($1, $2, $3, $4, $5)
+            RETURNING id
+            `,
+            [
+                userId,
+                totalAmount,
+                "Pending",
+                paymentMethod,
+                addressId
+            ]
+        );
+
+        const orderId = orderResult.rows[0].id;
+
+        // Insert order items
         for (const item of items) {
 
             const product = await client.query(
@@ -239,7 +393,6 @@ const orderResult = await client.query(
                 `,
                 [item.product_id]
             );
-
 
             await client.query(
                 `
@@ -260,22 +413,13 @@ const orderResult = await client.query(
                     product.rows[0].price
                 ]
             );
-
         }
-
 
         await client.query("COMMIT");
 
-
-      console.log(
-    "ORDER CREATED:",
-    orderId,
-    "RIDER: Not Assigned"
-);
-
+        console.log("ORDER CREATED:", orderId);
 
         return orderId;
-
 
     } catch (error) {
 
@@ -288,7 +432,6 @@ const orderResult = await client.query(
         client.release();
 
     }
-
 };
 
 const getMyOrders = async (userId) => {
@@ -437,6 +580,7 @@ const assignRiderToOrder = async (orderId, riderId) => {
 module.exports = {
     getAllOrders,
     getOrderStats,
+     getPendingStats,
     createOrder,
     getMyOrders,
     getOrderById,

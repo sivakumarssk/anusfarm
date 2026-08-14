@@ -106,30 +106,22 @@ color="#0A8A2A"/>
 <Text style={styles.address}>{item.full_address}</Text>
 <Text style={styles.phone}>{item.phone}</Text>
 </View>
+
 </View>
-<Text style={styles.edit}>Edit</Text>
+<TouchableOpacity
+  onPress={() =>
+    navigation.navigate("EditAddress", {
+      address: item,
+    })
+  }
+>
+  <Text style={styles.edit}>Edit</Text>
+</TouchableOpacity>
 </View>
 </TouchableOpacity>
 ))
 }
 
-{/* <TouchableOpacity style={styles.addButton}
-onPress={()=>{
-if(!selectedAddress){
-alert("Please select address");
-return;
-}
-// send only selected product
-
-navigation.navigate("InstantBuyPayment",{
-address:selectedAddress,
-items:items,
-type:type
-}
-);
-}}>
-<Text style={styles.addButtonText}>Continue</Text>
-</TouchableOpacity> */}
 <TouchableOpacity
   style={styles.addButton}
   onPress={() => {

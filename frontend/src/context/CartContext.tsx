@@ -1,13 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from 'react';
-
-import AsyncStorage
-from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, ReactNode, useEffect,} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type CartItem = {
   id: number;
@@ -19,126 +11,61 @@ export type CartItem = {
   quantity: number;
   type: "subscription" | "instant";
 };
-
 type CartContextType = {
   cartItems: CartItem[];
   lastAddedItem: CartItem | null;
 
-  addToCart: (
-    product: CartItem
-  ) => void;
-
-  increaseQuantity: (
-    id: number
-  ) => void;
-
-  decreaseQuantity: (
-    id: number
-  ) => void;
-
-  removeItem: (
-    id: number
-  ) => void;
-
+  addToCart: ( product: CartItem) => void;
+  increaseQuantity: (id: number) => void;
+  decreaseQuantity: ( id: number) => void;
+  removeItem: ( id: number) => void;
   clearCart: () => void;
-
   totalItems: number;
 };
 
 const CartContext =
-createContext<CartContextType | null>(
-  null
-);
+createContext<CartContextType | null>(null);
 
 
-const CART_STORAGE_KEY =
-  '@anu_farm_cart';
+const CART_STORAGE_KEY ='@anu_farm_cart';
 
-export const CartProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
-
-  const [
-    cartItems,
-    setCartItems,
-  ] = useState<CartItem[]>([]);
-  
-
-  
-  const [
-  lastAddedItem,
-  setLastAddedItem,
-] = useState<CartItem | null>(null);
+export const CartProvider = ({ children,}: { children: ReactNode;}) => {
+  const [ cartItems, setCartItems,] = useState<CartItem[]>([]);
+  const [ lastAddedItem, setLastAddedItem,] = useState<CartItem | null>(null);
 
 
 
   useEffect(() => {
-
   const loadCart = async () => {
-
     try {
-
       const savedCart =
         await AsyncStorage.getItem(
           CART_STORAGE_KEY
         );
-
       if (savedCart) {
-
         setCartItems(
           JSON.parse(savedCart)
         );
-
       }
-
     } catch (error) {
-
-      console.log(
-        'Error loading cart:',
-        error
-      );
-
+      console.log('Error loading cart:',error);
     }
-
   };
-
   loadCart();
-
 }, []);
 
 useEffect(() => {
-
   const saveCart = async () => {
-
     try {
-
-      await AsyncStorage.setItem(
-        CART_STORAGE_KEY,
-        JSON.stringify(cartItems)
-      );
-
-
-
+      await AsyncStorage.setItem( CART_STORAGE_KEY,JSON.stringify(cartItems));
     } catch (error) {
-
-      console.log(
-        'Error saving cart:',
-        error
-      );
-
+      console.log( 'Error saving cart:',error );
     }
-
   };
-
   saveCart();
-
 }, [cartItems]);
 
- const addToCart = (
-  product: CartItem
-) => {
+ const addToCart = (product: CartItem) => {
  console.log("ADDING TO CART IMAGE:", product.image);
     setLastAddedItem({
   ...product,
@@ -239,27 +166,14 @@ useEffect(() => {
           item.id !== id
       )
     );
-
   };
 const clearCart = async()=>{
-
   setCartItems([]);
-
-  await AsyncStorage.removeItem(
-    CART_STORAGE_KEY
-  );
-
+  await AsyncStorage.removeItem( CART_STORAGE_KEY );
 };
-
-  const totalItems =
-    cartItems.reduce(
-      (sum, item) =>
-        sum + item.quantity,
-      0
-    );
+  const totalItems = cartItems.reduce( (sum, item) =>sum + item.quantity,0);
 
   return (
-
     <CartContext.Provider
      value={{
   cartItems,
@@ -270,30 +184,17 @@ const clearCart = async()=>{
   removeItem,
   clearCart,
   totalItems,
-}}
-    >
-
+}}>
       {children}
-
     </CartContext.Provider>
-
   );
-
 };
-
 export const useCart = () => {
-
   const context =
     useContext(CartContext);
-
   if (!context) {
-
     throw new Error(
-      'useCart must be used inside CartProvider'
-    );
-
+      'useCart must be used inside CartProvider');
   }
-
   return context;
-
 };

@@ -27,50 +27,196 @@ const addProduct = async (req, res) => {
   }
 };
 // ================= GET ALL PRODUCTS =================
-const getProducts = async (req, res) => {
+// const getProducts = async (req, res) => {
+//   try {
+//     const result = await pool.query(`
+//       SELECT
+//         p.*,
+//         c.name AS category
+//       FROM products p
+//       LEFT JOIN categories c
+//       ON p.category_id = c.id
+//       ORDER BY p.id DESC
+//     `);
+//     const products = result.rows.map(product => ({
+//       ...product,image: product.image? `${req.protocol}://${req.get("host")}/uploads/${product.image}`: null}));
+//     res.json({
+//       success: true,products});
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+//   }
+// };
+ const getProducts = async (req, res) => {
   try {
+
     const result = await pool.query(`
       SELECT
         p.*,
-        c.name AS category
-      FROM products p
-      LEFT JOIN categories c
-      ON p.category_id = c.id
-      ORDER BY p.id DESC
+        c.name AS category,
+
+        COALESCE(
+          (
+            SELECT SUM(si.quantity)
+            FROM subscription_items si
+            INNER JOIN subscriptions s
+              ON s.id = si.subscription_id
+            WHERE si.product_id = p.id
+            AND LOWER(s.status) = 'active'
+          ),
+          0
+        ) AS subscription_stock,
+
+        GREATEST(
+          p.stock -
+          COALESCE(
+            (
+              SELECT SUM(si.quantity)
+              FROM subscription_items si
+              INNER JOIN subscriptions s
+                ON s.id = si.subscription_id
+              WHERE si.product_id = p.id
+              AND LOWER(s.status) = 'active'
+            ),
+            0
+          ),
+          0
+        ) AS available_stock
+
+     FROM products p
+
+LEFT JOIN categories c
+  ON p.category_id = c.id
+
+WHERE LOWER(p.status) = 'active'
+
+ORDER BY p.id DESC
     `);
+
     const products = result.rows.map(product => ({
-      ...product,image: product.image? `${req.protocol}://${req.get("host")}/uploads/${product.image}`: null}));
+      ...product,
+
+      image: product.image
+        ? `${req.protocol}://${req.get("host")}/uploads/${product.image}`
+        : null
+    }));
+
     res.json({
-      success: true,products});
+      success: true,
+      products
+    });
+
   } catch (error) {
+
+    console.error("GET PRODUCTS ERROR:", error);
+
     res.status(500).json({
       success: false,
       message: error.message
     });
   }
 };
+
 // ================= GET PRODUCTS BY CATEGORY =================
-const getProductsByCategory = async (req, res) => {
+// const getProductsByCategory = async (req, res) => {
+//   try {
+//     const { category } = req.params;
+//     const result = await pool.query(
+//       `SELECT
+//         p.*,
+//         c.name AS category
+//       FROM products p
+//       LEFT JOIN categories c
+//       ON p.category_id = c.id
+//       WHERE LOWER(c.name) = LOWER($1)
+//       ORDER BY p.id DESC
+//       `,[category]
+//     );
+//     const products = result.rows.map(product => ({
+//       ...product,image: product.image ? `${req.protocol}://${req.get("host")}/uploads/${product.image}`: null}));
+//     res.json({
+//       success: true,
+//       products
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message
+//     });
+//   }
+// };
+
+  const getProductsByCategory = async (req, res) => {
   try {
+
     const { category } = req.params;
+
     const result = await pool.query(
-      `SELECT
+      `
+      SELECT
         p.*,
-        c.name AS category
+        c.name AS category,
+
+        COALESCE(
+          (
+            SELECT SUM(si.quantity)
+            FROM subscription_items si
+            INNER JOIN subscriptions s
+              ON s.id = si.subscription_id
+            WHERE si.product_id = p.id
+            AND LOWER(s.status) = 'active'
+          ),
+          0
+        ) AS subscription_stock,
+
+        GREATEST(
+          p.stock -
+          COALESCE(
+            (
+              SELECT SUM(si.quantity)
+              FROM subscription_items si
+              INNER JOIN subscriptions s
+                ON s.id = si.subscription_id
+              WHERE si.product_id = p.id
+              AND LOWER(s.status) = 'active'
+            ),
+            0
+          ),
+          0
+        ) AS available_stock
+
       FROM products p
+
       LEFT JOIN categories c
-      ON p.category_id = c.id
-      WHERE LOWER(c.name) = LOWER($1)
-      ORDER BY p.id DESC
-      `,[category]
+        ON p.category_id = c.id
+
+     WHERE LOWER(c.name) = LOWER($1)
+AND LOWER(p.status) = 'active'
+
+ORDER BY p.id DESC
+      `,
+      [category]
     );
+
     const products = result.rows.map(product => ({
-      ...product,image: product.image ? `${req.protocol}://${req.get("host")}/uploads/${product.image}`: null}));
+      ...product,
+
+      image: product.image
+        ? `${req.protocol}://${req.get("host")}/uploads/${product.image}`
+        : null
+    }));
+
     res.json({
       success: true,
       products
     });
+
   } catch (error) {
+
+    console.error("GET PRODUCTS BY CATEGORY ERROR:", error);
+
     res.status(500).json({
       success: false,
       message: error.message

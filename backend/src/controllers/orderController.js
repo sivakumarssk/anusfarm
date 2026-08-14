@@ -1,32 +1,67 @@
 const { getDistance } = require("../utils/distance");
 
-const { getAllOrders, getOrderStats, createOrder, getMyOrders,
+const { getAllOrders,   getOrderStats, getPendingStats, createOrder, getMyOrders,
   getOrderById,updateOrderStatus,deleteOrder, assignRiderToOrder} = require("../models/orderModel");
 
 const notificationModel = require("../models/notificationModel");
 const pool = require("../config/db");
-  exports.getOrders = async(req,res)=>{
-    try{
+
+exports.getOrders = async (req, res) => {
+    try {
+
         const orders = await getAllOrders();
         const stats = await getOrderStats();
+        const pendingStats = await getPendingStats();
+
         res.json({
-            success:true,
-            summary:{
-                total:Number(stats.total),
-                delivered:Number(stats.delivered),
-                pending:Number(stats.pending),
-                cancelled:Number(stats.cancelled)
+            success: true,
+
+            summary: {
+                total: Number(stats.total),
+                delivered: Number(stats.delivered),
+                pending: Number(stats.pending),
+                cancelled: Number(stats.cancelled),
+
+                instant_pending: pendingStats.instant_pending,
+                subscription_pending: pendingStats.subscription_pending
             },
+
             orders: orders
         });
-    }catch(error){
-        console.log(error);
+
+    } catch (error) {
+
+        console.log("GET ORDERS ERROR:", error);
+
         res.status(500).json({
-            success:false,
-            message:"Server Error"
+            success: false,
+            message: error.message
         });
     }
 };
+
+exports.getPendingStats = async (req, res) => {
+    try {
+
+        const stats = await getPendingStats();
+
+        res.json({
+            success: true,
+            instant_pending: stats.instant_pending,
+            subscription_pending: stats.subscription_pending
+        });
+
+    } catch (error) {
+
+        console.error("GET PENDING STATS ERROR:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 exports.placeOrder = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -106,16 +141,33 @@ if (distance > 20) {
     });
 
 
-  } catch(error){
+//   } catch(error){
+
+//     console.log("PLACE ORDER ERROR:", error);
+
+//     res.status(500).json({
+//       success:false,
+//       message:error.message
+//     });
+
+//   }
+} catch(error){
 
     console.log("PLACE ORDER ERROR:", error);
 
+    if (error.message.includes("available for instant purchase")) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+
     res.status(500).json({
-      success:false,
-      message:error.message
+        success: false,
+        message: error.message
     });
 
-  }
+}
 };
 
 exports.myOrders = async (req, res) => {

@@ -26,37 +26,6 @@ const ProductsGrid = ({
   useEffect(() => {
     fetchProducts();
   }, [selectedCategory]);
-
-
-//   const fetchProducts = async () => {
-//     try {
-// console.log(
-//  "CALLING PRODUCT API:",
-//  `${API_URL}/api/products/category/${selectedCategory}`
-// );
-//       const response = await fetch(
-      
-//   `${API_URL}/api/products/category/${selectedCategory}`
-  
-// );
-
-//       const data = await response.json();
-
-//           console.log("PRODUCTS DATA:", data);
-
-//       if(data.success){
-//         setProducts(data.products);
-//       }
-
-//     } catch(error){
-//       console.log(
-//         "Fetch Products Error:",
-//         error
-//       );
-//     }
-//   };
-
-
 const fetchProducts = async () => {
 
 try {

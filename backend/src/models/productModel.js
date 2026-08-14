@@ -1,7 +1,10 @@
+
+
 const pool = require("../config/db");
 
 
 // ================= CREATE PRODUCT =================
+
 const createProduct = async (
   name,
   price,
@@ -32,33 +35,141 @@ const createProduct = async (
 
 
 // ================= GET ALL PRODUCTS =================
+
+
+
+// const getAllProducts = async () => {
+
+//   const result = await pool.query(`
+//     SELECT
+//       p.*,
+
+//       COALESCE(
+//         (
+//           SELECT SUM(si.quantity)
+//           FROM subscription_items si
+//           INNER JOIN subscriptions s
+//             ON s.id = si.subscription_id
+//           WHERE si.product_id = p.id
+//           AND LOWER(s.status) = 'active'
+//         ),
+//         0
+//       ) AS subscription_stock,
+
+//       GREATEST(
+//         p.stock -
+//         COALESCE(
+//           (
+//             SELECT SUM(si.quantity)
+//             FROM subscription_items si
+//             INNER JOIN subscriptions s
+//               ON s.id = si.subscription_id
+//             WHERE si.product_id = p.id
+//             AND LOWER(s.status) = 'active'
+//           ),
+//           0
+//         ),
+//         0
+//       ) AS available_stock
+
+//     FROM products p
+//     ORDER BY p.id DESC
+//   `);
+
+//   return result.rows;
+// };
 const getAllProducts = async () => {
 
-  const result = await pool.query(
-    `SELECT * FROM products
-     ORDER BY id DESC`
-  );
+  const result = await pool.query(`
+    SELECT
+      p.*,
+
+      COALESCE(
+        (
+          SELECT SUM(si.quantity)
+          FROM subscription_items si
+          INNER JOIN subscriptions s
+            ON s.id = si.subscription_id
+          WHERE si.product_id = p.id
+          AND LOWER(s.status) = 'active'
+        ),
+        0
+      ) AS subscription_stock,
+
+      GREATEST(
+        p.stock -
+        COALESCE(
+          (
+            SELECT SUM(si.quantity)
+            FROM subscription_items si
+            INNER JOIN subscriptions s
+              ON s.id = si.subscription_id
+            WHERE si.product_id = p.id
+            AND LOWER(s.status) = 'active'
+          ),
+          0
+        ),
+        0
+      ) AS available_stock
+
+    FROM products p
+
+    WHERE LOWER(p.status) = 'active'
+
+    ORDER BY p.id DESC
+  `);
 
   return result.rows;
 };
-
-
-
 // ================= GET PRODUCT BY ID =================
+
 const getProductById = async (id) => {
 
   const result = await pool.query(
-    `SELECT * FROM products
-     WHERE id=$1`,
+    `
+    SELECT
+      p.*,
+
+      COALESCE(
+        (
+          SELECT SUM(si.quantity)
+          FROM subscription_items si
+          INNER JOIN subscriptions s
+            ON s.id = si.subscription_id
+          WHERE si.product_id = p.id
+          AND LOWER(s.status) = 'active'
+        ),
+        0
+      ) AS subscription_stock,
+
+      GREATEST(
+        p.stock -
+        COALESCE(
+          (
+            SELECT SUM(si.quantity)
+            FROM subscription_items si
+            INNER JOIN subscriptions s
+              ON s.id = si.subscription_id
+            WHERE si.product_id = p.id
+            AND LOWER(s.status) = 'active'
+          ),
+          0
+        ),
+        0
+      ) AS available_stock
+
+    FROM products p
+
+    WHERE p.id = $1
+    `,
     [id]
   );
 
   return result.rows[0];
 };
 
-
-
 // ================= UPDATE PRODUCT =================
+
 const updateProduct = async (
   id,
   name,
@@ -97,6 +208,7 @@ const updateProduct = async (
 
 
 // ================= DELETE PRODUCT =================
+
 const deleteProduct = async (id) => {
 
   await pool.query(
@@ -111,6 +223,7 @@ const deleteProduct = async (id) => {
 
 
 // ================= EXPORT =================
+
 module.exports = {
   createProduct,
   getAllProducts,

@@ -10,8 +10,10 @@ const {getSingleOrder}=require("../controllers/orderController")
 const {updateOrderStatus}=require("../controllers/orderController")
 const {deleteOrder}=require("../controllers/orderController");
 const { assignRider } = require("../controllers/orderController");
+const {getPendingStats}=require("../controllers/orderController");
 
 router.get("/",getOrders);
+router.get("/pending-stats", getPendingStats);
 router.post("/", authMiddleware, placeOrder);
 router.get("/my",authMiddleware,myOrders);
 router.get("/:id",authMiddleware,getSingleOrder);

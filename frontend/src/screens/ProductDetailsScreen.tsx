@@ -1,50 +1,21 @@
 import React from "react";
-
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet
-} from "react-native";
-
+import {View,Text,Image,TouchableOpacity,StyleSheet} from "react-native";
 import { useCart } from "../context/CartContext";
 
 
-export default function ProductDetailsScreen({
-  route,
-  navigation
-}: any) {
-
-
+export default function ProductDetailsScreen({route, navigation}: any) {
   const { product } = route.params;
-
-
-  const {
-    addToCart
-  } = useCart();
-
-
+  const { addToCart} = useCart();
 
   const handleAddToCart = () => {
-
-     console.log("IMAGE BEFORE CART:", product.image);
+    //  console.log("IMAGE BEFORE CART:", product.image);
 
     addToCart({
-
       id: product.id,
-
       name: product.name,
-
-      
-category:
-product.category ||
-(product.category_id === 1 ? "Milk":"Other"),
-
+category:product.category ||(product.category_id === 1 ? "Milk":"Other"),
       unit: "1 Unit",
-
       price: Number(product.price),
-
       image:String(product.image),
        quantity: 1,
      type: "subscription",
@@ -57,36 +28,6 @@ product.category ||
 
 
   };
-
-// const handleInstantBuy = () => {
-
-//   const instantItem = {
-//     id: product.id,
-
-//     name: product.name,
-
-//     category:
-//       product.category ||
-//       (product.category_id === 1 ? "Milk" : "Other"),
-
-//     price: Number(product.price),
-
-//     image: String(product.image),
-
-//     quantity: 1,
-
-//     type: "instant" as const,
-
-//     unit: "1 Unit",
-//   };
-
-
-//   addToCart(instantItem);
-
-
-//  navigation.navigate("Address");
-
-// };
 const handleInstantBuy = () => {
 
   const instantItem = [
@@ -147,11 +88,10 @@ const handleInstantBuy = () => {
       </Text>
 
 
-
+      
       <Text style={styles.stock}>
-        Stock : {product.stock}
-      </Text>
-
+  Stock : {product.available_stock ?? product.stock}
+</Text>
 
 
       <Text style={styles.category}>
@@ -177,12 +117,23 @@ const handleInstantBuy = () => {
 
       </TouchableOpacity>
         
-        <TouchableOpacity
-  style={styles.buyButton}
+        {/* <TouchableOpacity  style={styles.buyButton}
+  onPress={handleInstantBuy}>
+  <Text style={styles.cartText}>  Instant Buy </Text>
+</TouchableOpacity> */}
+
+     <TouchableOpacity
+  style={[
+    styles.buyButton,
+    Number(product.available_stock ?? product.stock) <= 0 && styles.disabledButton
+  ]}
   onPress={handleInstantBuy}
+  disabled={Number(product.available_stock ?? product.stock) <= 0}
 >
   <Text style={styles.cartText}>
-    Instant Buy
+    {Number(product.available_stock ?? product.stock) <= 0
+      ? "Out of Stock"
+      : "Instant Buy"}
   </Text>
 </TouchableOpacity>
 
@@ -271,8 +222,10 @@ cartText:{
   textAlign:"center",
   fontSize:18,
   fontWeight:"bold"
-}
+},
 
-
+disabledButton: {
+  backgroundColor: "#999",
+},
 
 });

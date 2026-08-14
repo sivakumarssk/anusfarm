@@ -21,6 +21,7 @@ import SubscriptionSuccessScreen from '../screens/SubscriptionSuccessScreen';
 import InstantBuySuccessScreen from '../screens/InstantBuySuccessScreen';
 import PausedDeliveriesScreen from '../screens/PausedDeliveriesScreen';
 import AddressScreen from '../screens/AddressScreen';
+import EditAddressScreen from "../screens/EditAddressScreen";
 import EditScheduleScreen from '../screens/EditScheduleScreen';
 
 import LocationScreen from '../screens/LocationScreen';
@@ -41,6 +42,7 @@ import AddMoneyScreen from '../screens/AddMoneyScreen';
 import AddAddressScreen from '../screens/AddAddressScreen';
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
 import SubscriptionDetailsScreen from "../screens/SubscriptionDetailsScreen";
+
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -157,6 +159,12 @@ component={BottomTabNavigator}
 <Stack.Screen
   name="Address"
   component={AddressScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="EditAddress"
+  component={EditAddressScreen}
   options={{ headerShown: false }}
 />
 
