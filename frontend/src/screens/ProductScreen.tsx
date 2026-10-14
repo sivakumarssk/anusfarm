@@ -1,70 +1,40 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-
 import {
   StyleSheet,
   ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
 } from 'react-native';
-
-import FloatingCart
-from '../components/FloatingCart';
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import ProductsHeader
-from '../components/ProductsHeader';
-
-import SearchBar
-from '../components/SearchBar';
-
-import ProductsGrid
-from '../components/ProductsGrid';
-
-import ProductCategoryTabs
-from '../components/ProductsCategoryTabs';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import FloatingCart from '../components/FloatingCart';
+import { SafeAreaView,} from 'react-native-safe-area-context';
+import ProductsHeader from '../components/ProductsHeader';
+import SearchBar from '../components/SearchBar';
+import ProductsGrid from '../components/ProductsGrid';
+import ProductCategoryTabs from '../components/ProductsCategoryTabs';
 
 const ProductsScreen = () => {
+   const navigation = useNavigation<any>();
   console.log("PRODUCT SCREEN LOADED");
-  const [
-    selectedCategory,
-    setSelectedCategory,
-  ] = useState('Milk');
-
-const {
-  totalItems,
-  cartItems,
-  lastAddedItem,
-} = useCart();
-
-// const latestCartItem =
-//   cartItems.length > 0
-//     ? cartItems[cartItems.length - 1]
-//     : null;
-
-
-
-
-  const [
-  lastAddedProduct,
-  setLastAddedProduct,
-] = useState<any>(null);
+  const [ selectedCategory,setSelectedCategory,] = useState('Milk');
+const {totalItems,cartItems,lastAddedItem,} = useCart();
+  const [lastAddedProduct,setLastAddedProduct,] = useState<any>(null);
 
  
 
   return (
 
-  
-    <SafeAreaView
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.container} >
           <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
                paddingBottom:120,
         }}
       >
+        
 <ProductsHeader
   cartCount={totalItems}
 />

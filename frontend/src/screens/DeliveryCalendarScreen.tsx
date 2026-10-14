@@ -1,495 +1,11 @@
-// import React, {useEffect, useState} from "react";
-// import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator,} from "react-native";
-// import {Calendar,} from "react-native-calendars";
-// import AsyncStorage from"@react-native-async-storage/async-storage";
-// import { SafeAreaView,} from "react-native-safe-area-context";
-// import {useNavigation,useRoute,} from "@react-navigation/native";
-// import {Ionicons,} from "@expo/vector-icons";
-// import {API_URL} from "../config/api";
 
-
-// export default function DeliveryCalendarScreen(){
-
-// const navigation =useNavigation<any>();
-
-// const route =useRoute<any>();
-// const {id} = route.params;
-// const [loading,setLoading] =useState(true);
-// const [calendarData,setCalendarData] =useState<any>(null);
-
-
-
-// useEffect(()=>{
-// getCalendar();
-// },[]);
-
-
-
-// const getCalendar = async()=>{
-
-// try{
-// const token =await AsyncStorage.getItem("token");
-// const res =await fetch(`${API_URL}/api/subscriptions/${id}/calendar`,{
-// headers:{
-// Authorization:
-// `Bearer ${token}`
-// }
-// });
-// const json =await res.json();
-
-
-// if(json.success){
-// setCalendarData(
-// json.calendar
-// );
-
-// }
-
-
-// }
-// catch(error){
-// console.log(error);
-// }
-// setLoading(false);
-// };
-
-
-
-
-// if(loading){
-
-// return(
-
-// <View style={styles.loader}>
-
-// <ActivityIndicator
-// size="large"
-// />
-
-// </View>
-
-// );
-
-// }
-
-
-
-// const markedDates:any = {};
-
-
-
-// // Next delivery blue
-
-// if(calendarData?.next_delivery_date){
-
-// markedDates[
-// calendarData.next_delivery_date
-// ]=
-// {
-
-// selected:true,
-
-// selectedColor:"#2196F3",
-
-// marked:true,
-
-// dotColor:"#2196F3"
-
-// };
-
-// }
-
-
-
-// // Pause dates orange
-
-// if(
-// calendarData?.pause_from &&
-// calendarData?.pause_to
-// ){
-
-// const start =
-// new Date(
-// calendarData.pause_from
-// );
-
-// const end =
-// new Date(
-// calendarData.pause_to
-// );
-
-
-// while(start <= end){
-
-// const date =
-// start
-// .toISOString()
-// .split("T")[0];
-
-
-// markedDates[date]=
-// {
-
-// selected:true,
-
-// selectedColor:"#FF9800"
-
-// };
-
-
-// start.setDate(
-// start.getDate()+1
-// );
-
-// }
-
-// }
-// if(calendarData?.deliveries){
-
-// calendarData.deliveries.forEach(
-// (item:any)=>{
-
-
-// let color="#4CAF50";
-
-
-// if(item.status==="Delivered"){
-// color="#4CAF50";
-// }
-
-
-// if(item.status==="Paused"){
-// color="#FF9800";
-// }
-
-
-// if(item.status==="Cancelled"){
-// color="#F44336";
-// }
-
-
-
-// markedDates[item.delivery_date]={
-
-// marked:true,
-
-// dotColor:color
-
-// };
-
-
-// });
-
-
-// }
-
-
-// return(
-
-// <SafeAreaView
-// style={styles.container}
-// >
-
-
-// <View style={styles.header}>
-
-
-// <TouchableOpacity
-// onPress={()=>navigation.goBack()}
-// >
-
-// <Ionicons
-// name="arrow-back"
-// size={24}
-// />
-
-// </TouchableOpacity>
-
-
-// <Text style={styles.title}>
-
-// Delivery Calendar
-
-// </Text>
-
-
-// </View>
-
-
-
-
-// <Calendar
-
-// markedDates={
-// markedDates
-// }
-
-// theme={{
-
-// todayTextColor:"#4CAF50",
-
-// arrowColor:"#4CAF50",
-
-// }}
-
-// />
-
-
-
-
-
-// <View style={styles.card}>
-
-
-// <Text style={styles.heading}>
-
-// Subscription Details
-
-// </Text>
-
-
-
-// <View style={styles.row}>
-
-// <Text>
-// Frequency
-// </Text>
-
-// <Text style={styles.bold}>
-// {calendarData?.frequency}
-// </Text>
-
-// </View>
-
-
-
-// <View style={styles.row}>
-
-// <Text>
-// Next Delivery
-// </Text>
-
-// <Text style={styles.bold}>
-// {calendarData?.next_delivery_date}
-// </Text>
-
-// </View>
-
-
-
-// <View style={styles.row}>
-
-// <Text>
-// Status
-// </Text>
-
-
-// <Text
-// style={{
-// fontWeight:"700",
-// color:
-// calendarData?.status==="Active"
-// ?
-// "green"
-// :
-// "orange"
-// }}
-// >
-
-// {calendarData?.status}
-
-// </Text>
-
-
-// </View>
-
-
-// </View>
-
-
-
-
-
-// <View style={styles.legend}>
-
-
-// <View style={styles.legendItem}>
-
-// <View
-// style={[
-// styles.dot,
-// {
-// backgroundColor:"#4CAF50"
-// }
-// ]}
-// />
-
-// <Text>
-// Delivery
-// </Text>
-
-
-// </View>
-
-
-
-// <View style={styles.legendItem}>
-
-// <View
-// style={[
-// styles.dot,
-// {
-// backgroundColor:"#FF9800"
-// }
-// ]}
-// />
-
-// <Text>
-// Paused
-// </Text>
-
-
-// </View>
-
-
-
-
-// <View style={styles.legendItem}>
-
-// <View
-// style={[
-// styles.dot,
-// {
-// backgroundColor:"#2196F3"
-// }
-// ]}
-// />
-
-// <Text>
-// Next Delivery
-// </Text>
-
-
-// </View>
-
-
-
-// </View>
-
-
-
-// </SafeAreaView>
-
-// );
-
-
-// }
-
-
-
-// const styles =
-// StyleSheet.create({
-
-// container:{
-// flex:1,
-// backgroundColor:"#F7F7F7"
-// },
-
-
-// loader:{
-// flex:1,
-// justifyContent:"center",
-// alignItems:"center"
-// },
-
-
-// header:{
-// flexDirection:"row",
-// alignItems:"center",
-// padding:16
-// },
-
-
-// title:{
-// fontSize:22,
-// fontWeight:"700",
-// marginLeft:12
-// },
-
-
-// card:{
-// backgroundColor:"#fff",
-// margin:16,
-// padding:16,
-// borderRadius:15
-// },
-
-
-// heading:{
-// fontSize:18,
-// fontWeight:"700",
-// marginBottom:15
-// },
-
-
-// row:{
-// flexDirection:"row",
-// justifyContent:"space-between",
-// marginVertical:8
-// },
-
-
-// bold:{
-// fontWeight:"700"
-// },
-
-
-// legend:{
-// flexDirection:"row",
-// justifyContent:"space-around",
-// marginTop:20
-// },
-
-
-// legendItem:{
-// flexDirection:"row",
-// alignItems:"center"
-// },
-
-
-// dot:{
-// width:12,
-// height:12,
-// borderRadius:6,
-// marginRight:6
-// }
-
-
-// });
-
-
-
-// import React, { useEffect, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   TouchableOpacity,
-//   Alert,
-//   ScrollView,
-//   ActivityIndicator,
-// } from "react-native";
-
+// import React, { useEffect, useMemo, useState } from "react";
+// import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator,} from "react-native";
 // import { Calendar } from "react-native-calendars";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 // import { SafeAreaView } from "react-native-safe-area-context";
-// import {
-//   useNavigation,
-//   useRoute,
-//   RouteProp,
-// } from "@react-navigation/native";
+// import {useNavigation, useRoute,RouteProp,} from "@react-navigation/native";
 // import { Ionicons } from "@expo/vector-icons";
-
 // import { API_URL } from "../config/api";
 
 // /* =========================================================
@@ -509,10 +25,6 @@
 //   status?: string;
 // };
 
-// type CalendarData = {
-//   deliveries: Delivery[];
-// };
-
 // /* =========================================================
 //    SCREEN
 // ========================================================= */
@@ -521,20 +33,7 @@
 //   const navigation = useNavigation();
 
 //   const route =
-//     useRoute<
-//       RouteProp<RootStackParamList, "DeliveryCalendar">
-//     >();
-
-//   /*
-//    * IMPORTANT:
-//    * MySubscriptionsScreen sends:
-//    *
-//    * {
-//    *   subscriptionId: item.id
-//    * }
-//    *
-//    * Therefore we MUST read subscriptionId here.
-//    */
+//     useRoute<RouteProp<RootStackParamList, "DeliveryCalendar">>();
 
 //   const subscriptionId = route.params?.subscriptionId;
 
@@ -543,10 +42,14 @@
 //     subscriptionId
 //   );
 
+//   /* =========================================================
+//      STATE
+//   ========================================================= */
+
 //   const [loading, setLoading] = useState(true);
 
 //   const [calendarData, setCalendarData] =
-//     useState<CalendarData | null>(null);
+//     useState<Delivery[]>([]);
 
 //   const [selectedDate, setSelectedDate] =
 //     useState<string | null>(null);
@@ -578,7 +81,16 @@
 //   }, [subscriptionId]);
 
 //   /* =========================================================
-//      FORMAT DATE
+//      FORMAT API DATE TO INDIA DATE
+     
+//      API example:
+//      2026-08-18T18:30:00.000Z
+
+//      India:
+//      2026-08-19
+
+//      IMPORTANT:
+//      We MUST convert UTC -> Asia/Kolkata.
 //   ========================================================= */
 
 //   const formatDate = (
@@ -588,33 +100,61 @@
 //       return null;
 //     }
 
-//     /*
-//      * Already YYYY-MM-DD
-//      */
+//     /* Already YYYY-MM-DD */
 //     if (
-//       typeof date === "string" &&
 //       /^\d{4}-\d{2}-\d{2}$/.test(date)
 //     ) {
 //       return date;
 //     }
 
-//     const d = new Date(date);
+//     try {
+//       const parsedDate = new Date(date);
 
-//     if (isNaN(d.getTime())) {
+//       if (isNaN(parsedDate.getTime())) {
+//         console.log(
+//           "INVALID DATE:",
+//           date
+//         );
+
+//         return null;
+//       }
+
+//       /*
+//        * Convert UTC date to India date.
+//        *
+//        * en-CA gives:
+//        * YYYY-MM-DD
+//        *
+//        * Asia/Kolkata gives IST.
+//        */
+
+//       const indiaDate =
+//         new Intl.DateTimeFormat(
+//           "en-CA",
+//           {
+//             timeZone: "Asia/Kolkata",
+//             year: "numeric",
+//             month: "2-digit",
+//             day: "2-digit",
+//           }
+//         ).format(parsedDate);
+
+//       console.log(
+//         "DATE CONVERSION:",
+//         date,
+//         "=>",
+//         indiaDate
+//       );
+
+//       return indiaDate;
+//     } catch (error) {
+//       console.log(
+//         "DATE FORMAT ERROR:",
+//         error
+//       );
+
 //       return null;
 //     }
-
-//     const year = d.getFullYear();
-
-//     const month = String(
-//       d.getMonth() + 1
-//     ).padStart(2, "0");
-
-//     const day = String(
-//       d.getDate()
-//     ).padStart(2, "0");
-
-//     return `${year}-${month}-${day}`;
 //   };
 
 //   /* =========================================================
@@ -631,18 +171,10 @@
 //         return;
 //       }
 
+//       setLoading(true);
+
 //       const token =
 //         await AsyncStorage.getItem("token");
-
-//       /*
-//        * THIS IS THE IMPORTANT URL
-//        *
-//        * Example:
-//        * /api/subscriptions/81/calendar
-//        *
-//        * NOT:
-//        * /api/subscriptions/undefined/calendar
-//        */
 
 //       const url =
 //         `${API_URL}/api/subscriptions/${subscriptionId}/calendar`;
@@ -656,8 +188,10 @@
 //         method: "GET",
 
 //         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
+//           Authorization:
+//             `Bearer ${token}`,
+//           "Content-Type":
+//             "application/json",
 //         },
 //       });
 
@@ -696,29 +230,29 @@
 //       );
 
 //       if (json.success) {
-//         /*
-//          * Save calendar data
-//          */
-//        setCalendarData({
-//   deliveries: json.calendar || [],
-// });
+//         const deliveries: Delivery[] =
+//           Array.isArray(
+//             json.calendar
+//           )
+//             ? json.calendar
+//             : [];
+
+//         setCalendarData(
+//           deliveries
+//         );
 
 //         console.log(
 //           "CALENDAR DATA:",
 //           JSON.stringify(
-//             json.calendar,
+//             deliveries,
 //             null,
 //             2
 //           )
 //         );
 
 //         console.log(
-//           "ALL DELIVERIES:",
-//           JSON.stringify(
-//             json.calendar?.deliveries,
-//             null,
-//             2
-//           )
+//           "TOTAL DELIVERIES:",
+//           deliveries.length
 //         );
 //       } else {
 //         Alert.alert(
@@ -743,81 +277,146 @@
 //   };
 
 //   /* =========================================================
+//      GET STATUS COLOR
+//   ========================================================= */
+
+//   const getStatusColor = (
+//     status?: string
+//   ) => {
+//     switch (status) {
+//       case "Delivered":
+//         return "#4CAF50";
+
+//       case "Skipped":
+//         return "#9E9E9E";
+
+//       case "Paused":
+//         return "#FF9800";
+
+//       case "Cancelled":
+//         return "#F44336";
+
+//       case "Pending":
+//       case "Scheduled":
+//       case "Active":
+//       default:
+//         return "#2196F3";
+//     }
+//   };
+
+//   /* =========================================================
 //      SELECT DATE
 //   ========================================================= */
 
-//   const handleDateSelect = (
-//     dateString: string
-//   ) => {
-//     console.log(
-//       "SELECTED DATE:",
-//       dateString
-//     );
+//   // const handleDateSelect = (
+//   //   dateString: string
+//   // ) => {
+//   //   console.log(
+//   //     "SELECTED DATE:",
+//   //     dateString
+//   //   );
 
-//     setSelectedDate(
-//       dateString
-//     );
+//   //   setSelectedDate(
+//   //     dateString
+//   //   );
 
-//     const deliveries =
-//       calendarData?.deliveries || [];
+//   //   /*
+//   //    * calendarData is the delivery array.
+//   //    */
 
-//     console.log(
-//       "ALL DELIVERIES:",
-//       JSON.stringify(
-//         deliveries,
-//         null,
-//         2
-//       )
-//     );
+//   //   console.log(
+//   //     "SEARCHING DELIVERY FOR:",
+//   //     dateString
+//   //   );
 
-//     const delivery =
-//       deliveries.find(
-//         (item: Delivery) => {
-//           const deliveryDate =
-//             formatDate(
-//               item.delivery_date
-//             );
+//   //   const delivery =
+//   //     calendarData.find(
+//   //       (item: Delivery) => {
+//   //         const deliveryDate =
+//   //           formatDate(
+//   //             item.delivery_date
+//   //           );
 
-//           console.log(
-//             "COMPARING:",
-//             deliveryDate,
-//             "WITH:",
-//             dateString
-//           );
+//   //         console.log(
+//   //           "COMPARING:",
+//   //           deliveryDate,
+//   //           "WITH:",
+//   //           dateString,
+//   //           "DELIVERY ID:",
+//   //           item.id
+//   //         );
 
-//           return (
-//             deliveryDate ===
-//             dateString
-//           );
-//         }
+//   //         return (
+//   //           deliveryDate ===
+//   //           dateString
+//   //         );
+//   //       }
+//   //     );
+
+//   //   console.log(
+//   //     "SELECTED DELIVERY:",
+//   //     JSON.stringify(
+//   //       delivery,
+//   //       null,
+//   //       2
+//   //     )
+//   //   );
+
+//   //   setSelectedDelivery(
+//   //     delivery || null
+//   //   );
+//   // };
+// const handleDateSelect = (dateString: string) => {
+//   console.log("================================");
+//   console.log("SELECTED DATE:", dateString);
+
+//   setSelectedDate(dateString);
+
+//   const delivery = calendarData.find(
+//     (item: Delivery) => {
+//       const deliveryDate = formatDate(
+//         item.delivery_date
 //       );
 
-//     console.log(
-//       "SELECTED DELIVERY:",
-//       JSON.stringify(
-//         delivery,
-//         null,
-//         2
-//       )
-//     );
+//       console.log(
+//         "CHECK:",
+//         "ID =",
+//         item.id,
+//         "API DATE =",
+//         item.delivery_date,
+//         "INDIA DATE =",
+//         deliveryDate,
+//         "STATUS =",
+//         item.status
+//       );
 
-//     setSelectedDelivery(
-//       delivery || null
-//     );
-//   };
+//       return deliveryDate === dateString;
+//     }
+//   );
 
+//   console.log(
+//     "FINAL SELECTED DELIVERY:",
+//     JSON.stringify(
+//       delivery,
+//       null,
+//       2
+//     )
+//   );
+
+//   setSelectedDelivery(
+//     delivery || null
+//   );
+
+//   console.log("================================");
+// };
 //   /* =========================================================
 //      MARKED DATES
 //   ========================================================= */
 
-//   const markedDates: any = {};
+//   const markedDates = useMemo(() => {
+//     const marks: any = {};
 
-//   /*
-//    * Delivery dates
-//    */
-
-//   if (calendarData?.deliveries) {
-//     calendarData.deliveries.forEach(
+//     calendarData.forEach(
 //       (item: Delivery) => {
 //         const date =
 //           formatDate(
@@ -828,70 +427,43 @@
 //           return;
 //         }
 
-//         let color =
-//           "#2196F3";
+//         const color =
+//           getStatusColor(
+//             item.status
+//           );
 
-//         switch (
-//           item.status
-//         ) {
-//           case "Delivered":
-//             color = "#4CAF50";
-//             break;
-
-//           case "Skipped":
-//             color = "#9E9E9E";
-//             break;
-
-//           case "Paused":
-//             color = "#FF9800";
-//             break;
-
-//           case "Cancelled":
-//             color = "#F44336";
-//             break;
-
-//           case "Pending":
-//           case "Scheduled":
-//           case "Active":
-//             color = "#2196F3";
-//             break;
-
-//           default:
-//             color = "#2196F3";
-//         }
-
-//         markedDates[date] = {
+//         marks[date] = {
 //           marked: true,
 //           dotColor: color,
 //         };
 //       }
 //     );
-//   }
 
-//   /*
-//    * Selected date
-//    */
+//     /*
+//      * Selected date should override
+//      * only the selected appearance,
+//      * while preserving the delivery dot.
+//      */
 
-//   if (selectedDate) {
-//     markedDates[
-//       selectedDate
-//     ] = {
-//       ...(markedDates[
-//         selectedDate
-//       ] || {}),
+//     if (selectedDate) {
+//       marks[selectedDate] = {
+//         ...(marks[selectedDate] || {}),
 
-//       selected: true,
+//         selected: true,
 
-//       selectedColor:
-//         "#673AB7",
-//     };
-//   }
+//         selectedColor:
+//           "#673AB7",
 
-//   /*
-//    * Next delivery
-//    */
+//         selectedTextColor:
+//           "#FFFFFF",
+//       };
+//     }
 
- 
+//     return marks;
+//   }, [
+//     calendarData,
+//     selectedDate,
+//   ]);
 
 //   /* =========================================================
 //      LOADING
@@ -917,6 +489,94 @@
 //       </SafeAreaView>
 //     );
 //   }
+//   const handleSkipDelivery = async () => {
+//   if (!selectedDelivery?.id || !subscriptionId) {
+//     Alert.alert("Error", "Delivery information is missing");
+//     return;
+//   }
+
+//   Alert.alert(
+//     "Skip Delivery",
+//     `Are you sure you want to skip delivery for ${selectedDate}?`,
+//     [
+//       {
+//         text: "Cancel",
+//         style: "cancel",
+//       },
+//       {
+//         text: "Skip",
+//         onPress: async () => {
+//           try {
+//             const token =
+//               await AsyncStorage.getItem("token");
+
+//             const url =
+//               `${API_URL}/api/subscriptions/delivery/${selectedDelivery.id}/skip`;
+
+//             console.log("SKIP URL:", url);
+
+//             const response = await fetch(url, {
+//               method: "PUT",
+//               headers: {
+//                 Authorization: `Bearer ${token}`,
+//                 "Content-Type": "application/json",
+//               },
+//               body: JSON.stringify({
+//                 subscriptionId: subscriptionId,
+//               }),
+//             });
+
+//             const text = await response.text();
+
+//             console.log(
+//               "SKIP RAW RESPONSE:",
+//               text
+//             );
+
+//             const json = JSON.parse(text);
+
+//             console.log(
+//               "SKIP RESPONSE:",
+//               json
+//             );
+
+//             if (json.success) {
+//               Alert.alert(
+//                 "Success",
+//                 "Delivery skipped successfully"
+//               );
+
+//               // Reload calendar from database
+//               await getCalendar();
+
+//               // Update selected delivery immediately
+//               setSelectedDelivery({
+//                 ...selectedDelivery,
+//                 status: "Skipped",
+//               });
+//             } else {
+//               Alert.alert(
+//                 "Error",
+//                 json.message ||
+//                   "Unable to skip delivery"
+//               );
+//             }
+//           } catch (error) {
+//             console.log(
+//               "SKIP DELIVERY ERROR:",
+//               error
+//             );
+
+//             Alert.alert(
+//               "Error",
+//               "Unable to skip delivery"
+//             );
+//           }
+//         },
+//       },
+//     ]
+//   );
+// };
 
 //   /* =========================================================
 //      UI
@@ -939,6 +599,9 @@
 //           <TouchableOpacity
 //             onPress={() =>
 //               navigation.goBack()
+//             }
+//             style={
+//               styles.backButton
 //             }
 //           >
 //             <Ionicons
@@ -966,13 +629,15 @@
 //             markedDates={
 //               markedDates
 //             }
+
 //             onDayPress={(
 //               day
-//             ) =>
+//             ) => {
 //               handleDateSelect(
 //                 day.dateString
-//               )
-//             }
+//               );
+//             }}
+
 //             theme={{
 //               todayTextColor:
 //                 "#4CAF50",
@@ -981,7 +646,19 @@
 //                 "#4CAF50",
 
 //               selectedDayTextColor:
-//                 "#fff",
+//                 "#FFFFFF",
+
+//               textDayFontSize:
+//                 15,
+
+//               textMonthFontSize:
+//                 18,
+
+//               textMonthFontWeight:
+//                 "700",
+
+//               textDayHeaderFontSize:
+//                 13,
 //             }}
 //           />
 //         </View>
@@ -1002,28 +679,38 @@
 //               Delivery Details
 //             </Text>
 
+//             {/* DATE */}
+
 //             <View
 //               style={styles.row}
 //             >
 //               <Text
-//                 style={styles.label}
+//                 style={
+//                   styles.label
+//                 }
 //               >
 //                 Date
 //               </Text>
 
 //               <Text
-//                 style={styles.value}
+//                 style={
+//                   styles.value
+//                 }
 //               >
 //                 {selectedDate}
 //               </Text>
 //             </View>
+
+//             {/* DELIVERY */}
 
 //             {selectedDelivery ? (
 //               <>
 //                 {/* STATUS */}
 
 //                 <View
-//                   style={styles.row}
+//                   style={
+//                     styles.row
+//                   }
 //                 >
 //                   <Text
 //                     style={
@@ -1038,28 +725,23 @@
 //                       styles.value,
 //                       {
 //                         color:
-//                           selectedDelivery.status ===
-//                           "Delivered"
-//                             ? "#4CAF50"
-//                             : selectedDelivery.status ===
-//                               "Skipped"
-//                             ? "#9E9E9E"
-//                             : selectedDelivery.status ===
-//                               "Cancelled"
-//                             ? "#F44336"
-//                             : "#2196F3",
+//                           getStatusColor(
+//                             selectedDelivery.status
+//                           ),
 //                       },
 //                     ]}
 //                   >
 //                     {
-//                       selectedDelivery.status
+//                       selectedDelivery.status ||
+//                       "Pending"
 //                     }
 //                   </Text>
 //                 </View>
 
 //                 {/* DELIVERY ID */}
 
-//                 {selectedDelivery.id && (
+//                 {selectedDelivery.id !==
+//                   undefined && (
 //                   <View
 //                     style={
 //                       styles.row
@@ -1125,146 +807,118 @@
 //             )}
 //           </View>
 //         )}
+//       {selectedDelivery?.status === "Pending" && (
+//   <TouchableOpacity
+//     style={styles.skipButton}
+//     onPress={handleSkipDelivery}
+//   >
+//     <Text style={styles.skipButtonText}>
+//       Skip This Delivery
+//     </Text>
+//   </TouchableOpacity>
+// )}
 
-//         {/* ================= SUBSCRIPTION DETAILS ================= */}
+//         {/* ================= DELIVERY LIST ================= */}
 
-//         {calendarData && (
-//           <View
+//         <View
+//           style={
+//             styles.detailsCard
+//           }
+//         >
+//           <Text
 //             style={
-//               styles.detailsCard
+//               styles.cardTitle
 //             }
 //           >
+//             Delivery Schedule
+//           </Text>
+
+//           {calendarData.length ===
+//           0 ? (
 //             <Text
 //               style={
-//                 styles.cardTitle
+//                 styles.noDelivery
 //               }
 //             >
-//               Subscription Details
+//               No deliveries found.
 //             </Text>
+//           ) : (
+//             calendarData.map(
+//               (
+//                 delivery,
+//                 index
+//               ) => {
+//                 const date =
+//                   formatDate(
+//                     delivery.delivery_date
+//                   );
 
-//             {/* PLAN */}
+//                 return (
+//                   <TouchableOpacity
+//                     key={
+//                       delivery.id ||
+//                       index
+//                     }
+//                     style={[
+//                       styles.scheduleRow,
 
-//             <View
-//               style={styles.row}
-//             >
-//               <Text
-//                 style={styles.label}
-//               >
-//                 Plan
-//               </Text>
+//                       selectedDate ===
+//                         date &&
+//                         styles.selectedScheduleRow,
+//                     ]}
+//                     onPress={() => {
+//                       if (date) {
+//                         handleDateSelect(
+//                           date
+//                         );
+//                       }
+//                     }}
+//                   >
+//                     <View>
+//                       <Text
+//                         style={
+//                           styles.scheduleDate
+//                         }
+//                       >
+//                         {date ||
+//                           "-"}
+//                       </Text>
 
-//               {/* <Text
-//                 style={styles.value}
-//               >
-//                 {calendarData.plan ||
-//                   "Subscription"}
-//               </Text> */}
-//             </View>
+//                       {delivery.delivery_time && (
+//                         <Text
+//                           style={
+//                             styles.scheduleTime
+//                           }
+//                         >
+//                           {
+//                             delivery.delivery_time
+//                           }
+//                         </Text>
+//                       )}
+//                     </View>
 
-//             {/* FREQUENCY */}
-
-//             <View
-//               style={styles.row}
-//             >
-//               <Text
-//                 style={styles.label}
-//               >
-//                 Frequency
-//               </Text>
-
-//               {/* <Text
-//                 style={styles.value}
-//               >
-//                 {
-//                   calendarData.frequency ||
-//                   "-"
-//                 }
-//               </Text> */}
-//             </View>
-
-//             {/* DELIVERY TIME */}
-
-//             <View
-//               style={styles.row}
-//             >
-//               <Text
-//                 style={styles.label}
-//               >
-//                 Delivery Time
-//               </Text>
-
-//               {/* <Text
-//                 style={styles.value}
-//               >
-//                 {
-//                   calendarData.delivery_time ||
-//                   "-"
-//                 }
-//               </Text> */}
-//             </View>
-
-//             {/* STATUS */}
-
-//             <View
-//               style={styles.row}
-//             >
-//               <Text
-//                 style={styles.label}
-//               >
-//                 Status
-//               </Text>
-
-//               {/* <Text
-//                 style={[
-//                   styles.value,
-//                   {
-//                     color:
-//                       calendarData.status ===
-//                       "Active"
-//                         ? "#4CAF50"
-//                         : calendarData.status ===
-//                           "Paused"
-//                         ? "#FF9800"
-//                         : "#F44336",
-//                   },
-//                 ]}
-//               >
-//                 {
-//                   calendarData.status ||
-//                   "-"
-//                 }
-//               </Text> */}
-//             </View>
-
-//             {/* NEXT DELIVERY */}
-
-//             {/* {calendarData.next_delivery_date && (
-//               <View
-//                 style={
-//                   styles.row
-//                 }
-//               >
-//                 <Text
-//                   style={
-//                     styles.label
-//                   }
-//                 >
-//                   Next Delivery
-//                 </Text>
-
-//                 <Text
-//                   style={
-//                     styles.value
-//                   }
-//                 >
-//                   {formatDate(
-//                     calendarData.next_delivery_date
-//                   )}
-//                 </Text>
-//               </View>
-//             )} */}
-//           </View>
-//         )}
+//                     <Text
+//                       style={[
+//                         styles.scheduleStatus,
+//                         {
+//                           color:
+//                             getStatusColor(
+//                               delivery.status
+//                             ),
+//                         },
+//                       ]}
+//                     >
+//                       {
+//                         delivery.status ||
+//                         "Pending"
+//                       }
+//                     </Text>
+//                   </TouchableOpacity>
+//                 );
+//               }
+//             )
+//           )}
+//         </View>
 
 //         {/* ================= LEGEND ================= */}
 
@@ -1350,6 +1004,28 @@
 //               </Text>
 //             </View>
 
+//             {/* PAUSED */}
+
+//             <View
+//               style={
+//                 styles.legendItem
+//               }
+//             >
+//               <View
+//                 style={[
+//                   styles.dot,
+//                   {
+//                     backgroundColor:
+//                       "#FF9800",
+//                   },
+//                 ]}
+//               />
+
+//               <Text>
+//                 Paused
+//               </Text>
+//             </View>
+
 //             {/* CANCELLED */}
 
 //             <View
@@ -1411,6 +1087,12 @@
 //       alignItems:
 //         "center",
 //       padding: 16,
+//       backgroundColor:
+//         "#F7F7F7",
+//     },
+
+//     backButton: {
+//       padding: 4,
 //     },
 
 //     title: {
@@ -1418,44 +1100,69 @@
 //       fontWeight:
 //         "700",
 //       marginLeft: 12,
+//       color: "#222",
 //     },
 
 //     calendarCard: {
 //       backgroundColor:
-//         "#fff",
+//         "#FFFFFF",
 //       marginHorizontal: 16,
 //       borderRadius: 15,
 //       padding: 8,
 //       elevation: 3,
+//       shadowOpacity: 0.1,
+//       shadowRadius: 4,
+//       shadowOffset: {
+//         width: 0,
+//         height: 2,
+//       },
 //     },
 
 //     deliveryCard: {
 //       backgroundColor:
-//         "#fff",
+//         "#FFFFFF",
 //       margin: 16,
 //       padding: 16,
 //       borderRadius: 15,
 //       elevation: 3,
+//       shadowOpacity: 0.1,
+//       shadowRadius: 4,
+//       shadowOffset: {
+//         width: 0,
+//         height: 2,
+//       },
 //     },
 
 //     detailsCard: {
 //       backgroundColor:
-//         "#fff",
+//         "#FFFFFF",
 //       marginHorizontal: 16,
 //       marginBottom: 16,
 //       padding: 16,
 //       borderRadius: 15,
 //       elevation: 3,
+//       shadowOpacity: 0.1,
+//       shadowRadius: 4,
+//       shadowOffset: {
+//         width: 0,
+//         height: 2,
+//       },
 //     },
 
 //     legendCard: {
 //       backgroundColor:
-//         "#fff",
+//         "#FFFFFF",
 //       marginHorizontal: 16,
 //       marginBottom: 30,
 //       padding: 16,
 //       borderRadius: 15,
 //       elevation: 3,
+//       shadowOpacity: 0.1,
+//       shadowRadius: 4,
+//       shadowOffset: {
+//         width: 0,
+//         height: 2,
+//       },
 //     },
 
 //     cardTitle: {
@@ -1463,6 +1170,7 @@
 //       fontWeight:
 //         "700",
 //       marginBottom: 15,
+//       color: "#222",
 //     },
 
 //     row: {
@@ -1470,6 +1178,8 @@
 //         "row",
 //       justifyContent:
 //         "space-between",
+//       alignItems:
+//         "center",
 //       marginVertical: 8,
 //     },
 
@@ -1477,16 +1187,70 @@
 //       color: "#666",
 //       fontSize: 15,
 //     },
+//     skipButton: {
+//   backgroundColor: "#9E9E9E",
+//   paddingVertical: 13,
+//   borderRadius: 10,
+//   alignItems: "center",
+//   marginTop: 15,
+// },
+
+// skipButtonText: {
+//   color: "#FFFFFF",
+//   fontSize: 15,
+//   fontWeight: "700",
+// },
 
 //     value: {
 //       fontSize: 15,
 //       fontWeight:
 //         "700",
+//       color: "#222",
 //     },
 
 //     noDelivery: {
 //       color: "#777",
 //       marginTop: 10,
+//       fontSize: 14,
+//     },
+
+//     scheduleRow: {
+//       flexDirection:
+//         "row",
+//       justifyContent:
+//         "space-between",
+//       alignItems:
+//         "center",
+//       paddingVertical: 13,
+//       paddingHorizontal: 10,
+//       borderBottomWidth: 1,
+//       borderBottomColor:
+//         "#EEEEEE",
+//       borderRadius: 8,
+//     },
+
+//     selectedScheduleRow: {
+//       backgroundColor:
+//         "#F0E8FF",
+//     },
+
+//     scheduleDate: {
+//       fontSize: 15,
+//       fontWeight:
+//         "600",
+//       color: "#222",
+//     },
+
+//     scheduleTime: {
+//       fontSize: 13,
+//       color: "#777",
+//       marginTop: 3,
+//     },
+
+//     scheduleStatus: {
+//       fontSize: 14,
+//       fontWeight:
+//         "700",
 //     },
 
 //     legend: {
@@ -1515,16 +1279,18 @@
 //     },
 //   });
 
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-
-
-import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ScrollView,
   ActivityIndicator,
 } from "react-native";
@@ -1532,16 +1298,15 @@ import {
 import { Calendar } from "react-native-calendars";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import {
   useNavigation,
   useRoute,
   RouteProp,
 } from "@react-navigation/native";
-
 import { Ionicons } from "@expo/vector-icons";
 
 import { API_URL } from "../config/api";
+import CustomAlert from "../components/CustomAlert";
 
 /* =========================================================
    TYPES
@@ -1565,7 +1330,7 @@ type Delivery = {
 ========================================================= */
 
 export default function DeliveryCalendarScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   const route =
     useRoute<RouteProp<RootStackParamList, "DeliveryCalendar">>();
@@ -1592,40 +1357,53 @@ export default function DeliveryCalendarScreen() {
   const [selectedDelivery, setSelectedDelivery] =
     useState<Delivery | null>(null);
 
-  /* =========================================================
-     LOAD CALENDAR
-  ========================================================= */
+  const [skipping, setSkipping] = useState(false);
 
-  useEffect(() => {
-    if (!subscriptionId) {
-      console.log(
-        "ERROR: subscriptionId is undefined"
-      );
+  // CUSTOM ALERT STATE
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertButtonText, setAlertButtonText] = useState("OK");
+  const [alertCancelText, setAlertCancelText] =
+    useState<string | undefined>(undefined);
+  const [alertConfirmAction, setAlertConfirmAction] =
+    useState<(() => void) | undefined>(undefined);
 
-      Alert.alert(
-        "Error",
-        "Subscription ID is missing"
-      );
-
-      setLoading(false);
-
-      return;
+  const showCustomAlert = (
+    title: string,
+    message = "",
+    options?: {
+      buttonText?: string;
+      cancelText?: string;
+      onConfirm?: () => void;
     }
+  ) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertButtonText(options?.buttonText || "OK");
+    setAlertCancelText(options?.cancelText);
+    setAlertConfirmAction(() => options?.onConfirm);
+    setAlertVisible(true);
+  };
 
-    getCalendar();
-  }, [subscriptionId]);
+  const closeCustomAlert = () => {
+    setAlertVisible(false);
+    setAlertConfirmAction(undefined);
+    setAlertCancelText(undefined);
+  };
+
+  const confirmCustomAlert = () => {
+    const action = alertConfirmAction;
+
+    setAlertVisible(false);
+    setAlertConfirmAction(undefined);
+    setAlertCancelText(undefined);
+
+    action?.();
+  };
 
   /* =========================================================
      FORMAT API DATE TO INDIA DATE
-     
-     API example:
-     2026-08-18T18:30:00.000Z
-
-     India:
-     2026-08-19
-
-     IMPORTANT:
-     We MUST convert UTC -> Asia/Kolkata.
   ========================================================= */
 
   const formatDate = (
@@ -1635,10 +1413,8 @@ export default function DeliveryCalendarScreen() {
       return null;
     }
 
-    /* Already YYYY-MM-DD */
-    if (
-      /^\d{4}-\d{2}-\d{2}$/.test(date)
-    ) {
+    // Already YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return date;
     }
 
@@ -1646,48 +1422,22 @@ export default function DeliveryCalendarScreen() {
       const parsedDate = new Date(date);
 
       if (isNaN(parsedDate.getTime())) {
-        console.log(
-          "INVALID DATE:",
-          date
-        );
-
+        console.log("INVALID DATE:", date);
         return null;
       }
 
-      /*
-       * Convert UTC date to India date.
-       *
-       * en-CA gives:
-       * YYYY-MM-DD
-       *
-       * Asia/Kolkata gives IST.
-       */
+      const indiaDate = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(parsedDate);
 
-      const indiaDate =
-        new Intl.DateTimeFormat(
-          "en-CA",
-          {
-            timeZone: "Asia/Kolkata",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }
-        ).format(parsedDate);
-
-      console.log(
-        "DATE CONVERSION:",
-        date,
-        "=>",
-        indiaDate
-      );
+      console.log("DATE CONVERSION:", date, "=>", indiaDate);
 
       return indiaDate;
     } catch (error) {
-      console.log(
-        "DATE FORMAT ERROR:",
-        error
-      );
-
+      console.log("DATE FORMAT ERROR:", error);
       return null;
     }
   };
@@ -1697,112 +1447,87 @@ export default function DeliveryCalendarScreen() {
   ========================================================= */
 
   const getCalendar = async () => {
+    if (!subscriptionId) {
+      setCalendarData([]);
+      setLoading(false);
+
+      showCustomAlert(
+        "Error",
+        "Subscription ID is missing"
+      );
+
+      return;
+    }
+
     try {
-      if (!subscriptionId) {
-        console.log(
-          "GET CALENDAR: subscriptionId missing"
-        );
-
-        return;
-      }
-
       setLoading(true);
 
-      const token =
-        await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        showCustomAlert(
+          "Login Required",
+          "Please login again to view your delivery calendar."
+        );
+        return;
+      }
 
       const url =
         `${API_URL}/api/subscriptions/${subscriptionId}/calendar`;
 
-      console.log(
-        "CALENDAR URL:",
-        url
-      );
+      console.log("CALENDAR URL:", url);
 
       const res = await fetch(url, {
         method: "GET",
-
         headers: {
-          Authorization:
-            `Bearer ${token}`,
-          "Content-Type":
-            "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
       const text = await res.text();
 
-      console.log(
-        "CALENDAR RAW RESPONSE:",
-        text
-      );
+      console.log("CALENDAR RAW RESPONSE:", text);
 
       let json: any;
 
       try {
         json = JSON.parse(text);
-      } catch (error) {
-        console.log(
-          "CALENDAR JSON ERROR:",
-          error
-        );
-
-        Alert.alert(
+      } catch {
+        showCustomAlert(
           "Error",
           "Invalid response from server"
         );
-
         return;
       }
 
       console.log(
         "CALENDAR API:",
-        JSON.stringify(
-          json,
-          null,
-          2
-        )
+        JSON.stringify(json, null, 2)
       );
 
-      if (json.success) {
+      if (res.ok && json.success) {
         const deliveries: Delivery[] =
-          Array.isArray(
-            json.calendar
-          )
-            ? json.calendar
-            : [];
+          Array.isArray(json.calendar) ? json.calendar : [];
 
-        setCalendarData(
-          deliveries
-        );
+        setCalendarData(deliveries);
 
         console.log(
           "CALENDAR DATA:",
-          JSON.stringify(
-            deliveries,
-            null,
-            2
-          )
+          JSON.stringify(deliveries, null, 2)
         );
 
-        console.log(
-          "TOTAL DELIVERIES:",
-          deliveries.length
-        );
+        console.log("TOTAL DELIVERIES:", deliveries.length);
       } else {
-        Alert.alert(
+        showCustomAlert(
           "Error",
-          json.message ||
-            "Unable to load delivery calendar"
+          json.message || "Unable to load delivery calendar"
         );
       }
     } catch (error) {
-      console.log(
-        "CALENDAR ERROR:",
-        error
-      );
+      console.log("CALENDAR ERROR:", error);
 
-      Alert.alert(
+      showCustomAlert(
         "Error",
         "Unable to load delivery calendar"
       );
@@ -1811,29 +1536,43 @@ export default function DeliveryCalendarScreen() {
     }
   };
 
+  useEffect(() => {
+    if (!subscriptionId) {
+      setCalendarData([]);
+      setLoading(false);
+
+      showCustomAlert(
+        "Error",
+        "Subscription ID is missing"
+      );
+
+      return;
+    }
+
+    getCalendar();
+  }, [subscriptionId]);
+
   /* =========================================================
      GET STATUS COLOR
   ========================================================= */
 
-  const getStatusColor = (
-    status?: string
-  ) => {
-    switch (status) {
-      case "Delivered":
+  const getStatusColor = (status?: string) => {
+    switch ((status || "").toLowerCase()) {
+      case "delivered":
         return "#4CAF50";
 
-      case "Skipped":
+      case "skipped":
         return "#9E9E9E";
 
-      case "Paused":
+      case "paused":
         return "#FF9800";
 
-      case "Cancelled":
+      case "cancelled":
         return "#F44336";
 
-      case "Pending":
-      case "Scheduled":
-      case "Active":
+      case "pending":
+      case "scheduled":
+      case "active":
       default:
         return "#2196F3";
     }
@@ -1843,75 +1582,14 @@ export default function DeliveryCalendarScreen() {
      SELECT DATE
   ========================================================= */
 
-  // const handleDateSelect = (
-  //   dateString: string
-  // ) => {
-  //   console.log(
-  //     "SELECTED DATE:",
-  //     dateString
-  //   );
+  const handleDateSelect = (dateString: string) => {
+    console.log("================================");
+    console.log("SELECTED DATE:", dateString);
 
-  //   setSelectedDate(
-  //     dateString
-  //   );
+    setSelectedDate(dateString);
 
-  //   /*
-  //    * calendarData is the delivery array.
-  //    */
-
-  //   console.log(
-  //     "SEARCHING DELIVERY FOR:",
-  //     dateString
-  //   );
-
-  //   const delivery =
-  //     calendarData.find(
-  //       (item: Delivery) => {
-  //         const deliveryDate =
-  //           formatDate(
-  //             item.delivery_date
-  //           );
-
-  //         console.log(
-  //           "COMPARING:",
-  //           deliveryDate,
-  //           "WITH:",
-  //           dateString,
-  //           "DELIVERY ID:",
-  //           item.id
-  //         );
-
-  //         return (
-  //           deliveryDate ===
-  //           dateString
-  //         );
-  //       }
-  //     );
-
-  //   console.log(
-  //     "SELECTED DELIVERY:",
-  //     JSON.stringify(
-  //       delivery,
-  //       null,
-  //       2
-  //     )
-  //   );
-
-  //   setSelectedDelivery(
-  //     delivery || null
-  //   );
-  // };
-const handleDateSelect = (dateString: string) => {
-  console.log("================================");
-  console.log("SELECTED DATE:", dateString);
-
-  setSelectedDate(dateString);
-
-  const delivery = calendarData.find(
-    (item: Delivery) => {
-      const deliveryDate = formatDate(
-        item.delivery_date
-      );
+    const delivery = calendarData.find((item) => {
+      const deliveryDate = formatDate(item.delivery_date);
 
       console.log(
         "CHECK:",
@@ -1926,24 +1604,18 @@ const handleDateSelect = (dateString: string) => {
       );
 
       return deliveryDate === dateString;
-    }
-  );
+    });
 
-  console.log(
-    "FINAL SELECTED DELIVERY:",
-    JSON.stringify(
-      delivery,
-      null,
-      2
-    )
-  );
+    console.log(
+      "FINAL SELECTED DELIVERY:",
+      JSON.stringify(delivery, null, 2)
+    );
 
-  setSelectedDelivery(
-    delivery || null
-  );
+    setSelectedDelivery(delivery || null);
 
-  console.log("================================");
-};
+    console.log("================================");
+  };
+
   /* =========================================================
      MARKED DATES
   ========================================================= */
@@ -1951,54 +1623,141 @@ const handleDateSelect = (dateString: string) => {
   const markedDates = useMemo(() => {
     const marks: any = {};
 
-    calendarData.forEach(
-      (item: Delivery) => {
-        const date =
-          formatDate(
-            item.delivery_date
-          );
+    calendarData.forEach((item) => {
+      const date = formatDate(item.delivery_date);
 
-        if (!date) {
-          return;
-        }
-
-        const color =
-          getStatusColor(
-            item.status
-          );
-
-        marks[date] = {
-          marked: true,
-          dotColor: color,
-        };
+      if (!date) {
+        return;
       }
-    );
 
-    /*
-     * Selected date should override
-     * only the selected appearance,
-     * while preserving the delivery dot.
-     */
+      marks[date] = {
+        marked: true,
+        dotColor: getStatusColor(item.status),
+      };
+    });
 
     if (selectedDate) {
       marks[selectedDate] = {
         ...(marks[selectedDate] || {}),
-
         selected: true,
-
-        selectedColor:
-          "#673AB7",
-
-        selectedTextColor:
-          "#FFFFFF",
+        selectedColor: "#673AB7",
+        selectedTextColor: "#FFFFFF",
       };
     }
 
     return marks;
-  }, [
-    calendarData,
-    selectedDate,
-  ]);
+  }, [calendarData, selectedDate]);
+
+  /* =========================================================
+     SKIP DELIVERY
+  ========================================================= */
+
+  const performSkipDelivery = async () => {
+    if (!selectedDelivery?.id || !subscriptionId) {
+      showCustomAlert(
+        "Error",
+        "Delivery information is missing"
+      );
+      return;
+    }
+
+    try {
+      setSkipping(true);
+
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        showCustomAlert(
+          "Login Required",
+          "Please login again."
+        );
+        return;
+      }
+
+      const url =
+        `${API_URL}/api/subscriptions/delivery/${selectedDelivery.id}/skip`;
+
+      console.log("SKIP URL:", url);
+
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subscriptionId,
+        }),
+      });
+
+      const text = await response.text();
+
+      console.log("SKIP RAW RESPONSE:", text);
+
+      let json: any;
+
+      try {
+        json = JSON.parse(text);
+      } catch {
+        showCustomAlert(
+          "Error",
+          "Invalid response from server"
+        );
+        return;
+      }
+
+      console.log("SKIP RESPONSE:", json);
+
+      if (response.ok && json.success) {
+        // Update the selected delivery immediately.
+        setSelectedDelivery((previous) =>
+          previous ? { ...previous, status: "Skipped" } : null
+        );
+
+        // Refresh schedule data from the server.
+        await getCalendar();
+
+        showCustomAlert(
+          "Success",
+          "Delivery skipped successfully"
+        );
+      } else {
+        showCustomAlert(
+          "Error",
+          json.message || "Unable to skip delivery"
+        );
+      }
+    } catch (error) {
+      console.log("SKIP DELIVERY ERROR:", error);
+
+      showCustomAlert(
+        "Error",
+        "Unable to skip delivery"
+      );
+    } finally {
+      setSkipping(false);
+    }
+  };
+
+  const handleSkipDelivery = () => {
+    if (!selectedDelivery?.id || !subscriptionId) {
+      showCustomAlert(
+        "Error",
+        "Delivery information is missing"
+      );
+      return;
+    }
+
+    showCustomAlert(
+      "Skip Delivery",
+      `Are you sure you want to skip delivery for ${selectedDate}?`,
+      {
+        buttonText: "Skip",
+        cancelText: "Cancel",
+        onConfirm: performSkipDelivery,
+      }
+    );
+  };
 
   /* =========================================================
      LOADING
@@ -2006,138 +1765,38 @@ const handleDateSelect = (dateString: string) => {
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={styles.loader}
-      >
-        <ActivityIndicator
-          size="large"
-          color="#4CAF50"
-        />
+      <SafeAreaView style={styles.loader}>
+        <ActivityIndicator size="large" color="#4CAF50" />
 
-        <Text
-          style={
-            styles.loadingText
-          }
-        >
+        <Text style={styles.loadingText}>
           Loading calendar...
         </Text>
+
+        <CustomAlert
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          buttonText={alertButtonText}
+          cancelText={alertCancelText}
+          onClose={closeCustomAlert}
+          onConfirm={confirmCustomAlert}
+        />
       </SafeAreaView>
     );
   }
-  const handleSkipDelivery = async () => {
-  if (!selectedDelivery?.id || !subscriptionId) {
-    Alert.alert("Error", "Delivery information is missing");
-    return;
-  }
-
-  Alert.alert(
-    "Skip Delivery",
-    `Are you sure you want to skip delivery for ${selectedDate}?`,
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Skip",
-        onPress: async () => {
-          try {
-            const token =
-              await AsyncStorage.getItem("token");
-
-            const url =
-              `${API_URL}/api/subscriptions/delivery/${selectedDelivery.id}/skip`;
-
-            console.log("SKIP URL:", url);
-
-            const response = await fetch(url, {
-              method: "PUT",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                subscriptionId: subscriptionId,
-              }),
-            });
-
-            const text = await response.text();
-
-            console.log(
-              "SKIP RAW RESPONSE:",
-              text
-            );
-
-            const json = JSON.parse(text);
-
-            console.log(
-              "SKIP RESPONSE:",
-              json
-            );
-
-            if (json.success) {
-              Alert.alert(
-                "Success",
-                "Delivery skipped successfully"
-              );
-
-              // Reload calendar from database
-              await getCalendar();
-
-              // Update selected delivery immediately
-              setSelectedDelivery({
-                ...selectedDelivery,
-                status: "Skipped",
-              });
-            } else {
-              Alert.alert(
-                "Error",
-                json.message ||
-                  "Unable to skip delivery"
-              );
-            }
-          } catch (error) {
-            console.log(
-              "SKIP DELIVERY ERROR:",
-              error
-            );
-
-            Alert.alert(
-              "Error",
-              "Unable to skip delivery"
-            );
-          }
-        },
-      },
-    ]
-  );
-};
 
   /* =========================================================
      UI
   ========================================================= */
 
   return (
-    <SafeAreaView
-      style={styles.container}
-    >
-      <ScrollView
-        showsVerticalScrollIndicator={
-          false
-        }
-      >
-        {/* ================= HEADER ================= */}
-
-        <View
-          style={styles.header}
-        >
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* HEADER */}
+        <View style={styles.header}>
           <TouchableOpacity
-            onPress={() =>
-              navigation.goBack()
-            }
-            style={
-              styles.backButton
-            }
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
           >
             <Ionicons
               name="arrow-back"
@@ -2146,445 +1805,235 @@ const handleDateSelect = (dateString: string) => {
             />
           </TouchableOpacity>
 
-          <Text
-            style={styles.title}
-          >
+          <Text style={styles.title}>
             Delivery Calendar
           </Text>
         </View>
 
-        {/* ================= CALENDAR ================= */}
-
-        <View
-          style={
-            styles.calendarCard
-          }
-        >
+        {/* CALENDAR */}
+        <View style={styles.calendarCard}>
           <Calendar
-            markedDates={
-              markedDates
+            markedDates={markedDates}
+            onDayPress={(day) =>
+              handleDateSelect(day.dateString)
             }
-
-            onDayPress={(
-              day
-            ) => {
-              handleDateSelect(
-                day.dateString
-              );
-            }}
-
             theme={{
-              todayTextColor:
-                "#4CAF50",
-
-              arrowColor:
-                "#4CAF50",
-
-              selectedDayTextColor:
-                "#FFFFFF",
-
-              textDayFontSize:
-                15,
-
-              textMonthFontSize:
-                18,
-
-              textMonthFontWeight:
-                "700",
-
-              textDayHeaderFontSize:
-                13,
+              todayTextColor: "#4CAF50",
+              arrowColor: "#4CAF50",
+              selectedDayTextColor: "#FFFFFF",
+              textDayFontSize: 15,
+              textMonthFontSize: 18,
+              textMonthFontWeight: "700",
+              textDayHeaderFontSize: 13,
             }}
           />
         </View>
 
-        {/* ================= SELECTED DELIVERY ================= */}
-
+        {/* SELECTED DELIVERY */}
         {selectedDate && (
-          <View
-            style={
-              styles.deliveryCard
-            }
-          >
-            <Text
-              style={
-                styles.cardTitle
-              }
-            >
+          <View style={styles.deliveryCard}>
+            <Text style={styles.cardTitle}>
               Delivery Details
             </Text>
 
-            {/* DATE */}
-
-            <View
-              style={styles.row}
-            >
-              <Text
-                style={
-                  styles.label
-                }
-              >
-                Date
-              </Text>
-
-              <Text
-                style={
-                  styles.value
-                }
-              >
+            <View style={styles.row}>
+              <Text style={styles.label}>Date</Text>
+              <Text style={styles.value}>
                 {selectedDate}
               </Text>
             </View>
 
-            {/* DELIVERY */}
-
             {selectedDelivery ? (
               <>
-                {/* STATUS */}
-
-                <View
-                  style={
-                    styles.row
-                  }
-                >
-                  <Text
-                    style={
-                      styles.label
-                    }
-                  >
-                    Status
-                  </Text>
-
+                <View style={styles.row}>
+                  <Text style={styles.label}>Status</Text>
                   <Text
                     style={[
                       styles.value,
                       {
-                        color:
-                          getStatusColor(
-                            selectedDelivery.status
-                          ),
+                        color: getStatusColor(
+                          selectedDelivery.status
+                        ),
                       },
                     ]}
                   >
-                    {
-                      selectedDelivery.status ||
-                      "Pending"
-                    }
+                    {selectedDelivery.status || "Pending"}
                   </Text>
                 </View>
 
-                {/* DELIVERY ID */}
-
-                {selectedDelivery.id !==
-                  undefined && (
-                  <View
-                    style={
-                      styles.row
-                    }
-                  >
-                    <Text
-                      style={
-                        styles.label
-                      }
-                    >
+                {selectedDelivery.id !== undefined && (
+                  <View style={styles.row}>
+                    <Text style={styles.label}>
                       Delivery ID
                     </Text>
-
-                    <Text
-                      style={
-                        styles.value
-                      }
-                    >
-                      {
-                        selectedDelivery.id
-                      }
+                    <Text style={styles.value}>
+                      {selectedDelivery.id}
                     </Text>
                   </View>
                 )}
 
-                {/* DELIVERY TIME */}
-
-                {selectedDelivery.delivery_time && (
-                  <View
-                    style={
-                      styles.row
-                    }
-                  >
-                    <Text
-                      style={
-                        styles.label
-                      }
-                    >
+                {!!selectedDelivery.delivery_time && (
+                  <View style={styles.row}>
+                    <Text style={styles.label}>
                       Delivery Time
                     </Text>
-
-                    <Text
-                      style={
-                        styles.value
-                      }
-                    >
-                      {
-                        selectedDelivery.delivery_time
-                      }
+                    <Text style={styles.value}>
+                      {selectedDelivery.delivery_time}
                     </Text>
                   </View>
                 )}
               </>
             ) : (
-              <Text
-                style={
-                  styles.noDelivery
-                }
-              >
-                No delivery scheduled
-                for this date.
+              <Text style={styles.noDelivery}>
+                No delivery scheduled for this date.
               </Text>
             )}
           </View>
         )}
-      {selectedDelivery?.status === "Pending" && (
-  <TouchableOpacity
-    style={styles.skipButton}
-    onPress={handleSkipDelivery}
-  >
-    <Text style={styles.skipButtonText}>
-      Skip This Delivery
-    </Text>
-  </TouchableOpacity>
-)}
 
-        {/* ================= DELIVERY LIST ================= */}
-
-        <View
-          style={
-            styles.detailsCard
-          }
-        >
-          <Text
-            style={
-              styles.cardTitle
-            }
+        {/* SKIP BUTTON */}
+        {(selectedDelivery?.status || "").toLowerCase() ===
+          "pending" && (
+          <TouchableOpacity
+            style={[
+              styles.skipButton,
+              skipping && styles.disabledButton,
+            ]}
+            onPress={handleSkipDelivery}
+            disabled={skipping}
           >
+            <Text style={styles.skipButtonText}>
+              {skipping ? "Skipping..." : "Skip This Delivery"}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* DELIVERY SCHEDULE */}
+        <View style={styles.detailsCard}>
+          <Text style={styles.cardTitle}>
             Delivery Schedule
           </Text>
 
-          {calendarData.length ===
-          0 ? (
-            <Text
-              style={
-                styles.noDelivery
-              }
-            >
+          {calendarData.length === 0 ? (
+            <Text style={styles.noDelivery}>
               No deliveries found.
             </Text>
           ) : (
-            calendarData.map(
-              (
-                delivery,
-                index
-              ) => {
-                const date =
-                  formatDate(
-                    delivery.delivery_date
-                  );
+            calendarData.map((delivery, index) => {
+              const date = formatDate(delivery.delivery_date);
 
-                return (
-                  <TouchableOpacity
-                    key={
-                      delivery.id ||
-                      index
+              return (
+                <TouchableOpacity
+                  key={delivery.id ?? index}
+                  style={[
+                    styles.scheduleRow,
+                    selectedDate === date &&
+                      styles.selectedScheduleRow,
+                  ]}
+                  onPress={() => {
+                    if (date) {
+                      handleDateSelect(date);
                     }
-                    style={[
-                      styles.scheduleRow,
-
-                      selectedDate ===
-                        date &&
-                        styles.selectedScheduleRow,
-                    ]}
-                    onPress={() => {
-                      if (date) {
-                        handleDateSelect(
-                          date
-                        );
-                      }
-                    }}
-                  >
-                    <View>
-                      <Text
-                        style={
-                          styles.scheduleDate
-                        }
-                      >
-                        {date ||
-                          "-"}
-                      </Text>
-
-                      {delivery.delivery_time && (
-                        <Text
-                          style={
-                            styles.scheduleTime
-                          }
-                        >
-                          {
-                            delivery.delivery_time
-                          }
-                        </Text>
-                      )}
-                    </View>
-
-                    <Text
-                      style={[
-                        styles.scheduleStatus,
-                        {
-                          color:
-                            getStatusColor(
-                              delivery.status
-                            ),
-                        },
-                      ]}
-                    >
-                      {
-                        delivery.status ||
-                        "Pending"
-                      }
+                  }}
+                >
+                  <View>
+                    <Text style={styles.scheduleDate}>
+                      {date || "-"}
                     </Text>
-                  </TouchableOpacity>
-                );
-              }
-            )
+
+                    {!!delivery.delivery_time && (
+                      <Text style={styles.scheduleTime}>
+                        {delivery.delivery_time}
+                      </Text>
+                    )}
+                  </View>
+
+                  <Text
+                    style={[
+                      styles.scheduleStatus,
+                      {
+                        color: getStatusColor(delivery.status),
+                      },
+                    ]}
+                  >
+                    {delivery.status || "Pending"}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })
           )}
         </View>
 
-        {/* ================= LEGEND ================= */}
-
-        <View
-          style={
-            styles.legendCard
-          }
-        >
-          <Text
-            style={
-              styles.cardTitle
-            }
-          >
+        {/* CALENDAR LEGEND */}
+        <View style={styles.legendCard}>
+          <Text style={styles.cardTitle}>
             Calendar Legend
           </Text>
 
-          <View
-            style={styles.legend}
-          >
-            {/* SCHEDULED */}
-
-            <View
-              style={
-                styles.legendItem
-              }
-            >
+          <View style={styles.legend}>
+            <View style={styles.legendItem}>
               <View
                 style={[
                   styles.dot,
-                  {
-                    backgroundColor:
-                      "#2196F3",
-                  },
+                  { backgroundColor: "#2196F3" },
                 ]}
               />
-
-              <Text>
-                Scheduled
-              </Text>
+              <Text style={styles.legendText}>Scheduled</Text>
             </View>
 
-            {/* DELIVERED */}
-
-            <View
-              style={
-                styles.legendItem
-              }
-            >
+            <View style={styles.legendItem}>
               <View
                 style={[
                   styles.dot,
-                  {
-                    backgroundColor:
-                      "#4CAF50",
-                  },
+                  { backgroundColor: "#4CAF50" },
                 ]}
               />
-
-              <Text>
-                Delivered
-              </Text>
+              <Text style={styles.legendText}>Delivered</Text>
             </View>
 
-            {/* SKIPPED */}
-
-            <View
-              style={
-                styles.legendItem
-              }
-            >
+            <View style={styles.legendItem}>
               <View
                 style={[
                   styles.dot,
-                  {
-                    backgroundColor:
-                      "#9E9E9E",
-                  },
+                  { backgroundColor: "#9E9E9E" },
                 ]}
               />
-
-              <Text>
-                Skipped
-              </Text>
+              <Text style={styles.legendText}>Skipped</Text>
             </View>
 
-            {/* PAUSED */}
-
-            <View
-              style={
-                styles.legendItem
-              }
-            >
+            <View style={styles.legendItem}>
               <View
                 style={[
                   styles.dot,
-                  {
-                    backgroundColor:
-                      "#FF9800",
-                  },
+                  { backgroundColor: "#FF9800" },
                 ]}
               />
-
-              <Text>
-                Paused
-              </Text>
+              <Text style={styles.legendText}>Paused</Text>
             </View>
 
-            {/* CANCELLED */}
-
-            <View
-              style={
-                styles.legendItem
-              }
-            >
+            <View style={styles.legendItem}>
               <View
                 style={[
                   styles.dot,
-                  {
-                    backgroundColor:
-                      "#F44336",
-                  },
+                  { backgroundColor: "#F44336" },
                 ]}
               />
-
-              <Text>
-                Cancelled
-              </Text>
+              <Text style={styles.legendText}>Cancelled</Text>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      {/* CUSTOM ALERT */}
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        buttonText={alertButtonText}
+        cancelText={alertCancelText}
+        onClose={closeCustomAlert}
+        onConfirm={confirmCustomAlert}
+      />
     </SafeAreaView>
   );
 }
@@ -2593,223 +2042,198 @@ const handleDateSelect = (dateString: string) => {
    STYLES
 ========================================================= */
 
-const styles =
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor:
-        "#F7F7F7",
-    },
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#F7F7F7",
+  },
 
-    loader: {
-      flex: 1,
-      justifyContent:
-        "center",
-      alignItems:
-        "center",
-      backgroundColor:
-        "#F7F7F7",
-    },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F7F7F7",
+  },
 
-    loadingText: {
-      marginTop: 10,
-      color: "#666",
-    },
+  loadingText: {
+    marginTop: 10,
+    color: "#666",
+    fontFamily: "Inter-Regular",
+  },
 
-    header: {
-      flexDirection:
-        "row",
-      alignItems:
-        "center",
-      padding: 16,
-      backgroundColor:
-        "#F7F7F7",
-    },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#F7F7F7",
+  },
 
-    backButton: {
-      padding: 4,
-    },
+  backButton: {
+    padding: 4,
+  },
 
-    title: {
-      fontSize: 22,
-      fontWeight:
-        "700",
-      marginLeft: 12,
-      color: "#222",
-    },
+  title: {
+    fontSize: 22,
+    fontFamily: "Inter-Bold",
+    marginLeft: 12,
+    color: "#222",
+  },
 
-    calendarCard: {
-      backgroundColor:
-        "#FFFFFF",
-      marginHorizontal: 16,
-      borderRadius: 15,
-      padding: 8,
-      elevation: 3,
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-    },
+  calendarCard: {
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 16,
+    borderRadius: 15,
+    padding: 8,
+    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
-    deliveryCard: {
-      backgroundColor:
-        "#FFFFFF",
-      margin: 16,
-      padding: 16,
-      borderRadius: 15,
-      elevation: 3,
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-    },
+  deliveryCard: {
+    backgroundColor: "#FFFFFF",
+    margin: 16,
+    padding: 16,
+    borderRadius: 15,
+    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
-    detailsCard: {
-      backgroundColor:
-        "#FFFFFF",
-      marginHorizontal: 16,
-      marginBottom: 16,
-      padding: 16,
-      borderRadius: 15,
-      elevation: 3,
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-    },
+  detailsCard: {
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 15,
+    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
-    legendCard: {
-      backgroundColor:
-        "#FFFFFF",
-      marginHorizontal: 16,
-      marginBottom: 30,
-      padding: 16,
-      borderRadius: 15,
-      elevation: 3,
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-    },
+  legendCard: {
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 16,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 15,
+    elevation: 3,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
 
-    cardTitle: {
-      fontSize: 18,
-      fontWeight:
-        "700",
-      marginBottom: 15,
-      color: "#222",
-    },
+  cardTitle: {
+    fontSize: 18,
+    fontFamily: "Inter-Bold",
+    marginBottom: 15,
+    color: "#222",
+  },
 
-    row: {
-      flexDirection:
-        "row",
-      justifyContent:
-        "space-between",
-      alignItems:
-        "center",
-      marginVertical: 8,
-    },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 8,
+  },
 
-    label: {
-      color: "#666",
-      fontSize: 15,
-    },
-    skipButton: {
-  backgroundColor: "#9E9E9E",
-  paddingVertical: 13,
-  borderRadius: 10,
-  alignItems: "center",
-  marginTop: 15,
-},
+  label: {
+    color: "#666",
+    fontSize: 15,
+    fontFamily: "Inter-Regular",
+  },
 
-skipButtonText: {
-  color: "#FFFFFF",
-  fontSize: 15,
-  fontWeight: "700",
-},
+  value: {
+    fontSize: 15,
+    fontFamily: "Inter-SemiBold",
+    color: "#222",
+  },
 
-    value: {
-      fontSize: 15,
-      fontWeight:
-        "700",
-      color: "#222",
-    },
+  noDelivery: {
+    color: "#777",
+    marginTop: 10,
+    fontSize: 14,
+    fontFamily: "Inter-Regular",
+  },
 
-    noDelivery: {
-      color: "#777",
-      marginTop: 10,
-      fontSize: 14,
-    },
+  skipButton: {
+    backgroundColor: "#9E9E9E",
+    paddingVertical: 13,
+    borderRadius: 10,
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginTop: 15,
+  },
 
-    scheduleRow: {
-      flexDirection:
-        "row",
-      justifyContent:
-        "space-between",
-      alignItems:
-        "center",
-      paddingVertical: 13,
-      paddingHorizontal: 10,
-      borderBottomWidth: 1,
-      borderBottomColor:
-        "#EEEEEE",
-      borderRadius: 8,
-    },
+  disabledButton: {
+    opacity: 0.6,
+  },
 
-    selectedScheduleRow: {
-      backgroundColor:
-        "#F0E8FF",
-    },
+  skipButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontFamily: "Inter-Bold",
+  },
 
-    scheduleDate: {
-      fontSize: 15,
-      fontWeight:
-        "600",
-      color: "#222",
-    },
+  scheduleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 13,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+    borderRadius: 8,
+  },
 
-    scheduleTime: {
-      fontSize: 13,
-      color: "#777",
-      marginTop: 3,
-    },
+  selectedScheduleRow: {
+    backgroundColor: "#F0E8FF",
+  },
 
-    scheduleStatus: {
-      fontSize: 14,
-      fontWeight:
-        "700",
-    },
+  scheduleDate: {
+    fontSize: 15,
+    fontFamily: "Inter-SemiBold",
+    color: "#222",
+  },
 
-    legend: {
-      flexDirection:
-        "row",
-      flexWrap:
-        "wrap",
-      justifyContent:
-        "space-between",
-    },
+  scheduleTime: {
+    fontSize: 13,
+    color: "#777",
+    marginTop: 3,
+    fontFamily: "Inter-Regular",
+  },
 
-    legendItem: {
-      flexDirection:
-        "row",
-      alignItems:
-        "center",
-      marginBottom: 12,
-      width: "48%",
-    },
+  scheduleStatus: {
+    fontSize: 14,
+    fontFamily: "Inter-Bold",
+  },
 
-    dot: {
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      marginRight: 7,
-    },
-  });
+  legend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    width: "48%",
+  },
+
+  legendText: {
+    fontFamily: "Inter-Regular",
+    color: "#333",
+    fontSize: 13,
+  },
+
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 7,
+  },
+});

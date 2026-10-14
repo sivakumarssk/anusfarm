@@ -73,7 +73,7 @@ console.log("UPDATE:",data);
 
    setShowNameInput(false);
    
-   navigation.navigate("Home");
+  //  navigation.navigate("Home");
 }
 }catch(error){
 console.log(error);
@@ -221,12 +221,61 @@ alignItems:'center',
 paddingHorizontal:16,
 paddingTop:16
 },
-headerTitle:{
-fontSize:22,
-fontWeight:'600',
-marginLeft:12,
-color:'#000'
+
+headerTitle: {
+  fontSize: 22,
+  fontFamily: 'Inter-SemiBold',
+  marginLeft: 12,
+  color: '#000',
 },
+
+userName: {
+  fontSize: 20,
+  fontFamily: 'Inter-Bold',
+  color: '#100f0f',
+},
+
+userPhone: {
+  fontSize: 14,
+  fontFamily: 'Inter-Regular',
+  color: '#131212',
+  marginTop: 4,
+},
+
+completeText: {
+  fontSize: 12,
+  fontFamily: 'Inter-Regular',
+  color: '#666',
+},
+
+completeNow: {
+  fontSize: 12,
+  fontFamily: 'Inter-Bold',
+  color: '#555',
+},
+
+nameInput: {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 10,
+  padding: 12,
+  backgroundColor: '#fff',
+  fontFamily: 'Inter-Regular',
+},
+
+saveText: {
+  color: '#fff',
+  textAlign: 'center',
+  fontFamily: 'Inter-SemiBold',
+},
+
+menuTitle: {
+  fontSize: 15,
+  fontFamily: 'Inter-Medium',
+  color: '#000',
+  marginLeft: 14,
+},
+
 profileCard:{
 backgroundColor:'#aab9aa',
 marginHorizontal:16,
@@ -239,16 +288,6 @@ flexDirection:'row',
 justifyContent:'space-between',
 alignItems:'center'
 },
-userName:{
-fontSize:20,
-fontWeight:'700',
-color:'#100f0f'
-},
-userPhone:{
-fontSize:14,
-color:'#131212',
-marginTop:4
-},
 completeProfileBox:{
 backgroundColor:'rgba(255,255,255,0.15)',
 borderWidth:1,
@@ -259,37 +298,18 @@ padding:12,
 flexDirection:'row',
 justifyContent:'space-between'
 },
-completeText:{
-fontSize:12,
-color:'#666'
-},
-completeNow:{
-fontSize:12,
-fontWeight:'700',
-color:'#555'
-},
 nameBox:{
 marginHorizontal:16,
 marginTop:10
 },
-nameInput:{
-borderWidth:1,
-borderColor:'#ccc',
-borderRadius:10,
-padding:12,
-backgroundColor:'#fff'
-},
+
 saveButton:{
 backgroundColor:'#000',
 padding:12,
 borderRadius:10,
 marginTop:10
 },
-saveText:{
-color:'#fff',
-textAlign:'center',
-fontWeight:'600'
-},
+
 menuCard:{
 backgroundColor:'#FFF',
 marginHorizontal:16,
@@ -306,9 +326,5 @@ menuLeft:{
 flexDirection:'row',
 alignItems:'center'
 },
-menuTitle:{
-fontSize:15,
-color:'#000',
-marginLeft:14
-}
+
 });

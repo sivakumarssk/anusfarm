@@ -23,46 +23,46 @@ const styles = StyleSheet.create({
   /* ---------------- LOGO ---------------- */
 
   logoContainer: {
-  width:'100%',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  position: 'relative',
-  marginTop: 14,
-},
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    marginTop: 14,
+  },
 
-lineContainer: {
-  marginRight: 4,
-  marginTop: 36,
-},
+  lineContainer: {
+    marginRight: 4,
+    marginTop: 36,
+  },
 
-longLine: {
-  width: 24,
-  height: 1.5,
-  marginBottom: 4,
-},
+  longLine: {
+    width: 24,
+    height: 1.5,
+    marginBottom: 4,
+  },
 
-shortLine: {
-  width: 10,
-  height: 1.5,
-  marginLeft: 4,
-},
+  shortLine: {
+    width: 10,
+    height: 1.5,
+    marginLeft: 4,
+  },
 
-logoText: {
-  fontSize: 22,
-  fontWeight: '700',
-  color: '#000',
-  lineHeight: 28,
-  marginTop: 30,
-},
+  logoText: {
+    fontSize: 18,
+    fontFamily: 'Inter-Bold',
+    color: '#000',
+    lineHeight: 28,
+    marginTop: 30,
+  },
 
-birds: {
-  width: 60,
-  height: 50,
-  position: 'absolute',
-  top: -18,
-  right: -10,
-},
+  birds: {
+    width: 60,
+    height: 50,
+    position: 'absolute',
+    top: -18,
+    right: -10,
+  },
 
   /* ---------------- CENTER CONTENT ---------------- */
 
@@ -73,20 +73,21 @@ birds: {
   },
 
   title: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
     color: '#000',
     textAlign: 'center',
     marginBottom: 0,
   },
 
- subtitle: {
-  fontSize: 16,
-  color: '#7A7A7A',
-  textAlign: 'center',
-  marginTop: 10,
-  fontWeight: '400',
-},
+  subtitle: {
+    fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: '#7A7A7A',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+
   /* ---------------- PAGINATION ---------------- */
 
   paginationContainer: {
@@ -132,13 +133,13 @@ birds: {
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
 
   browseText: {
     fontSize: 12,
     color: '#000',
-    fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
     marginTop: 14,
     marginBottom: 30,
@@ -147,3 +148,4 @@ birds: {
 });
 
 export default styles;
+

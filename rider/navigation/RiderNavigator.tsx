@@ -11,6 +11,7 @@ import RiderOrdersScreen from "../screens/RiderOrdersScreen";
 import RiderSubscriptionDeliveriesScreen from "../screens/RiderSubscriptionDeliveriesScreen";
 import RiderSubscriptionDeliveryDetailsScreen
   from "../screens/RiderSubscriptionDeliveryDetailsScreen";
+  import RiderOrderDetailsScreen from "../screens/RiderOrderDetails";
 const Stack = createNativeStackNavigator();
 
 const RiderNavigator = () => {
@@ -35,6 +36,10 @@ const RiderNavigator = () => {
         <Stack.Screen
   name="RiderOrders"
   component={RiderOrdersScreen}
+/>
+<Stack.Screen
+  name="RiderOrderDetails"
+  component={RiderOrderDetailsScreen}
 />
 
 <Stack.Screen

@@ -9,17 +9,10 @@ import {useNavigation,} from '@react-navigation/native';
 import { Ionicons }from '@expo/vector-icons';
 import axios from "axios";
 import { API_URL } from '../config/api';
+import CustomAlert from '../components/CustomAlert';
 
-// const SubscribePaymentScreen = () => {
 const SubscribePaymentScreen = ({ route }: any) => {
   const { address } = route.params || {};
-
-console.log("========== SUBSCRIPTION ADDRESS ==========");
-console.log("SELECTED ADDRESS =", address);
-console.log("ADDRESS ID =", address?.id);
-console.log("ADDRESS TEXT =", address?.full_address);
-console.log("ADDRESS PHONE =", address?.phone);
-console.log("==========================================");
 const minimumWalletAmount = 500;
   const navigation =useNavigation<any>();
   const {subscriptionData,setSubscriptionData,} = useSubscription();
@@ -28,7 +21,30 @@ const minimumWalletAmount = 500;
     const [walletError, setWalletError] = useState('');
   const [amount, setAmount] = useState('');
   const [ paymentMethod,setPaymentMethod,] = useState('upi');
+const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState('');
+const [alertMessage, setAlertMessage] = useState('');
+const [navigateAfterAlert, setNavigateAfterAlert] = useState(false);
 
+const showCustomAlert = (
+  title: string,
+  message: string,
+  navigate = false
+) => {
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setNavigateAfterAlert(navigate);
+  setAlertVisible(true);
+};
+
+const closeCustomAlert = () => {
+  setAlertVisible(false);
+
+  if (navigateAfterAlert) {
+    setNavigateAfterAlert(false);
+    navigation.navigate('SubscriptionSuccess');
+  }
+};
  const subscriptionItems: CartItem[] =cartItems.filter(
  item => item.type === "subscription");
 
@@ -50,12 +66,12 @@ const totalAmount =subscriptionTotal +instantTotal +walletAmount;
 const handleSubscribe = async () => {
 
    if (!address?.id) {
-    Alert.alert(
-      "Address Required",
-      "Please select an address before subscribing."
-    );
-    return;
-  }
+  showCustomAlert(
+    'Address Required',
+    'Please select an address before subscribing.'
+  );
+  return;
+}
   if (
     subscriptionItems.length > 0 &&
     walletAmount < minimumWalletAmount
@@ -72,10 +88,6 @@ const handleSubscribe = async () => {
   }
   try {
     const token =await AsyncStorage.getItem("token");
-    console.log("========== DEBUG ==========");
-console.log("ADDRESS:", address);
-console.log("ADDRESS ID:", address?.id);
-console.log("TOKEN:", token ? "YES" : "NO");
   
    const response = await axios.post(`${API_URL}/api/subscriptions/create`,{
 plan:
@@ -295,13 +307,17 @@ items:[
 
   }
 
-  catch(error:any){
+  catch (error: any) {
+  console.log(
+    'Subscription API Error:',
+    error.response?.data || error.message
+  );
 
- console.log(
-   "Subscription API Error:",
-   error.response?.data || error.message
- );
-
+  showCustomAlert(
+    'Subscription Failed',
+    error.response?.data?.message ||
+      'Unable to create your subscription. Please try again.'
+  );
 }
 
 console.log("Subscription Order Added");
@@ -392,9 +408,9 @@ return (
         }
       >
 
-        <Text>
-          + ₹{value}
-        </Text>
+        <Text style={{ fontFamily: 'Inter-Medium' }}>
+  + ₹{value}
+</Text>
 
       </TouchableOpacity>
 
@@ -420,13 +436,13 @@ return (
     style={styles.productSummaryRow}
   >
 
-    <Text>
-      {item.name} x{item.quantity}
-    </Text>
+   <Text style={{ fontFamily: 'Inter-Regular' }}>
+  {item.name} x{item.quantity}
+</Text>
 
-    <Text>
-      Subscription
-    </Text>
+<Text style={{ fontFamily: 'Inter-Regular' }}>
+  Subscription
+</Text>
 
   </View>
 
@@ -445,16 +461,13 @@ return (
     style={styles.productSummaryRow}
   >
 
-    <Text>
-      {item.name} x{item.quantity}
-    </Text>
+    <Text style={{ fontFamily: 'Inter-Regular' }}>
+  {item.name} x{item.quantity}
+</Text>
 
-    <Text>
-      ₹
-      {item.price *
-        item.quantity}
-    </Text>
-
+<Text style={{ fontFamily: 'Inter-Regular' }}>
+  ₹{item.price * item.quantity}
+</Text>
   </View>
 
 ))}
@@ -463,13 +476,13 @@ return (
 
  <View style={styles.summaryRow}>
 
-  <Text>
-    Wallet Topup
-  </Text>
+  <Text style={{ fontFamily: 'Inter-Regular' }}>
+  Wallet Topup
+</Text>
 
-  <Text>
-    ₹{walletAmount}
-  </Text>
+<Text style={{ fontFamily: 'Inter-Regular' }}>
+  ₹{walletAmount}
+</Text>
 
 </View>
 
@@ -477,14 +490,13 @@ return (
 
  <View style={styles.summaryRow}>
 
-  <Text>
-    Instant Buy Total
-  </Text>
+ <Text style={{ fontFamily: 'Inter-Regular' }}>
+  Instant Buy Total
+</Text>
 
-  <Text>
-    ₹{instantTotal}
-  </Text>
-
+<Text style={{ fontFamily: 'Inter-Regular' }}>
+  ₹{instantTotal}
+</Text>
 </View>
 
   <View style={styles.dashedLine} />
@@ -492,9 +504,9 @@ return (
   <View style={styles.summaryRow}>
 
     <Text
-      style={{
-        fontWeight: '700',
-      }}
+     style={{
+  fontFamily: 'Inter-Bold',
+}}
     >
       Total Amount
     </Text>
@@ -631,6 +643,13 @@ return (
 </View>
 
 </ScrollView>
+<CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  buttonText="OK"
+  onClose={closeCustomAlert}
+/>
     </SafeAreaView>
   );
     
@@ -655,15 +674,15 @@ header: {
 },
 
 headerTitle: {
-  fontSize: 18,
-  fontWeight: '600',
+  fontSize: 16,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
   marginLeft: 12,
 },
 
 sectionTitle: {
-  fontSize: 15,
-  fontWeight: '600',
+  fontSize: 13,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
   marginHorizontal: 16,
   marginTop: 24,
@@ -699,15 +718,16 @@ amountInputBox: {
 
 rupee: {
   fontSize: 22,
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
 },
 
 amountInput: {
   flex: 1,
   marginLeft: 10,
-  fontSize: 16,
+  fontSize: 14,
   color: '#000',
+  fontFamily: 'Inter-Regular',
 },
 
 quickAmountRow: {
@@ -771,10 +791,9 @@ summaryCard: {
 },
 
 summaryTitle: {
-  fontSize: 16,
-  fontWeight: '600',
+  fontSize: 14,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
-
   marginBottom: 14,
 },
 
@@ -801,9 +820,8 @@ dashedLine: {
 
 autoPayTitle: {
   fontSize: 15,
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
-
   marginHorizontal: 16,
   marginTop: 20,
 },
@@ -811,7 +829,7 @@ autoPayTitle: {
 autoPaySubTitle: {
   fontSize: 12,
   color: '#777',
-
+  fontFamily: 'Inter-Regular',
   marginHorizontal: 16,
   marginTop: 4,
   marginBottom: 10,
@@ -856,7 +874,7 @@ divider: {
 
 methodTitle: {
   fontSize: 14,
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
 },
 
@@ -864,6 +882,7 @@ methodSub: {
   fontSize: 11,
   color: '#777',
   marginTop: 3,
+  fontFamily: 'Inter-Regular',
 },
 
 radioOuter: {
@@ -908,7 +927,7 @@ subscribeButton: {
 subscribeText: {
   color: '#FFF',
   fontSize: 16,
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
 },
 
 methodLeft: {
@@ -976,16 +995,15 @@ paymentIcon: {
 
 sectionLabel: {
   fontSize: 14,
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
   marginBottom: 10,
 },
 
 errorText: {
   color: '#E53935',
-
   fontSize: 12,
-
+  fontFamily: 'Inter-Regular',
   marginTop: 6,
   marginHorizontal: 16,
 },

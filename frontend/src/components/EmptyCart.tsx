@@ -78,17 +78,19 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#000',
-  },
+  fontSize: 22,
+  fontWeight: '700',
+  fontFamily: 'Inter-Bold',
+  color: '#000',
+},
 
-  subtitle: {
-    textAlign: 'center',
-    color: '#666',
-    marginTop: 10,
-    lineHeight: 22,
-  },
+ subtitle: {
+  textAlign: 'center',
+  color: '#666',
+  marginTop: 10,
+  lineHeight: 22,
+  fontFamily: 'Inter-Regular',
+},
 
   button: {
     marginTop: 24,
@@ -99,8 +101,9 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFF',
-    fontWeight: '600',
-  },
+  color: '#FFF',
+  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
+},
 
 });

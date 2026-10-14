@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 
@@ -9,63 +11,72 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+import { Ionicons } from '@expo/vector-icons';
+
 const OrdersHeader = () => {
   const navigation = useNavigation<any>();
 
   return (
-
     <View style={styles.container}>
 
-      <Text style={styles.title}>
-        My Orders
-      </Text>
+      {/* Back Arrow + Title */}
+      <View style={styles.leftContainer}>
+
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={26}
+            color="#000"
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.title}>
+          My Orders
+        </Text>
+
+      </View>
 
       <View style={styles.iconsContainer}>
 
         <TouchableOpacity>
-
           <Image
             source={require('../../assets/icons/notification.png')}
             style={styles.icon}
             resizeMode="contain"
           />
-
         </TouchableOpacity>
 
         <TouchableOpacity
-        onPress={()=>{
-          navigation.navigate("Wallet")
-        }}
+          onPress={() => {
+            navigation.navigate("Wallet");
+          }}
         >
-
           <Image
             source={require('../../assets/icons/wallet.png')}
             style={styles.icon}
             resizeMode="contain"
           />
-
         </TouchableOpacity>
 
         <TouchableOpacity
-        onPress={()=>{
-          navigation.navigate("Cart")
-        }}
+          onPress={() => {
+            navigation.navigate("Cart");
+          }}
         >
-
           <Image
             source={require('../../assets/icons/cart.png')}
             style={styles.icon}
             resizeMode="contain"
           />
-
         </TouchableOpacity>
 
       </View>
 
     </View>
-
   );
-
 };
 
 export default OrdersHeader;
@@ -76,15 +87,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 12,
+    marginTop: 20,
+    marginBottom: 20,
   },
 
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#000',
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
+
+  backButton: {
+    marginRight: 10,
+  },
+
+  
+title: {
+  fontFamily: "Inter-Bold",
+  fontSize: 20,
+ 
+  color: "#000",
+},
 
   iconsContainer: {
     flexDirection: 'row',

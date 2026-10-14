@@ -105,44 +105,78 @@ const FeatureSection = () => {
 
 export default FeatureSection;
 
-const styles = StyleSheet.create({
+// const styles = StyleSheet.create({
 
+//   container: {
+//     backgroundColor: '#E8E8E8',
+//     borderRadius: 18,
+//     marginTop: 10,
+//     marginLeft:10,
+//     paddingVertical: 14,
+//     paddingHorizontal: 10,
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//   },
+
+//   featureItem: {
+//     flex: 1,
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//   },
+
+//   icon: {
+//     width: 18,
+//     height: 18,
+//     marginRight: 6,
+//     marginLeft:2
+//   },
+
+//   title: { fontSize: 10, fontWeight: '600', fontFamily: 'Inter-SemiBold', color: '#000', },
+
+//   subtitle: { fontSize: 7, fontFamily: 'Inter-Regular', color: '#666', lineHeight: 10, },
+
+// });
+
+const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#E8E8E8',
-    borderRadius: 18,
-    marginTop: 10,
-    marginLeft:10,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: "#FFF",
+    borderRadius: 20,
+    marginTop: 18,
+    marginHorizontal: 2,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
   },
 
   featureItem: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   icon: {
-    width: 18,
-    height: 18,
-    marginRight: 6,
-    marginLeft:2
+    width: 24,
+    height: 24,
+    marginRight: 7,
   },
 
   title: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#000',
+    fontFamily: "Inter-SemiBold",
+    color: "#111",
   },
 
   subtitle: {
-    fontSize: 7,
-    color: '#666',
+    fontSize: 7.5,
+    fontFamily: "Inter-Regular",
+    color: "#777",
     lineHeight: 10,
   },
-
 });

@@ -97,31 +97,59 @@ const ProductCarousel = () => {
 export default ProductCarousel;
 
 const styles = StyleSheet.create({
-  cardContainer:{
-    width: width - 32,
-  },
+  // cardContainer:{
+  //   width: width - 32,
+  // },
 
 
-  indicatorContainer:{
-    flexDirection:'row',
-    justifyContent:'center',
-    marginTop:10,
-  },
+  // indicatorContainer:{
+  //   flexDirection:'row',
+  //   justifyContent:'center',
+  //   marginTop:10,
+  // },
 
 
-  dot:{
-    width:8,
-    height:8,
-    borderRadius:4,
-    backgroundColor:'#D9D9D9',
-    marginHorizontal:4,
-  },
+  // dot:{
+  //   width:8,
+  //   height:8,
+  //   borderRadius:4,
+  //   backgroundColor:'#D9D9D9',
+  //   marginHorizontal:4,
+  // },
 
 
-  activeDot:{
-    width:24,
-    borderRadius:4,
-    backgroundColor:'#000',
-  },
+  // activeDot:{
+  //   width:24,
+  //   borderRadius:4,
+  //   backgroundColor:'#000',
+  // },
 
+
+  cardContainer: {
+  width: width - 32,
+  paddingHorizontal: 0,
+},
+
+indicatorContainer: {
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: 12,
+  marginBottom: 4,
+},
+
+dot: {
+  width: 7,
+  height: 7,
+  borderRadius: 4,
+  backgroundColor: "#D9D9D9",
+  marginHorizontal: 3,
+},
+
+activeDot: {
+  width: 22,
+  height: 7,
+  borderRadius: 4,
+  backgroundColor: "#2E7D32",
+},
 });

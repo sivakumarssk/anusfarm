@@ -29,7 +29,7 @@ const firstProduct = products[0];
 }}>
 
 
-     {firstProduct?.image ? (
+     {/* {firstProduct?.image ? (
   <Image
   source={{
     uri: firstProduct.image,
@@ -45,10 +45,43 @@ const firstProduct = products[0];
         backgroundColor: "#EEE",
         justifyContent: "center",
         alignItems: "center",
+        
       },
     ]}
   >
-    <Text>No Image</Text>
+    <Text style={{ fontFamily: "Inter-Regular" }}>
+  No Image
+</Text>
+  </View>
+)} */}
+
+{firstProduct?.image ? (
+  <Image
+    source={{ uri: firstProduct.image }}
+    style={styles.image}
+    resizeMode="contain"
+    onError={(error) =>
+      console.log(
+        "ORDER PRODUCT IMAGE ERROR:",
+        firstProduct.image,
+        error.nativeEvent.error
+      )
+    }
+  />
+) : (
+  <View
+    style={[
+      styles.image,
+      {
+        backgroundColor: "#EEE",
+        justifyContent: "center",
+        alignItems: "center",
+      },
+    ]}
+  >
+    <Text style={{ fontFamily: "Inter-Regular" }}>
+      No Image
+    </Text>
   </View>
 )}
       </View>
@@ -112,22 +145,90 @@ products.map((item:any,index:number)=>(
 
 export default OrderCard;
 
-const styles = StyleSheet.create({
+// const styles = StyleSheet.create({
 
-  card: {
-    flexDirection: 'row',
+//   card: {
+//     flexDirection: 'row',
 
-    backgroundColor: '#FFF',
+//     backgroundColor: '#FFF',
 
-    borderRadius: 16,
+//     borderRadius: 16,
 
-    padding: 12,
+//     padding: 12,
   
 
-    marginBottom: 12,
+//     marginBottom: 12,
 
+//     borderWidth: 1,
+//     borderColor: '#E8E8E8',
+//   },
+
+//   image: {
+//     width: 80,
+//     height: 110,
+//     borderRadius: 12,
+//   },
+
+//   content: {
+//     flex: 1,
+//     marginLeft: 12,
+//   },
+
+//   name: {
+//     fontSize: 15,
+//     fontWeight: '600',
+//     color: '#000',
+//   },
+
+//   info: {
+//     fontSize: 12,
+//     color: '#777',
+//     marginTop: 4,
+//   },
+
+//   price: {
+//     fontSize: 16,
+//     fontWeight: '700',
+//     color: '#000',
+//     marginTop: 6,
+//   },
+
+//   status: {
+//     fontSize: 11,
+//     color: '#666',
+//     marginTop: 4,
+//   },
+
+//   button: {
+//     height: 34,
+
+//     backgroundColor: '#000',
+
+//     borderRadius: 8,
+
+//     marginTop: 8,
+
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+
+//   buttonText: {
+//     color: '#FFF',
+//     fontSize: 12,
+//     fontWeight: '600',
+//   },
+
+// });
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    backgroundColor: "#FFF",
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: "#E8E8E8",
   },
 
   image: {
@@ -142,47 +243,47 @@ const styles = StyleSheet.create({
   },
 
   name: {
+    fontFamily: "Inter-SemiBold",
     fontSize: 15,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: "600",
+    color: "#000",
   },
 
   info: {
+    fontFamily: "Inter-Regular",
     fontSize: 12,
-    color: '#777',
+    color: "#777",
     marginTop: 4,
   },
 
   price: {
+    fontFamily: "Inter-Bold",
     fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
+    fontWeight: "700",
+    color: "#000",
     marginTop: 6,
   },
 
   status: {
+    fontFamily: "Inter-Regular",
     fontSize: 11,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
 
   button: {
     height: 34,
-
-    backgroundColor: '#000',
-
+    backgroundColor: "#000",
     borderRadius: 8,
-
     marginTop: 8,
-
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   buttonText: {
-    color: '#FFF',
+    fontFamily: "Inter-SemiBold",
+    color: "#FFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-
 });

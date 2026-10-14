@@ -1,3 +1,6 @@
+
+
+
 // import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import { API_URL } from "../config/api";
@@ -6,41 +9,29 @@
 
 //   const [data, setData] = useState({
 //     summary: {},
-//     orders: []
+//     orders: [],
 //   });
 
-//   // Store all riders
 //   const [riders, setRiders] = useState([]);
 
+//   // ACTIVE / OLD ORDERS
+//   const [orderType, setOrderType] = useState("active");
 
-//   // ============================================================
 //   // LOAD ORDERS + RIDERS
-//   // ============================================================
-
 //   useEffect(() => {
-
 //     fetchOrders();
 //     fetchRiders();
-
 //   }, []);
 
-
-//   // ============================================================
 //   // FETCH ORDERS
-//   // ============================================================
-
 //   const fetchOrders = async () => {
-
 //     try {
 
 //       const res = await axios.get(
 //         `${API_URL}/api/orders`
 //       );
 
-//       console.log(
-//         "ADMIN ORDERS =",
-//         res.data
-//       );
+//       console.log("ADMIN ORDERS =", res.data);
 
 //       setData(res.data);
 
@@ -48,30 +39,21 @@
 
 //       console.log(
 //         "FETCH ORDERS ERROR =",
-//         error
+//         error.response?.data || error
 //       );
 
 //     }
-
 //   };
 
-
-//   // ============================================================
 //   // FETCH RIDERS
-//   // ============================================================
-
 //   const fetchRiders = async () => {
-
 //     try {
 
 //       const res = await axios.get(
 //         `${API_URL}/api/riders/all`
 //       );
 
-//       console.log(
-//         "ADMIN RIDERS =",
-//         res.data
-//       );
+//       console.log("ADMIN RIDERS =", res.data);
 
 //       setRiders(
 //         res.data.riders || []
@@ -85,14 +67,9 @@
 //       );
 
 //     }
-
 //   };
 
-
-//   // ============================================================
-//   // ASSIGN RIDER
-//   // ============================================================
-
+//   // ASSIGN / CHANGE RIDER
 //   const assignRider = async (
 //     orderId,
 //     riderId
@@ -100,9 +77,7 @@
 
 //     try {
 
-//       if (!riderId) {
-//         return;
-//       }
+//       if (!riderId) return;
 
 //       console.log(
 //         "ASSIGNING RIDER:",
@@ -111,29 +86,34 @@
 //         orderId
 //       );
 
-
 //       const res = await axios.put(
 //         `${API_URL}/api/orders/${orderId}/assign-rider`,
 //         {
-//           rider_id: Number(riderId)
+//           rider_id: Number(riderId),
 //         }
 //       );
-
 
 //       console.log(
 //         "ASSIGN RIDER RESPONSE =",
 //         res.data
 //       );
 
+//       if (res.data.success) {
 
-//       alert(
-//         "Rider assigned successfully"
-//       );
+//         alert(
+//           "Rider assigned successfully"
+//         );
 
+//         await fetchOrders();
 
-//       // Refresh orders
-//       fetchOrders();
+//       } else {
 
+//         alert(
+//           res.data.message ||
+//           "Failed to assign rider"
+//         );
+
+//       }
 
 //     } catch (error) {
 
@@ -142,598 +122,1418 @@
 //         error.response?.data || error
 //       );
 
-
 //       alert(
 //         error.response?.data?.message ||
 //         "Failed to assign rider"
 //       );
 
 //     }
+//   };
+
+//   // =====================================================
+//   // GET DATE FROM ORDER
+//   // =====================================================
+
+//   const getOrderDate = (order) => {
+
+//     return (
+//       order.created_at ||
+//       order.order_date ||
+//       order.createdAt ||
+//       order.date ||
+//       null
+//     );
 
 //   };
 
+//   // =====================================================
+//   // FILTER ORDERS
+//   // =====================================================
 
-//   // ============================================================
-//   // UPDATE ORDER STATUS
-//   // ============================================================
+//   const filteredOrders =
+//     data.orders?.filter((order) => {
 
-//   const updateStatus = async (
-//     id,
+//       const rawDate =
+//         getOrderDate(order);
+
+//       // If order has no date
+//       if (!rawDate) {
+//         return false;
+//       }
+
+//       const orderDate =
+//         new Date(rawDate);
+
+//       if (
+//         Number.isNaN(
+//           orderDate.getTime()
+//         )
+//       ) {
+//         return false;
+//       }
+
+//       // Today's date
+//       const today =
+//         new Date();
+
+//       today.setHours(
+//         0,
+//         0,
+//         0,
+//         0
+//       );
+
+//       // Order date
+//       orderDate.setHours(
+//         0,
+//         0,
+//         0,
+//         0
+//       );
+
+//       // ACTIVE = TODAY
+//       if (orderType === "active") {
+
+//         return (
+//           orderDate.getTime() ===
+//           today.getTime()
+//         );
+
+//       }
+
+//       // OLD = BEFORE TODAY
+//       return (
+//         orderDate.getTime() <
+//         today.getTime()
+//       );
+
+//     }) || [];
+
+//   // =====================================================
+//   // STATUS BADGE
+//   // =====================================================
+
+//   const getStatusStyle = (
 //     status
 //   ) => {
 
-//     try {
+//     const currentStatus =
+//       status?.toLowerCase();
 
-//       await axios.put(
-//         `${API_URL}/api/orders/${id}/status`,
-//         {
-//           status
-//         }
-//       );
+//     switch (currentStatus) {
 
+//       case "delivered":
 
-//       alert(
-//         "Order status updated"
-//       );
+//         return {
+//           badge:
+//             "bg-green-100 text-green-700 border-green-200",
+//           icon: "✓",
+//         };
 
+//       case "cancelled":
 
-//       fetchOrders();
+//         return {
+//           badge:
+//             "bg-red-100 text-red-700 border-red-200",
+//           icon: "✕",
+//         };
 
+//       case "out for delivery":
 
-//     } catch (error) {
+//         return {
+//           badge:
+//             "bg-orange-100 text-orange-700 border-orange-200",
+//           icon: "🚚",
+//         };
 
-//       console.log(
-//         "UPDATE ERROR =",
-//         error
-//       );
+//       case "picked up":
 
+//         return {
+//           badge:
+//             "bg-purple-100 text-purple-700 border-purple-200",
+//           icon: "📦",
+//         };
 
-//       alert(
-//         "Status update failed"
-//       );
+//       case "accepted":
+
+//         return {
+//           badge:
+//             "bg-blue-100 text-blue-700 border-blue-200",
+//           icon: "✓",
+//         };
+
+//       case "packed":
+
+//         return {
+//           badge:
+//             "bg-indigo-100 text-indigo-700 border-indigo-200",
+//           icon: "📦",
+//         };
+
+//       case "assigned":
+
+//         return {
+//           badge:
+//             "bg-cyan-100 text-cyan-700 border-cyan-200",
+//           icon: "🚴",
+//         };
+
+//       case "pending":
+
+//         return {
+//           badge:
+//             "bg-yellow-100 text-yellow-700 border-yellow-200",
+//           icon: "⏳",
+//         };
+
+//       default:
+
+//         return {
+//           badge:
+//             "bg-gray-100 text-gray-700 border-gray-200",
+//           icon: "•",
+//         };
 
 //     }
 
 //   };
 
+//   // =====================================================
+//   // STATUS BADGE COMPONENT
+//   // =====================================================
 
-//   // ============================================================
-//   // UI
-//   // ============================================================
+//   const StatusBadge = ({
+//     status
+//   }) => {
 
-//   return (
+//     const statusStyle =
+//       getStatusStyle(status);
 
-//     <div className="p-6 bg-gray-50 min-h-screen">
+//     return (
 
+//       <span
+//         className={`
+//           inline-flex
+//           items-center
+//           gap-1.5
+//           px-3
+//           py-1.5
+//           rounded-full
+//           border
+//           text-xs
+//           font-semibold
+//           whitespace-nowrap
+//           ${statusStyle.badge}
+//         `}
+//       >
 
-//       <h1 className="text-3xl font-bold mb-6 text-gray-800">
-//         Orders
-//       </h1>
+//         <span>
+//           {statusStyle.icon}
+//         </span>
 
+//         <span>
+//           {status || "Pending"}
+//         </span>
 
-//       {/* =====================================================
-//           SUMMARY
-//       ====================================================== */}
+//       </span>
 
-//       <div className="grid grid-cols-4 gap-6 mb-8">
+//     );
 
+//   };
 
-//         <div className="bg-white shadow rounded-xl p-5">
+//   // =====================================================
+//   // RIDER SELECT COMPONENT
+//   // =====================================================
 
-//           <h3>
-//             Total Orders
-//           </h3>
+//   const RiderSelect = ({
+//     order
+//   }) => {
 
-//           <p className="text-3xl font-bold">
-//             {data.summary?.total || 0}
-//           </p>
+//     return (
 
-//         </div>
+//       <div className="min-w-0">
 
+//         <select
 
-//         <div className="bg-white shadow rounded-xl p-5">
+//           value={
+//             order.rider_id || ""
+//           }
 
-//           <h3>
-//             Delivered
-//           </h3>
+//           onChange={(e) =>
+//             assignRider(
+//               order.order_id,
+//               e.target.value
+//             )
+//           }
 
-//           <p className="text-3xl font-bold">
-//             {data.summary?.delivered || 0}
-//           </p>
+//           className="
+//             w-full
+//             min-w-0
+//             border
+//             border-gray-300
+//             rounded-lg
+//             px-3
+//             py-2.5
+//             bg-white
+//             text-sm
+//             focus:outline-none
+//             focus:ring-2
+//             focus:ring-green-500
+//           "
+//         >
 
-//         </div>
+//           <option value="">
+//             Select Rider
+//           </option>
 
+//           {riders.map(
+//             (rider) => (
 
-//         <div className="bg-white shadow rounded-xl p-5">
+//               <option
+//                 key={rider.id}
+//                 value={rider.id}
+//               >
 
-//           <h3>
-//             Pending
-//           </h3>
+//                 {rider.name}
+//                 {" - "}
+//                 {rider.phone}
 
-//           <p className="text-3xl font-bold">
-//             {data.summary?.pending || 0}
-//           </p>
+//               </option>
 
-//         </div>
+//             )
+//           )}
 
+//         </select>
 
-//         <div className="bg-white shadow rounded-xl p-5">
+//         {order.rider_name && (
 
-//           <h3>
-//             Cancelled
-//           </h3>
+//           <div className="
+//             flex
+//             items-center
+//             gap-2
+//             mt-2
+//             text-sm
+//             text-green-600
+//             font-medium
+//           ">
 
-//           <p className="text-3xl font-bold">
-//             {data.summary?.cancelled || 0}
-//           </p>
+//             <span>
+//               🚴
+//             </span>
 
-//         </div>
+//             <span>
+//               {order.rider_name}
+//             </span>
 
+//           </div>
+
+//         )}
+
+//         {!order.rider_id && (
+
+//           <div className="
+//             text-xs
+//             text-orange-500
+//             mt-2
+//           ">
+
+//             ⚠ Rider not assigned
+
+//           </div>
+
+//         )}
 
 //       </div>
 
-
-//       {/* =====================================================
-//           TABLE
-//       ====================================================== */}
-
-//       <div className="bg-white rounded-xl shadow overflow-x-auto">
-
-
-//         <table className="w-full">
-
-
-//           <thead className="bg-gray-100">
-
-//             <tr className="text-left">
-
-
-//               <th className="p-4">
-//                 Order ID
-//               </th>
-
-
-//               <th className="p-4">
-//                 Customer
-//               </th>
-
-
-//               <th className="p-4">
-//                 Products
-//               </th>
-
-
-//               <th className="p-4">
-//                 Price
-//               </th>
-
-
-//               <th className="p-4">
-//                 Address
-//               </th>
-
-
-//               <th className="p-4">
-//                 Rider
-//               </th>
-
-
-//               <th className="p-4">
-//                 Status
-//               </th>
-
-
-//             </tr>
-
-//           </thead>
-
-
-//           <tbody>
-
-
-//             {data.orders?.map(
-//               (order) => (
-
-//                 <tr
-//                   key={order.order_id}
-//                   className="border-t"
-//                 >
-
-
-//                   {/* ORDER ID */}
-
-//                   <td className="p-4">
-
-//                     #{order.order_id}
-
-//                   </td>
-
-
-//                   {/* CUSTOMER */}
-
-//                   <td className="p-4">
-
-//                     <div>
-//                       {order.customer_name}
-//                     </div>
-
-//                     <div className="text-sm text-gray-500">
-//                       {order.customer_phone}
-//                     </div>
-
-//                   </td>
-
-
-//                   {/* PRODUCTS */}
-
-//                   <td className="p-4">
-
-//                     {order.products?.map(
-//                       (product, index) => (
-
-//                         <div
-//                           key={index}
-//                           className="mb-1"
-//                         >
-
-//                           {product.product_name}
-
-//                           {" x "}
-
-//                           {product.quantity}
-
-//                         </div>
-
-//                       )
-//                     )}
-
-//                   </td>
-
-
-//                   {/* PRICE */}
-
-//                   <td className="p-4">
-
-//                     <div className="font-semibold">
-
-//                       ₹{order.total_amount}
-
-//                     </div>
-
-//                   </td>
-
-
-//                   {/* ADDRESS */}
-
-//                   <td className="p-4">
-
-//                     {order.address ||
-//                       "No Address"}
-
-//                   </td>
-
-
-//                   {/* =================================================
-//                       RIDER
-//                   ================================================== */}
-
-//                   <td className="p-4">
-
-
-//                     <select
-
-//                       value={
-//                         order.rider_id || ""
-//                       }
-
-//                       onChange={(e) =>
-//                         assignRider(
-//                           order.order_id,
-//                           e.target.value
-//                         )
-//                       }
-
-//                       className="
-//                         border
-//                         border-gray-300
-//                         rounded-lg
-//                         px-3
-//                         py-2
-//                         bg-white
-//                         min-w-[180px]
-//                       "
-//                     >
-
-
-//                       <option value="">
-
-//                         Select Rider
-
-//                       </option>
-
-
-//                       {riders.map(
-//                         (rider) => (
-
-//                           <option
-//                             key={rider.id}
-//                             value={rider.id}
+//     );
+
+//   };
+
+//   return (
+
+//     <div className="
+//       w-full
+//       min-w-0
+//       min-h-screen
+//       bg-gray-50
+//       p-4
+//       sm:p-6
+//       lg:p-8
+//       overflow-x-hidden
+//     ">
+
+//       {/* ================================================= */}
+//       {/* PAGE HEADER */}
+//       {/* ================================================= */}
+
+//       <div className="mb-6">
+
+//         <h1 className="
+//           text-2xl
+//           sm:text-3xl
+//           font-bold
+//           text-gray-800
+//         ">
+
+//           Orders
+
+//         </h1>
+
+//         <p className="
+//           text-gray-500
+//           mt-1
+//           text-sm
+//           sm:text-base
+//         ">
+
+//           Manage orders and assign riders
+
+//         </p>
+
+//       </div>
+
+//       {/* ================================================= */}
+//       {/* ACTIVE / OLD ORDERS */}
+//       {/* ================================================= */}
+
+//       <div className="
+//         flex
+//         gap-3
+//         mb-6
+//         flex-wrap
+//       ">
+
+//         <button
+
+//           onClick={() =>
+//             setOrderType("active")
+//           }
+
+//           className={`
+//             px-5
+//             py-3
+//             rounded-xl
+//             font-semibold
+//             transition
+//             ${
+//               orderType === "active"
+//                 ? "bg-green-600 text-white shadow"
+//                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+//             }
+//           `}
+//         >
+
+//           Active Orders
+
+//         </button>
+
+//         <button
+
+//           onClick={() =>
+//             setOrderType("old")
+//           }
+
+//           className={`
+//             px-5
+//             py-3
+//             rounded-xl
+//             font-semibold
+//             transition
+//             ${
+//               orderType === "old"
+//                 ? "bg-green-600 text-white shadow"
+//                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+//             }
+//           `}
+//         >
+
+//           Old Orders
+
+//         </button>
+
+//       </div>
+
+//       {/* ================================================= */}
+//       {/* SUMMARY CARDS */}
+//       {/* ================================================= */}
+
+//       <div className="
+//         grid
+//         grid-cols-2
+//         xl:grid-cols-4
+//         gap-3
+//         sm:gap-5
+//         mb-6
+//         sm:mb-8
+//       ">
+
+//         {/* TOTAL */}
+
+//         <div className="
+//           bg-white
+//           shadow-sm
+//           border
+//           border-gray-100
+//           rounded-xl
+//           p-4
+//           sm:p-5
+//           min-w-0
+//         ">
+
+//           <p className="
+//             text-xs
+//             sm:text-sm
+//             text-gray-500
+//           ">
+
+//             {orderType === "active"
+//               ? "Today's Orders"
+//               : "Old Orders"}
+
+//           </p>
+
+//           <p className="
+//             text-2xl
+//             sm:text-3xl
+//             font-bold
+//             text-gray-800
+//             mt-1
+//           ">
+
+//             {filteredOrders.length}
+
+//           </p>
+
+//         </div>
+
+//         {/* DELIVERED */}
+
+//         <div className="
+//           bg-white
+//           shadow-sm
+//           border
+//           border-gray-100
+//           rounded-xl
+//           p-4
+//           sm:p-5
+//           min-w-0
+//         ">
+
+//           <p className="
+//             text-xs
+//             sm:text-sm
+//             text-gray-500
+//           ">
+
+//             Delivered
+
+//           </p>
+
+//           <p className="
+//             text-2xl
+//             sm:text-3xl
+//             font-bold
+//             text-green-600
+//             mt-1
+//           ">
+
+//             {
+//               filteredOrders.filter(
+//                 (order) =>
+//                   order.status
+//                     ?.toLowerCase() ===
+//                   "delivered"
+//               ).length
+//             }
+
+//           </p>
+
+//         </div>
+
+//         {/* PENDING */}
+
+//         <div className="
+//           bg-white
+//           shadow-sm
+//           border
+//           border-gray-100
+//           rounded-xl
+//           p-4
+//           sm:p-5
+//           min-w-0
+//         ">
+
+//           <p className="
+//             text-xs
+//             sm:text-sm
+//             text-gray-500
+//           ">
+
+//             Pending
+
+//           </p>
+
+//           <p className="
+//             text-2xl
+//             sm:text-3xl
+//             font-bold
+//             text-yellow-600
+//             mt-1
+//           ">
+
+//             {
+//               filteredOrders.filter(
+//                 (order) =>
+//                   order.status
+//                     ?.toLowerCase() ===
+//                   "pending"
+//               ).length
+//             }
+
+//           </p>
+
+//         </div>
+
+//         {/* CANCELLED */}
+
+//         <div className="
+//           bg-white
+//           shadow-sm
+//           border
+//           border-gray-100
+//           rounded-xl
+//           p-4
+//           sm:p-5
+//           min-w-0
+//         ">
+
+//           <p className="
+//             text-xs
+//             sm:text-sm
+//             text-gray-500
+//           ">
+
+//             Cancelled
+
+//           </p>
+
+//           <p className="
+//             text-2xl
+//             sm:text-3xl
+//             font-bold
+//             text-red-600
+//             mt-1
+//           ">
+
+//             {
+//               filteredOrders.filter(
+//                 (order) =>
+//                   order.status
+//                     ?.toLowerCase() ===
+//                   "cancelled"
+//               ).length
+//             }
+
+//           </p>
+
+//         </div>
+
+//       </div>
+
+//       {/* ================================================= */}
+//       {/* MOBILE ORDERS */}
+//       {/* ================================================= */}
+
+//       <div className="
+//         block
+//         lg:hidden
+//         space-y-4
+//       ">
+
+//         {filteredOrders.length === 0 ? (
+
+//           <div className="
+//             bg-white
+//             rounded-xl
+//             p-6
+//             text-center
+//             text-gray-500
+//             border
+//             border-gray-100
+//           ">
+
+//             {orderType === "active"
+//               ? "No orders for today"
+//               : "No old orders found"}
+
+//           </div>
+
+//         ) : (
+
+//           filteredOrders.map(
+//             (order) => (
+
+//               <div
+//                 key={order.order_id}
+//                 className="
+//                   bg-white
+//                   border
+//                   border-gray-200
+//                   rounded-xl
+//                   p-4
+//                   shadow-sm
+//                   min-w-0
+//                 "
+//               >
+
+//                 {/* ORDER ID + STATUS */}
+
+//                 <div className="
+//                   flex
+//                   flex-wrap
+//                   justify-between
+//                   items-center
+//                   gap-3
+//                   mb-4
+//                   pb-3
+//                   border-b
+//                   border-gray-100
+//                 ">
+
+//                   <h3 className="
+//                     font-bold
+//                     text-gray-800
+//                     text-base
+//                   ">
+
+//                     Order #{order.order_id}
+
+//                   </h3>
+
+//                   <StatusBadge
+//                     status={order.status}
+//                   />
+
+//                 </div>
+
+//                 {/* DATE */}
+
+//                 <div className="mb-4">
+
+//                   <p className="
+//                     text-xs
+//                     text-gray-500
+//                     mb-1
+//                   ">
+
+//                     Order Date
+
+//                   </p>
+
+//                   <p className="
+//                     text-sm
+//                     text-gray-600
+//                   ">
+
+//                     {getOrderDate(order)
+//                       ? new Date(
+//                           getOrderDate(order)
+//                         ).toLocaleString()
+//                       : "-"}
+
+//                   </p>
+
+//                 </div>
+
+//                 {/* CUSTOMER */}
+
+//                 <div className="mb-4">
+
+//                   <p className="
+//                     text-xs
+//                     text-gray-500
+//                     mb-1
+//                   ">
+
+//                     Customer
+
+//                   </p>
+
+//                   <p className="
+//                     font-medium
+//                     text-gray-800
+//                     break-words
+//                   ">
+
+//                     {order.customer_name ||
+//                       "Unknown"}
+
+//                   </p>
+
+//                   <p className="
+//                     text-sm
+//                     text-gray-500
+//                     mt-1
+//                   ">
+
+//                     {order.customer_phone ||
+//                       "No phone"}
+
+//                   </p>
+
+//                 </div>
+
+//                 {/* PRODUCTS */}
+
+//                 <div className="mb-4">
+
+//                   <p className="
+//                     text-xs
+//                     text-gray-500
+//                     mb-2
+//                   ">
+
+//                     Products
+
+//                   </p>
+
+//                   {order.products?.length > 0 ? (
+
+//                     <div className="space-y-2">
+
+//                       {order.products.map(
+//                         (product, index) => (
+
+//                           <div
+//                             key={index}
+//                             className="
+//                               flex
+//                               justify-between
+//                               items-start
+//                               gap-3
+//                               text-sm
+//                             "
 //                           >
 
-//                             {rider.name}
+//                             <span className="
+//                               text-gray-700
+//                               break-words
+//                               min-w-0
+//                             ">
 
-//                             {" - "}
+//                               {product.product_name}
 
-//                             {rider.phone}
+//                             </span>
 
-//                           </option>
+//                             <span className="
+//                               text-gray-500
+//                               whitespace-nowrap
+//                             ">
+
+//                               × {product.quantity}
+
+//                             </span>
+
+//                           </div>
 
 //                         )
 //                       )}
 
+//                     </div>
 
-//                     </select>
+//                   ) : (
 
+//                     <p className="
+//                       text-sm
+//                       text-gray-400
+//                     ">
 
-//                     {/* SHOW ASSIGNED RIDER */}
+//                       No products
 
-//                     {order.rider_name && (
+//                     </p>
 
-//                       <div className="
-//                         mt-2
-//                         text-sm
-//                         text-green-600
-//                         font-medium
-//                       ">
+//                   )}
 
-//                         Assigned:
+//                 </div>
 
-//                         {" "}
+//                 {/* PRICE */}
 
-//                         {order.rider_name}
+//                 <div className="mb-4">
 
-//                       </div>
+//                   <p className="
+//                     text-xs
+//                     text-gray-500
+//                     mb-1
+//                   ">
 
-//                     )}
+//                     Total Price
 
+//                   </p>
 
-//                   </td>
+//                   <p className="
+//                     font-bold
+//                     text-gray-800
+//                     text-lg
+//                   ">
 
+//                     ₹
+//                     {Number(
+//                       order.total_amount || 0
+//                     ).toFixed(2)}
 
-//                   {/* =================================================
-//                       STATUS
-//                   ================================================== */}
+//                   </p>
 
-//                   <td className="p-4">
+//                 </div>
 
+//                 {/* ADDRESS */}
 
-//                     <span
-//                       className={`
-//                         px-3
-//                         py-1
-//                         rounded-full
-//                         text-sm
+//                 <div className="mb-4">
 
-//                         ${
-//                           order.status
-//                             ?.toLowerCase() ===
-//                           "delivered"
+//                   <p className="
+//                     text-xs
+//                     text-gray-500
+//                     mb-1
+//                   ">
 
-//                             ? "bg-green-100 text-green-700"
+//                     Address
 
-//                             : order.status
-//                                 ?.toLowerCase() ===
-//                               "pending"
+//                   </p>
 
-//                             ? "bg-yellow-100 text-yellow-700"
-
-//                             : order.status
-//                                 ?.toLowerCase() ===
-//                               "cancelled"
-
-//                             ? "bg-red-100 text-red-700"
-
-//                             : "bg-blue-100 text-blue-700"
-//                         }
-//                       `}
-//                     >
-
-//                       {order.status}
-
-//                     </span>
-
-
-//                     {/* STATUS BUTTONS */}
+//                   {order.address ? (
 
 //                     <div className="
 //                       flex
+//                       items-start
 //                       gap-2
-//                       mt-4
-//                       flex-wrap
 //                     ">
 
+//                       <span>
+//                         📍
+//                       </span>
 
-//                       <button
+//                       <span className="
+//                         text-sm
+//                         text-gray-600
+//                         break-words
+//                         min-w-0
+//                       ">
 
-//                         className="
-//                           bg-blue-500
-//                           text-white
-//                           px-3
-//                           py-1
-//                           rounded
-//                         "
+//                         {order.address}
 
-//                         onClick={() =>
-//                           updateStatus(
-//                             order.order_id,
-//                             "Accepted"
-//                           )
-//                         }
-
-//                       >
-
-//                         Accept
-
-//                       </button>
-
-
-//                       <button
-
-//                         className="
-//                           bg-purple-500
-//                           text-white
-//                           px-3
-//                           py-1
-//                           rounded
-//                         "
-
-//                         onClick={() =>
-//                           updateStatus(
-//                             order.order_id,
-//                             "Packed"
-//                           )
-//                         }
-
-//                       >
-
-//                         Packed
-
-//                       </button>
-
-
-//                       <button
-
-//                         className="
-//                           bg-orange-500
-//                           text-white
-//                           px-3
-//                           py-1
-//                           rounded
-//                         "
-
-//                         onClick={() =>
-//                           updateStatus(
-//                             order.order_id,
-//                             "Out for Delivery"
-//                           )
-//                         }
-
-//                       >
-
-//                         Out For Delivery
-
-//                       </button>
-
-
-//                       <button
-
-//                         className="
-//                           bg-green-600
-//                           text-white
-//                           px-3
-//                           py-1
-//                           rounded
-//                         "
-
-//                         onClick={() =>
-//                           updateStatus(
-//                             order.order_id,
-//                             "Delivered"
-//                           )
-//                         }
-
-//                       >
-
-//                         Delivered
-
-//                       </button>
-
-
-//                       <button
-
-//                         className="
-//                           bg-red-600
-//                           text-white
-//                           px-3
-//                           py-1
-//                           rounded
-//                         "
-
-//                         onClick={() =>
-//                           updateStatus(
-//                             order.order_id,
-//                             "Cancelled"
-//                           )
-//                         }
-
-//                       >
-
-//                         Cancel
-
-//                       </button>
-
+//                       </span>
 
 //                     </div>
 
+//                   ) : (
 
-//                   </td>
+//                     <p className="
+//                       text-sm
+//                       text-gray-400
+//                     ">
 
+//                       No Address
 
-//                 </tr>
+//                     </p>
 
-//               )
-//             )}
+//                   )}
 
+//                 </div>
 
-//           </tbody>
+//                 {/* RIDER */}
 
+//                 <div className="
+//                   pt-4
+//                   border-t
+//                   border-gray-100
+//                 ">
 
-//         </table>
+//                   <label className="
+//                     block
+//                     text-xs
+//                     text-gray-500
+//                     mb-2
+//                   ">
 
+//                     Assign Rider
+
+//                   </label>
+
+//                   <RiderSelect
+//                     order={order}
+//                   />
+
+//                 </div>
+
+//               </div>
+
+//             )
+//           )
+
+//         )}
 
 //       </div>
 
+//       {/* ================================================= */}
+//       {/* DESKTOP ORDERS TABLE */}
+//       {/* ================================================= */}
+
+//       <div className="
+//         hidden
+//         lg:block
+//         bg-white
+//         rounded-xl
+//         shadow-sm
+//         border
+//         border-gray-100
+//         overflow-hidden
+//       ">
+
+//         <div className="
+//           w-full
+//           overflow-x-auto
+//         ">
+
+//           <table className="
+//             w-full
+//             min-w-[1000px]
+//           ">
+
+//             {/* TABLE HEADER */}
+
+//             <thead className="
+//               bg-gray-50
+//               border-b
+//             ">
+
+//               <tr className="text-left">
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Order ID
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Date
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Customer
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Products
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Price
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Address
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Rider
+
+//                 </th>
+
+//                 <th className="
+//                   p-4
+//                   text-sm
+//                   font-semibold
+//                   text-gray-600
+//                 ">
+
+//                   Status
+
+//                 </th>
+
+//               </tr>
+
+//             </thead>
+
+//             {/* TABLE BODY */}
+
+//             <tbody>
+
+//               {filteredOrders.length === 0 ? (
+
+//                 <tr>
+
+//                   <td
+//                     colSpan="8"
+//                     className="
+//                       text-center
+//                       py-12
+//                       text-gray-500
+//                     "
+//                   >
+
+//                     {orderType === "active"
+//                       ? "No orders for today"
+//                       : "No old orders found"}
+
+//                   </td>
+
+//                 </tr>
+
+//               ) : (
+
+//                 filteredOrders.map(
+//                   (order) => (
+
+//                     <tr
+//                       key={order.order_id}
+//                       className="
+//                         border-b
+//                         hover:bg-gray-50
+//                         transition
+//                       "
+//                     >
+
+//                       {/* ORDER ID */}
+
+//                       <td className="p-4">
+
+//                         <span className="
+//                           font-semibold
+//                           text-gray-800
+//                         ">
+
+//                           #{order.order_id}
+
+//                         </span>
+
+//                       </td>
+
+//                       {/* DATE */}
+
+//                       <td className="p-4">
+
+//                         <span className="
+//                           text-sm
+//                           text-gray-600
+//                           whitespace-nowrap
+//                         ">
+
+//                           {getOrderDate(order)
+//                             ? new Date(
+//                                 getOrderDate(order)
+//                               ).toLocaleDateString()
+//                             : "-"}
+
+//                         </span>
+
+//                       </td>
+
+//                       {/* CUSTOMER */}
+
+//                       <td className="p-4">
+
+//                         <div className="
+//                           font-medium
+//                           text-gray-800
+//                         ">
+
+//                           {order.customer_name ||
+//                             "Unknown"}
+
+//                         </div>
+
+//                         <div className="
+//                           text-sm
+//                           text-gray-500
+//                           mt-1
+//                         ">
+
+//                           {order.customer_phone ||
+//                             "No phone"}
+
+//                         </div>
+
+//                       </td>
+
+//                       {/* PRODUCTS */}
+
+//                       <td className="p-4">
+
+//                         {order.products?.length > 0 ? (
+
+//                           <div className="space-y-1">
+
+//                             {order.products.map(
+//                               (product, index) => (
+
+//                                 <div
+//                                   key={index}
+//                                   className="
+//                                     text-sm
+//                                     text-gray-700
+//                                   "
+//                                 >
+
+//                                   <span className="
+//                                     font-medium
+//                                   ">
+
+//                                     {product.product_name}
+
+//                                   </span>
+
+//                                   <span className="
+//                                     text-gray-500
+//                                   ">
+
+//                                     {" × "}
+//                                     {product.quantity}
+
+//                                   </span>
+
+//                                 </div>
+
+//                               )
+//                             )}
+
+//                           </div>
+
+//                         ) : (
+
+//                           <span className="
+//                             text-gray-400
+//                           ">
+
+//                             No products
+
+//                           </span>
+
+//                         )}
+
+//                       </td>
+
+//                       {/* PRICE */}
+
+//                       <td className="p-4">
+
+//                         <span className="
+//                           font-semibold
+//                           text-gray-800
+//                           whitespace-nowrap
+//                         ">
+
+//                           ₹
+//                           {Number(
+//                             order.total_amount || 0
+//                           ).toFixed(2)}
+
+//                         </span>
+
+//                       </td>
+
+//                       {/* ADDRESS */}
+
+//                       <td className="
+//                         p-4
+//                         max-w-xs
+//                       ">
+
+//                         {order.address ? (
+
+//                           <div className="
+//                             flex
+//                             items-start
+//                             gap-2
+//                           ">
+
+//                             <span>
+//                               📍
+//                             </span>
+
+//                             <span className="
+//                               text-sm
+//                               text-gray-600
+//                               break-words
+//                             ">
+
+//                               {order.address}
+
+//                             </span>
+
+//                           </div>
+
+//                         ) : (
+
+//                           <span className="
+//                             text-sm
+//                             text-gray-400
+//                           ">
+
+//                             No Address
+
+//                           </span>
+
+//                         )}
+
+//                       </td>
+
+//                       {/* RIDER */}
+
+//                       <td className="p-4">
+
+//                         <div className="
+//                           min-w-[190px]
+//                         ">
+
+//                           <RiderSelect
+//                             order={order}
+//                           />
+
+//                         </div>
+
+//                       </td>
+
+//                       {/* STATUS */}
+
+//                       <td className="p-4">
+
+//                         <StatusBadge
+//                           status={order.status}
+//                         />
+
+//                       </td>
+
+//                     </tr>
+
+//                   )
+//                 )
+
+//               )}
+
+//             </tbody>
+
+//           </table>
+
+//         </div>
+
+//       </div>
+
+//       {/* ================================================= */}
+//       {/* INFORMATION */}
+//       {/* ================================================= */}
+
+//       <div className="
+//         mt-5
+//         bg-blue-50
+//         border
+//         border-blue-100
+//         rounded-xl
+//         p-4
+//       ">
+
+//         <p className="
+//           text-sm
+//           text-blue-700
+//         ">
+
+//           <span className="font-semibold">
+//             Note:
+//           </span>{" "}
+
+//           {orderType === "active"
+//             ? "Active Orders shows today's orders."
+//             : "Old Orders shows orders from previous days."}
+
+//           {" "}Order status is updated by the rider from the Rider App.
+//           Admin can only assign or change the rider.
+
+//         </p>
+
+//       </div>
 
 //     </div>
 
 //   );
 
 // }
+
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
 export default function Orders() {
-
   const [data, setData] = useState({
     summary: {},
-    orders: []
+    orders: [],
   });
 
-  // All riders
   const [riders, setRiders] = useState([]);
 
+  // ACTIVE / OLD ORDERS
+  const [orderType, setOrderType] =
+    useState("active");
 
-  // ============================================================
+  // =====================================================
   // LOAD ORDERS + RIDERS
-  // ============================================================
+  // =====================================================
 
   useEffect(() => {
-
     fetchOrders();
     fetchRiders();
-
   }, []);
 
-
-  // ============================================================
+  // =====================================================
   // FETCH ORDERS
-  // ============================================================
+  // =====================================================
 
   const fetchOrders = async () => {
-
     try {
-
       const res = await axios.get(
         `${API_URL}/api/orders`
       );
@@ -744,27 +1544,20 @@ export default function Orders() {
       );
 
       setData(res.data);
-
     } catch (error) {
-
       console.log(
         "FETCH ORDERS ERROR =",
         error.response?.data || error
       );
-
     }
-
   };
 
-
-  // ============================================================
+  // =====================================================
   // FETCH RIDERS
-  // ============================================================
+  // =====================================================
 
   const fetchRiders = async () => {
-
     try {
-
       const res = await axios.get(
         `${API_URL}/api/riders/all`
       );
@@ -777,33 +1570,24 @@ export default function Orders() {
       setRiders(
         res.data.riders || []
       );
-
     } catch (error) {
-
       console.log(
         "FETCH RIDERS ERROR =",
         error.response?.data || error
       );
-
     }
-
   };
 
-
-  // ============================================================
+  // =====================================================
   // ASSIGN / CHANGE RIDER
-  // ============================================================
+  // =====================================================
 
   const assignRider = async (
     orderId,
     riderId
   ) => {
-
     try {
-
-      if (!riderId) {
-        return;
-      }
+      if (!riderId) return;
 
       console.log(
         "ASSIGNING RIDER:",
@@ -812,682 +1596,1458 @@ export default function Orders() {
         orderId
       );
 
-
       const res = await axios.put(
         `${API_URL}/api/orders/${orderId}/assign-rider`,
         {
-          rider_id: Number(riderId)
+          rider_id: Number(riderId),
         }
       );
-
 
       console.log(
         "ASSIGN RIDER RESPONSE =",
         res.data
       );
 
-
       if (res.data.success) {
-
         alert(
           "Rider assigned successfully"
         );
 
-        // Refresh orders
         await fetchOrders();
-
       } else {
-
         alert(
           res.data.message ||
-          "Failed to assign rider"
+            "Failed to assign rider"
         );
-
       }
-
-
     } catch (error) {
-
       console.log(
         "ASSIGN RIDER ERROR =",
         error.response?.data || error
       );
 
-
       alert(
         error.response?.data?.message ||
-        "Failed to assign rider"
+          "Failed to assign rider"
       );
-
     }
-
   };
 
+  // =====================================================
+// ADMIN CANCEL ORDER
+// =====================================================
 
-  // ============================================================
+const cancelOrder = async (orderId) => {
+  try {
+
+    const confirmed = window.confirm(
+      `Are you sure you want to cancel Order #${orderId}?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const res = await axios.put(
+      `${API_URL}/api/orders/${orderId}/admin-cancel`
+    );
+
+    console.log(
+      "ADMIN CANCEL RESPONSE =",
+      res.data
+    );
+
+    if (res.data.success) {
+
+      alert(
+        "Order cancelled successfully"
+      );
+
+      await fetchOrders();
+
+    } else {
+
+      alert(
+        res.data.message ||
+        "Failed to cancel order"
+      );
+    }
+
+  } catch (error) {
+
+    console.log(
+      "ADMIN CANCEL ERROR =",
+      error.response?.data || error
+    );
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to cancel order"
+    );
+  }
+};
+
+  // =====================================================
+  // GET DELIVERY DATE FROM ORDER
+  // =====================================================
+
+  const getOrderDate = (order) => {
+    return (
+      order.delivery_date ||
+      order.deliveryDate ||
+      order.created_at ||
+      order.order_date ||
+      order.createdAt ||
+      order.date ||
+      null
+    );
+  };
+
+  // =====================================================
+  // FILTER ORDERS
+  // =====================================================
+
+  // const filteredOrders =
+  //   data.orders?.filter((order) => {
+  //     const rawDate =
+  //       getOrderDate(order);
+
+  //     if (!rawDate) {
+  //       return false;
+  //     }
+
+  //     const orderDate =
+  //       new Date(rawDate);
+
+  //     if (
+  //       Number.isNaN(
+  //         orderDate.getTime()
+  //       )
+  //     ) {
+  //       return false;
+  //     }
+
+  //     // TODAY
+  //     const today = new Date();
+
+  //     today.setHours(
+  //       0,
+  //       0,
+  //       0,
+  //       0
+  //     );
+
+  //     // TOMORROW
+  //     const tomorrow =
+  //       new Date(today);
+
+  //     tomorrow.setDate(
+  //       tomorrow.getDate() + 1
+  //     );
+
+  //     // DELIVERY DATE
+  //     orderDate.setHours(
+  //       0,
+  //       0,
+  //       0,
+  //       0
+  //     );
+
+  //     const status =
+  //       String(
+  //         order.status || ""
+  //       )
+  //         .trim()
+  //         .toLowerCase();
+
+  //     // ==========================================
+  //     // ACTIVE ORDERS
+  //     // ONLY TOMORROW + PENDING
+  //     // ==========================================
+
+  //     if (
+  //       orderType === "active"
+  //     ) {
+  //       return (
+  //         orderDate.getTime() ===
+  //           tomorrow.getTime() &&
+  //         status === "pending"
+  //       );
+  //     }
+
+  //     // ==========================================
+  //     // OLD ORDERS
+  //     // EVERYTHING BEFORE TOMORROW
+  //     // ==========================================
+
+  //     return (
+  //       orderDate.getTime() <
+  //       tomorrow.getTime()
+  //     );
+  //   }) || [];
+  const filteredOrders =
+  data.orders?.filter((order) => {
+    const rawDate = getOrderDate(order);
+
+    if (!rawDate) {
+      return false;
+    }
+
+    const orderDate = new Date(rawDate);
+
+    if (Number.isNaN(orderDate.getTime())) {
+      return false;
+    }
+
+    // TODAY
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+
+    // TOMORROW
+    const tomorrow = new Date(today);
+
+    tomorrow.setDate(
+      tomorrow.getDate() + 1
+    );
+
+    // REMOVE TIME FROM ORDER DATE
+    orderDate.setHours(0, 0, 0, 0);
+
+    // ==========================================
+    // ACTIVE ORDERS
+    // ALL ORDERS FOR TOMORROW
+    // INCLUDING CANCELLED
+    // ==========================================
+
+    if (orderType === "active") {
+      return (
+        orderDate.getTime() ===
+        tomorrow.getTime()
+      );
+    }
+
+    // ==========================================
+    // OLD ORDERS
+    // EVERYTHING BEFORE TOMORROW
+    // ==========================================
+
+    return (
+      orderDate.getTime() <
+      tomorrow.getTime()
+    );
+  }) || [];
+
+  // =====================================================
   // STATUS BADGE
-  // ============================================================
+  // =====================================================
 
-  const getStatusStyle = (status) => {
-
+  const getStatusStyle = (
+    status
+  ) => {
     const currentStatus =
       status?.toLowerCase();
 
-
     switch (currentStatus) {
-
       case "delivered":
-
         return {
           badge:
             "bg-green-100 text-green-700 border-green-200",
-          icon: "✓"
+          icon: "✓",
         };
 
-
       case "cancelled":
-
         return {
           badge:
             "bg-red-100 text-red-700 border-red-200",
-          icon: "✕"
+          icon: "✕",
         };
 
-
       case "out for delivery":
-
         return {
           badge:
             "bg-orange-100 text-orange-700 border-orange-200",
-          icon: "🚚"
+          icon: "🚚",
         };
 
-
       case "picked up":
-
         return {
           badge:
             "bg-purple-100 text-purple-700 border-purple-200",
-          icon: "📦"
+          icon: "📦",
         };
 
-
       case "accepted":
-
         return {
           badge:
             "bg-blue-100 text-blue-700 border-blue-200",
-          icon: "✓"
+          icon: "✓",
         };
 
-
       case "packed":
-
         return {
           badge:
             "bg-indigo-100 text-indigo-700 border-indigo-200",
-          icon: "📦"
+          icon: "📦",
         };
 
-
       case "assigned":
-
         return {
           badge:
             "bg-cyan-100 text-cyan-700 border-cyan-200",
-          icon: "🚴"
+          icon: "🚴",
         };
 
-
       case "pending":
-
         return {
           badge:
             "bg-yellow-100 text-yellow-700 border-yellow-200",
-          icon: "⏳"
+          icon: "⏳",
         };
 
-
       default:
-
         return {
           badge:
             "bg-gray-100 text-gray-700 border-gray-200",
-          icon: "•"
+          icon: "•",
         };
-
     }
-
   };
 
+  // =====================================================
+  // STATUS BADGE COMPONENT
+  // =====================================================
 
-  // ============================================================
-  // UI
-  // ============================================================
+  const StatusBadge = ({
+    status,
+  }) => {
+    const statusStyle =
+      getStatusStyle(status);
+
+    return (
+      <span
+        className={`
+          inline-flex
+          items-center
+          gap-1.5
+          px-3
+          py-1.5
+          rounded-full
+          border
+          text-xs
+          font-semibold
+          whitespace-nowrap
+          ${statusStyle.badge}
+        `}
+      >
+        <span>
+          {statusStyle.icon}
+        </span>
+
+        <span>
+          {status || "Pending"}
+        </span>
+      </span>
+    );
+  };
+
+  // =====================================================
+  // RIDER SELECT COMPONENT
+  // =====================================================
+
+  const RiderSelect = ({
+    order,
+  }) => {
+    return (
+      <div className="min-w-0">
+        <select
+          value={
+            order.rider_id || ""
+          }
+          onChange={(e) =>
+            assignRider(
+              order.order_id,
+              e.target.value
+            )
+          }
+          className="
+            w-full
+            min-w-0
+            border
+            border-gray-300
+            rounded-lg
+            px-3
+            py-2.5
+            bg-white
+            text-sm
+            focus:outline-none
+            focus:ring-2
+            focus:ring-green-500
+          "
+        >
+          <option value="">
+            Select Rider
+          </option>
+
+          {riders.map(
+            (rider) => (
+              <option
+                key={rider.id}
+                value={rider.id}
+              >
+                {rider.name}
+                {" - "}
+                {rider.phone}
+              </option>
+            )
+          )}
+        </select>
+
+        {order.rider_name && (
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+              mt-2
+              text-sm
+              text-green-600
+              font-medium
+            "
+          >
+            <span>🚴</span>
+
+            <span>
+              {order.rider_name}
+            </span>
+          </div>
+        )}
+
+        {!order.rider_id && (
+          <div
+            className="
+              text-xs
+              text-orange-500
+              mt-2
+            "
+          >
+            ⚠ Rider not assigned
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // =====================================================
+  // COUNTS
+  // =====================================================
+
+  const pendingCount =
+    filteredOrders.filter(
+      (order) =>
+        String(
+          order.status || ""
+        ).toLowerCase() ===
+        "pending"
+    ).length;
+
+  const deliveredCount =
+    filteredOrders.filter(
+      (order) =>
+        String(
+          order.status || ""
+        ).toLowerCase() ===
+        "delivered"
+    ).length;
+
+  const cancelledCount =
+    filteredOrders.filter(
+      (order) =>
+        String(
+          order.status || ""
+        ).toLowerCase() ===
+        "cancelled"
+    ).length;
 
   return (
-
-    <div className="p-6 bg-gray-50 min-h-screen">
-
-
-      {/* ======================================================
-          PAGE HEADER
-      ====================================================== */}
+    <div
+      className="
+        w-full
+        min-w-0
+        min-h-screen
+        bg-gray-50
+        p-4
+        sm:p-6
+        lg:p-8
+        overflow-x-hidden
+      "
+    >
+      {/* ================================================= */}
+      {/* PAGE HEADER */}
+      {/* ================================================= */}
 
       <div className="mb-6">
-
-        <h1 className="text-3xl font-bold text-gray-800">
+        <h1
+          className="
+            text-2xl
+            sm:text-3xl
+            font-bold
+            text-gray-800
+          "
+        >
           Orders
         </h1>
 
-        <p className="text-gray-500 mt-1">
+        <p
+          className="
+            text-gray-500
+            mt-1
+            text-sm
+            sm:text-base
+          "
+        >
           Manage orders and assign riders
         </p>
-
       </div>
 
+      {/* ================================================= */}
+      {/* ACTIVE / OLD ORDERS */}
+      {/* ================================================= */}
 
-      {/* ======================================================
-          SUMMARY
-      ====================================================== */}
+      <div
+        className="
+          flex
+          gap-3
+          mb-6
+          flex-wrap
+        "
+      >
+        <button
+          onClick={() =>
+            setOrderType(
+              "active"
+            )
+          }
+          className={`
+            px-5
+            py-3
+            rounded-xl
+            font-semibold
+            transition
+            ${
+              orderType ===
+              "active"
+                ? "bg-green-600 text-white shadow"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }
+          `}
+        >
+          Active Orders
+        </button>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <button
+          onClick={() =>
+            setOrderType("old")
+          }
+          className={`
+            px-5
+            py-3
+            rounded-xl
+            font-semibold
+            transition
+            ${
+              orderType ===
+              "old"
+                ? "bg-green-600 text-white shadow"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }
+          `}
+        >
+          Old Orders
+        </button>
+      </div>
 
+      {/* ================================================= */}
+      {/* SUMMARY CARDS */}
+      {/* ================================================= */}
 
+      <div
+        className="
+          grid
+          grid-cols-2
+          xl:grid-cols-4
+          gap-3
+          sm:gap-5
+          mb-6
+          sm:mb-8
+        "
+      >
         {/* TOTAL */}
 
-        <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-5">
-
-          <p className="text-sm text-gray-500">
-            Total Orders
+        <div
+          className="
+            bg-white
+            shadow-sm
+            border
+            border-gray-100
+            rounded-xl
+            p-4
+            sm:p-5
+            min-w-0
+          "
+        >
+          <p
+            className="
+              text-xs
+              sm:text-sm
+              text-gray-500
+            "
+          >
+            {orderType ===
+            "active"
+              ? "Tomorrow's Pending Orders"
+              : "Old Orders"}
           </p>
 
-          <p className="text-3xl font-bold text-gray-800 mt-1">
-            {data.summary?.total || 0}
+          <p
+            className="
+              text-2xl
+              sm:text-3xl
+              font-bold
+              text-gray-800
+              mt-1
+            "
+          >
+            {filteredOrders.length}
           </p>
-
         </div>
-
 
         {/* DELIVERED */}
 
-        <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-5">
-
-          <p className="text-sm text-gray-500">
+        <div
+          className="
+            bg-white
+            shadow-sm
+            border
+            border-gray-100
+            rounded-xl
+            p-4
+            sm:p-5
+            min-w-0
+          "
+        >
+          <p
+            className="
+              text-xs
+              sm:text-sm
+              text-gray-500
+            "
+          >
             Delivered
           </p>
 
-          <p className="text-3xl font-bold text-green-600 mt-1">
-            {data.summary?.delivered || 0}
+          <p
+            className="
+              text-2xl
+              sm:text-3xl
+              font-bold
+              text-green-600
+              mt-1
+            "
+          >
+            {deliveredCount}
           </p>
-
         </div>
-
 
         {/* PENDING */}
 
-        <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-5">
-
-          <p className="text-sm text-gray-500">
+        <div
+          className="
+            bg-white
+            shadow-sm
+            border
+            border-gray-100
+            rounded-xl
+            p-4
+            sm:p-5
+            min-w-0
+          "
+        >
+          <p
+            className="
+              text-xs
+              sm:text-sm
+              text-gray-500
+            "
+          >
             Pending
           </p>
 
-          <p className="text-3xl font-bold text-yellow-600 mt-1">
-            {data.summary?.pending || 0}
+          <p
+            className="
+              text-2xl
+              sm:text-3xl
+              font-bold
+              text-yellow-600
+              mt-1
+            "
+          >
+            {pendingCount}
           </p>
-
         </div>
-
 
         {/* CANCELLED */}
 
-        <div className="bg-white shadow-sm border border-gray-100 rounded-xl p-5">
-
-          <p className="text-sm text-gray-500">
+        <div
+          className="
+            bg-white
+            shadow-sm
+            border
+            border-gray-100
+            rounded-xl
+            p-4
+            sm:p-5
+            min-w-0
+          "
+        >
+          <p
+            className="
+              text-xs
+              sm:text-sm
+              text-gray-500
+            "
+          >
             Cancelled
           </p>
 
-          <p className="text-3xl font-bold text-red-600 mt-1">
-            {data.summary?.cancelled || 0}
+          <p
+            className="
+              text-2xl
+              sm:text-3xl
+              font-bold
+              text-red-600
+              mt-1
+            "
+          >
+            {cancelledCount}
           </p>
-
         </div>
-
       </div>
 
+      {/* ================================================= */}
+      {/* MOBILE ORDERS */}
+      {/* ================================================= */}
 
-      {/* ======================================================
-          ORDERS TABLE
-      ====================================================== */}
+      <div
+        className="
+          block
+          lg:hidden
+          space-y-4
+        "
+      >
+        {filteredOrders.length ===
+        0 ? (
+          <div
+            className="
+              bg-white
+              rounded-xl
+              p-6
+              text-center
+              text-gray-500
+              border
+              border-gray-100
+            "
+          >
+            {orderType ===
+            "active"
+              ? "No pending orders for tomorrow"
+              : "No old orders found"}
+          </div>
+        ) : (
+          filteredOrders.map(
+            (order) => (
+              <div
+                key={
+                  order.order_id
+                }
+                className="
+                  bg-white
+                  border
+                  border-gray-200
+                  rounded-xl
+                  p-4
+                  shadow-sm
+                  min-w-0
+                "
+              >
+                {/* ORDER ID + STATUS */}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-
-
-        <table className="w-full">
-
-
-          {/* ==================================================
-              TABLE HEADER
-          ================================================== */}
-
-          <thead className="bg-gray-50 border-b">
-
-            <tr className="text-left">
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Order ID
-              </th>
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Customer
-              </th>
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Products
-              </th>
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Price
-              </th>
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Address
-              </th>
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Rider
-              </th>
-
-
-              <th className="p-4 text-sm font-semibold text-gray-600">
-                Status
-              </th>
-
-
-            </tr>
-
-          </thead>
-
-
-          {/* ==================================================
-              TABLE BODY
-          ================================================== */}
-
-          <tbody>
-
-
-            {data.orders?.length === 0 ? (
-
-              <tr>
-
-                <td
-                  colSpan="7"
-                  className="text-center py-12 text-gray-500"
+                <div
+                  className="
+                    flex
+                    flex-wrap
+                    justify-between
+                    items-center
+                    gap-3
+                    mb-4
+                    pb-3
+                    border-b
+                    border-gray-100
+                  "
                 >
-
-                  No orders found
-
-                </td>
-
-              </tr>
-
-            ) : (
-
-              data.orders?.map(
-                (order) => (
-
-                  <tr
-                    key={order.order_id}
-                    className="border-b hover:bg-gray-50 transition"
+                  <h3
+                    className="
+                      font-bold
+                      text-gray-800
+                      text-base
+                    "
                   >
-
-
-                    {/* =========================================
-                        ORDER ID
-                    ========================================== */}
-
-                    <td className="p-4">
-
-                      <span className="font-semibold text-gray-800">
-
-                        #{order.order_id}
-
-                      </span>
-
-                    </td>
-
-
-                    {/* =========================================
-                        CUSTOMER
-                    ========================================== */}
-
-                    <td className="p-4">
-
-                      <div className="font-medium text-gray-800">
-
-                        {order.customer_name ||
-                          "Unknown"}
-
-                      </div>
-
-                      <div className="text-sm text-gray-500 mt-1">
-
-                        {order.customer_phone ||
-                          "No phone"}
-
-                      </div>
-
-                    </td>
-
-
-                    {/* =========================================
-                        PRODUCTS
-                    ========================================== */}
-
-                    <td className="p-4">
-
-                      {order.products?.length > 0 ? (
-
-                        <div className="space-y-1">
-
-                          {order.products.map(
-                            (product, index) => (
-
-                              <div
-                                key={index}
-                                className="text-sm text-gray-700"
-                              >
-
-                                <span className="font-medium">
-
-                                  {product.product_name}
-
-                                </span>
-
-                                <span className="text-gray-500">
-
-                                  {" × "}
-                                  {product.quantity}
-
-                                </span>
-
-                              </div>
-
-                            )
-                          )}
-
-                        </div>
-
-                      ) : (
-
-                        <span className="text-gray-400">
-                          No products
-                        </span>
-
-                      )}
-
-                    </td>
-
-
-                    {/* =========================================
-                        PRICE
-                    ========================================== */}
-
-                    <td className="p-4">
-
-                      <span className="font-semibold text-gray-800">
-
-                        ₹
-                        {Number(
-                          order.total_amount || 0
-                        ).toFixed(2)}
-
-                      </span>
-
-                    </td>
-
-
-                    {/* =========================================
-                        ADDRESS
-                    ========================================== */}
-
-                    <td className="p-4 max-w-xs">
-
-                      {order.address ? (
-
-                        <div className="flex items-start gap-2">
-
-                          <span>
-                            📍
-                          </span>
-
-                          <span className="text-sm text-gray-600">
-
-                            {order.address}
-
-                          </span>
-
-                        </div>
-
-                      ) : (
-
-                        <span className="text-sm text-gray-400">
-
-                          No Address
-
-                        </span>
-
-                      )}
-
-                    </td>
-
-
-                    {/* =========================================
-                        RIDER
-                    ========================================== */}
-
-                    <td className="p-4">
-
-
-                      <div className="min-w-[190px]">
-
-
-                        {/* RIDER SELECT */}
-
-                        <select
-                          value={
-                            order.rider_id || ""
-                          }
-
-                          onChange={(e) =>
-                            assignRider(
-                              order.order_id,
-                              e.target.value
-                            )
-                          }
-
-                          className="
-                            w-full
-                            border
-                            border-gray-300
-                            rounded-lg
-                            px-3
-                            py-2
-                            bg-white
-                            text-sm
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-green-500
-                          "
-                        >
-
-
-                          <option value="">
-
-                            Select Rider
-
-                          </option>
-
-
-                          {riders.map(
-                            (rider) => (
-
-                              <option
-                                key={rider.id}
-                                value={rider.id}
-                              >
-
-                                {rider.name}
-                                {" - "}
-                                {rider.phone}
-
-                              </option>
-
-                            )
-                          )}
-
-                        </select>
-
-
-                        {/* CURRENT RIDER */}
-
-                        {order.rider_name && (
-
+                    Order #
+                    {
+                      order.order_id
+                    }
+                  </h3>
+
+                  <StatusBadge
+                    status={
+                      order.status
+                    }
+                  />
+                </div>
+
+                {/* DELIVERY DATE */}
+
+                <div className="mb-4">
+                  <p
+                    className="
+                      text-xs
+                      text-gray-500
+                      mb-1
+                    "
+                  >
+                    Delivery Date
+                  </p>
+
+                  <p
+                    className="
+                      text-sm
+                      text-gray-600
+                    "
+                  >
+                    {getOrderDate(
+                      order
+                    )
+                      ? new Date(
+                          getOrderDate(
+                            order
+                          )
+                        ).toLocaleString()
+                      : "-"}
+                  </p>
+                </div>
+
+                {/* CUSTOMER */}
+
+                <div className="mb-4">
+                  <p
+                    className="
+                      text-xs
+                      text-gray-500
+                      mb-1
+                    "
+                  >
+                    Customer
+                  </p>
+
+                  <p
+                    className="
+                      font-medium
+                      text-gray-800
+                      break-words
+                    "
+                  >
+                    {order.customer_name ||
+                      "Unknown"}
+                  </p>
+
+                  <p
+                    className="
+                      text-sm
+                      text-gray-500
+                      mt-1
+                    "
+                  >
+                    {order.customer_phone ||
+                      "No phone"}
+                  </p>
+                </div>
+
+                {/* PRODUCTS */}
+
+                <div className="mb-4">
+                  <p
+                    className="
+                      text-xs
+                      text-gray-500
+                      mb-2
+                    "
+                  >
+                    Products
+                  </p>
+
+                  {order.products
+                    ?.length > 0 ? (
+                    <div className="space-y-2">
+                      {order.products.map(
+                        (
+                          product,
+                          index
+                        ) => (
                           <div
+                            key={
+                              index
+                            }
                             className="
                               flex
-                              items-center
-                              gap-2
-                              mt-2
+                              justify-between
+                              items-start
+                              gap-3
                               text-sm
-                              text-green-600
-                              font-medium
                             "
                           >
-
-                            <span>
-                              🚴
+                            <span
+                              className="
+                                text-gray-700
+                                break-words
+                                min-w-0
+                              "
+                            >
+                              {
+                                product.product_name
+                              }
                             </span>
 
-                            <span>
-
-                              {order.rider_name}
-
+                            <span
+                              className="
+                                text-gray-500
+                                whitespace-nowrap
+                              "
+                            >
+                              ×{" "}
+                              {
+                                product.quantity
+                              }
                             </span>
-
                           </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <p
+                      className="
+                        text-sm
+                        text-gray-400
+                      "
+                    >
+                      No products
+                    </p>
+                  )}
+                </div>
 
-                        )}
+                {/* PRICE */}
 
+                <div className="mb-4">
+                  <p
+                    className="
+                      text-xs
+                      text-gray-500
+                      mb-1
+                    "
+                  >
+                    Total Price
+                  </p>
 
-                        {!order.rider_id && (
+                  <p
+                    className="
+                      font-bold
+                      text-gray-800
+                      text-lg
+                    "
+                  >
+                    ₹
+                    {Number(
+                      order.total_amount ||
+                        0
+                    ).toFixed(2)}
+                  </p>
+                </div>
 
-                          <div className="text-xs text-orange-500 mt-2">
+                {/* ADDRESS */}
 
-                            ⚠ Rider not assigned
+                <div className="mb-4">
+                  <p
+                    className="
+                      text-xs
+                      text-gray-500
+                      mb-1
+                    "
+                  >
+                    Address
+                  </p>
 
-                          </div>
+                  {order.address ? (
+                    <div
+                      className="
+                        flex
+                        items-start
+                        gap-2
+                      "
+                    >
+                      <span>
+                        📍
+                      </span>
 
-                        )}
+                      <span
+                        className="
+                          text-sm
+                          text-gray-600
+                          break-words
+                          min-w-0
+                        "
+                      >
+                        {
+                          order.address
+                        }
+                      </span>
+                    </div>
+                  ) : (
+                    <p
+                      className="
+                        text-sm
+                        text-gray-400
+                      "
+                    >
+                      No Address
+                    </p>
+                  )}
+                </div>
 
-                      </div>
+                {/* RIDER */}
 
-                    </td>
+                {/* <div
+                  className="
+                    pt-4
+                    border-t
+                    border-gray-100
+                  "
+                >
+                  <label
+                    className="
+                      block
+                      text-xs
+                      text-gray-500
+                      mb-2
+                    "
+                  >
+                    Assign Rider
+                  </label>
 
+                  <RiderSelect
+                    order={order}
+                  />
+                </div> */}
+                {/* RIDER */}
 
-                    {/* =========================================
-                        STATUS
-                    ========================================== */}
+<div
+  className="
+    pt-4
+    border-t
+    border-gray-100
+  "
+>
+  {String(order.status || "").toLowerCase() === "pending" ? (
+    <>
+      <label
+        className="
+          block
+          text-xs
+          text-gray-500
+          mb-2
+        "
+      >
+        Assign Rider
+      </label>
 
-                    <td className="p-4">
+      <RiderSelect
+        order={order}
+      />
 
-                      {(() => {
+      {/* ADMIN CANCEL */}
 
-                        const statusStyle =
-                          getStatusStyle(
-                            order.status
-                          );
-
-                        return (
-
-                          <span
-                            className={`
-                              inline-flex
-                              items-center
-                              gap-1.5
-                              px-3
-                              py-1.5
-                              rounded-full
-                              border
-                              text-xs
-                              font-semibold
-                              whitespace-nowrap
-                              ${statusStyle.badge}
-                            `}
-                          >
-
-                            <span>
-                              {statusStyle.icon}
-                            </span>
-
-                            <span>
-                              {order.status ||
-                                "Pending"}
-                            </span>
-
-                          </span>
-
-                        );
-
-                      })()}
-
-                    </td>
-
-
-                  </tr>
-
-                )
-
-              )
-
-            )}
-
-          </tbody>
-
-        </table>
-
+      <button
+        onClick={() =>
+          cancelOrder(order.order_id)
+        }
+        className="
+          w-full
+          mt-3
+          px-4
+          py-2.5
+          rounded-lg
+          bg-red-600
+          text-white
+          font-semibold
+          text-sm
+          hover:bg-red-700
+          transition
+        "
+      >
+        Cancel Order
+      </button>
+    </>
+  ) : (
+    <div className="text-sm text-gray-500">
+      {String(order.status || "").toLowerCase() === "cancelled"
+        ? "Order Cancelled"
+        : "No actions available"}
+    </div>
+  )}
+</div>
+              </div>
+            )
+          )
+        )}
       </div>
 
+      {/* ================================================= */}
+      {/* DESKTOP ORDERS TABLE */}
+      {/* ================================================= */}
 
-      {/* ======================================================
-          INFORMATION
-      ====================================================== */}
+      <div
+        className="
+          hidden
+          lg:block
+          bg-white
+          rounded-xl
+          shadow-sm
+          border
+          border-gray-100
+          overflow-hidden
+        "
+      >
+        <div
+          className="
+            w-full
+            overflow-x-auto
+          "
+        >
+          <table
+            className="
+              w-full
+              min-w-[1000px]
+            "
+          >
+            <thead
+              className="
+                bg-gray-50
+                border-b
+              "
+            >
+              <tr className="text-left">
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Order ID
+                </th>
 
-      <div className="mt-5 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Delivery Date
+                </th>
 
-        <p className="text-sm text-blue-700">
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Customer
+                </th>
 
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Products
+                </th>
+
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Price
+                </th>
+
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Address
+                </th>
+
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Rider
+                </th>
+
+                <th className="p-4 text-sm font-semibold text-gray-600">
+                  Status
+                </th>
+
+                <th className="p-4 text-sm font-semibold text-gray-600">
+  Action
+</th>
+
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredOrders.length ===
+              0 ? (
+                <tr>
+                  <td
+                    colSpan="9"
+                    className="
+                      text-center
+                      py-12
+                      text-gray-500
+                    "
+                  >
+                    {orderType ===
+                    "active"
+                      ? "No pending orders for tomorrow"
+                      : "No old orders found"}
+                  </td>
+                </tr>
+              ) : (
+                filteredOrders.map(
+                  (order) => (
+                    <tr
+                      key={
+                        order.order_id
+                      }
+                      className="
+                        border-b
+                        hover:bg-gray-50
+                        transition
+                      "
+                    >
+                      {/* ORDER ID */}
+
+                      <td className="p-4">
+                        <span className="font-semibold text-gray-800">
+                          #
+                          {
+                            order.order_id
+                          }
+                        </span>
+                      </td>
+
+                      {/* DELIVERY DATE */}
+
+                      <td className="p-4">
+                        <span
+                          className="
+                            text-sm
+                            text-gray-600
+                            whitespace-nowrap
+                          "
+                        >
+                          {getOrderDate(
+                            order
+                          )
+                            ? new Date(
+                                getOrderDate(
+                                  order
+                                )
+                              ).toLocaleDateString()
+                            : "-"}
+                        </span>
+                      </td>
+
+                      {/* CUSTOMER */}
+
+                      <td className="p-4">
+                        <div className="font-medium text-gray-800">
+                          {order.customer_name ||
+                            "Unknown"}
+                        </div>
+
+                        <div className="text-sm text-gray-500 mt-1">
+                          {order.customer_phone ||
+                            "No phone"}
+                        </div>
+                      </td>
+
+                      {/* PRODUCTS */}
+
+                      <td className="p-4">
+                        {order.products
+                          ?.length >
+                        0 ? (
+                          <div className="space-y-1">
+                            {order.products.map(
+                              (
+                                product,
+                                index
+                              ) => (
+                                <div
+                                  key={
+                                    index
+                                  }
+                                  className="text-sm text-gray-700"
+                                >
+                                  <span className="font-medium">
+                                    {
+                                      product.product_name
+                                    }
+                                  </span>
+
+                                  <span className="text-gray-500">
+                                    {" × "}
+                                    {
+                                      product.quantity
+                                    }
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">
+                            No
+                            products
+                          </span>
+                        )}
+                      </td>
+
+                      {/* PRICE */}
+
+                      <td className="p-4">
+                        <span
+                          className="
+                            font-semibold
+                            text-gray-800
+                            whitespace-nowrap
+                          "
+                        >
+                          ₹
+                          {Number(
+                            order.total_amount ||
+                              0
+                          ).toFixed(
+                            2
+                          )}
+                        </span>
+                      </td>
+
+                      {/* ADDRESS */}
+
+                      <td className="p-4 max-w-xs">
+                        {order.address ? (
+                          <div className="flex items-start gap-2">
+                            <span>
+                              📍
+                            </span>
+
+                            <span className="text-sm text-gray-600 break-words">
+                              {
+                                order.address
+                              }
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">
+                            No
+                            Address
+                          </span>
+                        )}
+                      </td>
+
+                      {/* RIDER */}
+
+                      <td className="p-4">
+                        <div className="min-w-[190px]">
+                          <RiderSelect
+                            order={
+                              order
+                            }
+                          />
+                        </div>
+                      </td>
+
+                      {/* STATUS */}
+
+                      <td className="p-4">
+  <StatusBadge
+    status={order.status}
+  />
+</td>
+
+<td className="p-4">
+  {String(order.status || "").toLowerCase() === "pending" ? (
+    <button
+      onClick={() =>
+        cancelOrder(order.order_id)
+      }
+      className="
+        px-4
+        py-2
+        rounded-lg
+        bg-red-600
+        text-white
+        text-sm
+        font-semibold
+        hover:bg-red-700
+        transition
+        whitespace-nowrap
+      "
+    >
+      Cancel Order
+    </button>
+  ) : (
+    <span className="text-sm text-gray-400">
+      —
+    </span>
+  )}
+</td>
+                    </tr>
+                  )
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ================================================= */}
+      {/* INFORMATION */}
+      {/* ================================================= */}
+
+      <div
+        className="
+          mt-5
+          bg-blue-50
+          border
+          border-blue-100
+          rounded-xl
+          p-4
+        "
+      >
+        <p
+          className="
+            text-sm
+            text-blue-700
+          "
+        >
           <span className="font-semibold">
             Note:
           </span>{" "}
 
-          Order status is updated by the rider from the
-          Rider App. Admin can only assign or change the
-          rider.
+          {orderType ===
+          "active"
+            ? "Active Orders shows only tomorrow's pending orders."
+            : "Old Orders shows orders before tomorrow."}
 
+          {" "}
+          Order status is updated by
+          the rider from the Rider App.
+          Admin can only assign or
+          change the rider.
         </p>
-
       </div>
-
-
     </div>
-
   );
-
 }

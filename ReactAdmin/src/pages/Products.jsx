@@ -30,18 +30,49 @@ export default function Products() {
     setSearch(params.get("search") || "");
   },[location.search]);
 
-  const deleteProduct = async(id)=>{
-    try{
-      const response = await axios.delete( `${API}/products/${id}` );
-      if(response.data.success){
-        alert("Product Deleted Successfully");
-        fetchProducts();
-      }
-    }
-    catch(error){
-      console.log(error);}
-  };
+  // const deleteProduct = async(id)=>{
+  //   try{
+  //     const response = await axios.delete( `${API}/products/${id}` );
+  //     if(response.data.success){
+  //       alert("Product Deleted Successfully");
+  //       fetchProducts();
+  //     }
+  //   }
+  //   catch(error){
+  //     console.log(error);}
+  // };
 
+const deleteProduct = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to deactivate this product?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    const response = await axios.delete(
+      `${API}/products/${id}`
+    );
+
+    if (response.data.success) {
+      alert("Product deactivated successfully");
+
+      setProducts((prevProducts) =>
+        prevProducts.filter(
+          (product) => String(product.id) !== String(id)
+        )
+      );
+    }
+  } catch (error) {
+    console.error("DELETE ERROR:", error.response?.data || error);
+
+    alert(
+      error.response?.data?.message ||
+        "Failed to deactivate product"
+    );
+  }
+};
+  
   const toggleProductStatus = async(id,status)=>{
     try{
       const newStatus =status === "Active" ?"Inactive":"Active";
@@ -142,17 +173,28 @@ className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded">🗑 Dele
               className="w-full border rounded-lg px-3 py-2 outline-none" />
           </div>
           <div className="bg-yellow-100 p-4 rounded-lg">
-            <p className="font-semibold">Subscription Stock</p>
-            <p className="text-xl font-bold"> {selectedStock.subscription_stock || 0}</p>
-          </div>
+  <p className="font-semibold">
+    Subscription Required
+  </p>
 
-          <div className="bg-green-100 p-4 rounded-lg">
-            <p className="font-semibold">Available Stock</p>
-            <p className="text-xl font-bold">
-              {Number(stockQty) -
-                Number(selectedStock.subscription_stock || 0)}
-            </p>
-          </div>
+  <p className="text-xl font-bold">
+    {Number(selectedStock.subscription_required || 0)}
+  </p>
+</div>
+
+<div className="bg-green-100 p-4 rounded-lg">
+  <p className="font-semibold">
+    Instant Available
+  </p>
+
+  <p className="text-xl font-bold">
+    {Math.max(
+      0,
+      Number(stockQty) -
+        Number(selectedStock.subscription_required || 0)
+    )}
+  </p>
+</div>
         </div>
 
         <div className="flex gap-3 mt-6">

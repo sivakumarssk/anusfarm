@@ -63,6 +63,7 @@ const [currentIndex, setCurrentIndex] =
 <FlatList
   ref={flatListRef}
   data={bannerData}
+  contentContainerStyle={styles.bannerList}
   horizontal
   showsHorizontalScrollIndicator={false}
   keyExtractor={(item) => item.id}
@@ -95,13 +96,22 @@ export default BannerSection;
 
 const styles = StyleSheet.create({
 
-  bannerImage: {
-    width: 250,
-    height: 250,
-    borderRadius: 20,
-    marginTop: 20,
-    marginLeft:10
-  },
+  // bannerImage: {
+  //   width: 250,
+  //   height: 250,
+  //   borderRadius: 20,
+  //   marginTop: 20,
+  //   marginLeft:10
+  // },
 
-
+bannerImage: {
+  width: width - 32,
+  height: 170,
+  borderRadius: 20,
+  marginTop: 20,
+  marginLeft: 8,
+},
+bannerList: {
+  paddingRight: 8,
+},
 });

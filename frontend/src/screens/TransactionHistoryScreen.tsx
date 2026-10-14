@@ -9,15 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/api";
 import { useFocusEffect } from "@react-navigation/native";
 
-// interface Transaction {
-//   id: number;
-//   wallet_id: number;
-//   user_id: number;
-//   type: "credit" | "debit";
-//   amount: string;
-//   description: string;
-//   created_at: string;
-// }
+
 interface Transaction {
   id: number | string;
   type: 'credit' | 'debit' | 'subscription';
@@ -28,47 +20,14 @@ interface Transaction {
 const TransactionHistoryScreen = () => {
 const [transactions, setTransactions] = useState<Transaction[]>([]);
   const navigation = useNavigation<any>();
-// const fetchTransactions = async () => {
-//   try {
-//     const token = await AsyncStorage.getItem("token");
-
-//     const response = await fetch(
-//       `${API_URL}/api/wallet/transactions`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-
-//     const data = await response.json();
-//     console.log("TRANSACTIONS:", data);
-
-//     if (data.success) {
-//   setTransactions(data.transactions);
-// } else {
-//   setTransactions([]);
-// }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
-
-      const fetchTransactions = async () => {
-
+const fetchTransactions = async () => {
   try {
-
     const token = await AsyncStorage.getItem("token");
-
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
+    const headers = { Authorization: `Bearer ${token}`,};
 
 
     // Wallet transactions
-    const walletResponse = await fetch(
-      `${API_URL}/api/wallet/transactions`,
+    const walletResponse = await fetch( `${API_URL}/api/wallet/transactions`,
       {
         headers,
       }
@@ -76,8 +35,6 @@ const [transactions, setTransactions] = useState<Transaction[]>([]);
 
 
     const walletData = await walletResponse.json();
-
-
     // Subscription transactions
     const subscriptionResponse = await fetch(
       `${API_URL}/api/subscription-transactions/my`,
@@ -259,14 +216,15 @@ useFocusEffect(
   />
 
   <Text
-    style={{
-      marginTop: 10,
-      color: "#777",
-      fontSize: 16,
-    }}
-  >
-    No Transactions Yet
-  </Text>
+  style={{
+    marginTop: 10,
+    color: "#777",
+    fontSize: 16,
+    fontFamily: "Inter-Regular",
+  }}
+>
+  No Transactions Yet
+</Text>
 </View>
 ) : (
   transactions.slice().reverse().map(item => (
@@ -310,11 +268,11 @@ const styles =
     },
 
     headerTitle: {
-      fontSize: 22,
-      fontWeight: '600',
-      color: '#000',
-      marginLeft: 12,
-    },
+  fontSize: 22,
+  fontFamily: 'Inter-SemiBold',
+  color: '#000',
+  marginLeft: 12,
+},
 
     cardContainer: {
       backgroundColor: '#FFF',

@@ -5,7 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
+  // Alert,
    Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {API_URL} from "../config/api";
-
+import CustomAlert from "../components/CustomAlert";
 // const BASE_URL = "http://192.168.0.112:5000/api";
 
 export default function EditSubscriptionScreen() {
@@ -29,7 +29,10 @@ export default function EditSubscriptionScreen() {
   const [deliveryTime, setDeliveryTime] = useState("");
   const [nextDeliveryDate, setNextDeliveryDate] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState("");
+const [alertMessage, setAlertMessage] = useState("");
+const [goBackAfterAlert, setGoBackAfterAlert] = useState(false);
   useEffect(() => {
     loadSubscription();
   }, []);
@@ -67,46 +70,44 @@ export default function EditSubscriptionScreen() {
     setLoading(false);
   };
 
-  const updateSubscription = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
+ const updateSubscription = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
 
-      const res = await fetch(
-        `${API_URL}/api/subscriptions/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            frequency,
-            delivery_time: deliveryTime,
-            next_delivery_date: nextDeliveryDate,
-          }),
-        }
-      );
+    const res = await fetch(`${API_URL}/api/subscriptions/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        frequency,
+        delivery_time: deliveryTime,
+        next_delivery_date: nextDeliveryDate,
+      }),
+    });
 
-      const json = await res.json();
+    const json = await res.json();
 
-      if (json.success) {
-        Alert.alert(
-          "Success",
-          "Subscription Updated Successfully",
-          [
-            {
-              text: "OK",
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
-      } else {
-        Alert.alert(json.message);
-      }
-    } catch (e) {
-      console.log(e);
+    if (json.success) {
+      setAlertTitle("Success");
+      setAlertMessage("Subscription Updated Successfully");
+      setGoBackAfterAlert(true);
+      setAlertVisible(true);
+    } else {
+      setAlertTitle("Error");
+      setAlertMessage(json.message || "Unable to update subscription.");
+      setGoBackAfterAlert(false);
+      setAlertVisible(true);
     }
-  };
+  } catch (error) {
+    console.log("Update subscription error:", error);
+    setAlertTitle("Error");
+    setAlertMessage("Something went wrong. Please try again.");
+    setGoBackAfterAlert(false);
+    setAlertVisible(true);
+  }
+};
 
   if (loading) {
     return (
@@ -196,14 +197,7 @@ export default function EditSubscriptionScreen() {
           Next Delivery Date
         </Text>
 
-       {/* <TouchableOpacity
-  style={styles.input}
-  onPress={() => setShowDatePicker(true)}
->
-  <Text>
-    {nextDeliveryDate || "Select Date"}
-  </Text>
-</TouchableOpacity> */}
+       
 <TouchableOpacity
   style={styles.input}
   onPress={() => setShowDatePicker(true)}
@@ -216,12 +210,13 @@ export default function EditSubscriptionScreen() {
     }}
   >
     <Text
-      style={{
-        color: nextDeliveryDate ? "#000" : "#888",
-      }}
-    >
-      {nextDeliveryDate || "Select Next Delivery Date"}
-    </Text>
+  style={{
+    fontFamily: "Inter-Regular",
+    color: nextDeliveryDate ? "#000" : "#888",
+  }}
+>
+  {nextDeliveryDate || "Select Next Delivery Date"}
+</Text>
 
     <Ionicons
       name="calendar-outline"
@@ -271,6 +266,20 @@ export default function EditSubscriptionScreen() {
         </TouchableOpacity>
 
       </View>
+      <CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  buttonText="OK"
+  onClose={() => {
+    setAlertVisible(false);
+
+    if (goBackAfterAlert) {
+      setGoBackAfterAlert(false);
+      navigation.goBack();
+    }
+  }}
+/>
 
     </SafeAreaView>
   );
@@ -281,7 +290,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F7F7F7",
   },
+title: {
+  fontFamily: "Inter-Bold",
+  fontSize: 22,
+  marginLeft: 12,
+},
 
+label: {
+  fontFamily: "Inter-Bold",
+  fontSize: 16,
+  marginBottom: 10,
+  marginTop: 15,
+},
+
+optionText: {
+  fontFamily: "Inter-SemiBold",
+},
+
+saveText: {
+  fontFamily: "Inter-Bold",
+  color: "#fff",
+  textAlign: "center",
+  fontSize: 16,
+},
   loader: {
     flex: 1,
     justifyContent: "center",
@@ -294,11 +325,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginLeft: 12,
-  },
+ 
 
   card: {
     margin: 16,
@@ -307,12 +334,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
 
-  label: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 10,
-    marginTop: 15,
-  },
+ 
 
   row: {
     flexDirection: "row",
@@ -334,9 +356,7 @@ const styles = StyleSheet.create({
     borderColor: "#2E7D32",
   },
 
-  optionText: {
-    fontWeight: "600",
-  },
+ 
 
   input: {
     borderWidth: 1,
@@ -350,12 +370,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#2E7D32",
     padding: 15,
     borderRadius: 10,
-  },
-
-  saveText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "700",
-    fontSize: 16,
   },
 });

@@ -80,13 +80,12 @@ exports.changeStatus = async (req, res) => {
 };
 
 
-// ============================================================
-// USER - CREATE SUBSCRIPTION
-// ============================================================
-
 // exports.createSubscription = async (req, res) => {
+//     const client = await pool.connect();
 
 //     try {
+
+//         await client.query("BEGIN");
 
 //         const user_id = req.user.id;
 
@@ -98,31 +97,208 @@ exports.changeStatus = async (req, res) => {
 //             wallet_amount,
 //             payment_method,
 //             next_delivery_date,
-//               address_id,
+//             address_id,
 //             items
 //         } = req.body;
 
-// const addressResult = await pool.query(
-//     `
-//     SELECT id
-//     FROM addresses
-//     WHERE id = $1
-//     AND user_id = $2
-//     `,
-//     [address_id, user_id]
-// );
+//         console.log("========== CREATE SUBSCRIPTION ==========");
+//         console.log("USER ID =", user_id);
+//         console.log("ADDRESS ID =", address_id);
+//         console.log("ITEMS =", items);
 
-// if (addressResult.rows.length === 0) {
-//     return res.status(400).json({
-//         success: false,
-//         message: "Invalid address selected"
-//     });
-// }
-//         // ------------------------------------------------------
+//         // ==========================================
+//         // VALIDATE ADDRESS
+//         // ==========================================
+
+//         if (!address_id) {
+//             await client.query("ROLLBACK");
+
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Address is required"
+//             });
+//         }
+
+//         const addressResult = await client.query(
+//             `
+//             SELECT
+//                 id,
+//                 user_id,
+//                 address_type,
+//                 full_address,
+//                 latitude,
+//                 longitude,
+//                 phone
+//             FROM addresses
+//             WHERE id = $1
+//             AND user_id = $2
+//             `,
+//             [
+//                 address_id,
+//                 user_id
+//             ]
+//         );
+
+//         if (addressResult.rows.length === 0) {
+//             await client.query("ROLLBACK");
+
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid address selected"
+//             });
+//         }
+
+//         const selectedAddress = addressResult.rows[0];
+
+//         console.log(
+//             "SELECTED ADDRESS =",
+//             selectedAddress
+//         );
+
+//         // ==========================================
+//         // VALIDATE ITEMS
+//         // ==========================================
+
+//         if (!Array.isArray(items) || items.length === 0) {
+
+//             await client.query("ROLLBACK");
+
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "At least one product is required"
+//             });
+//         }
+
+//         // ==========================================
+//         // CHECK SUBSCRIPTION STOCK
+//         // ==========================================
+
+//         for (const item of items) {
+
+//             const productId = Number(item.id);
+//             const requestedQuantity = Number(item.quantity);
+
+//             if (!Number.isInteger(productId) || productId <= 0) {
+
+//                 await client.query("ROLLBACK");
+
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: "Invalid product"
+//                 });
+//             }
+
+//             if (
+//                 !Number.isInteger(requestedQuantity) ||
+//                 requestedQuantity <= 0
+//             ) {
+
+//                 await client.query("ROLLBACK");
+
+//                 return res.status(400).json({
+//                     success: false,
+//                     message:
+//                         `Invalid quantity for ${item.name || "product"}`
+//                 });
+//             }
+
+//             // Lock the product row while checking inventory
+//             const productResult = await client.query(
+//                 `
+//                 SELECT
+//                     id,
+//                     name,
+//                     price,
+//                     stock,
+//                     subscription_stock,
+//                     instant_stock
+//                 FROM products
+//                 WHERE id = $1
+//                 FOR UPDATE
+//                 `,
+//                 [productId]
+//             );
+
+//             if (productResult.rows.length === 0) {
+
+//                 await client.query("ROLLBACK");
+
+//                 return res.status(400).json({
+//                     success: false,
+//                     message:
+//                         `${item.name || "Product"} not found`
+//                 });
+//             }
+
+//             const product = productResult.rows[0];
+
+//             const totalStock = Number(product.stock);
+//             const subscriptionStock =
+//                 Number(product.subscription_stock);
+
+//             const instantStock =
+//                 Number(product.instant_stock);
+
+//             console.log(
+//                 "SUBSCRIPTION INVENTORY CHECK:",
+//                 {
+//                     productId,
+//                     productName: product.name,
+//                     totalStock,
+//                     subscriptionStock,
+//                     instantStock,
+//                     requestedQuantity
+//                 }
+//             );
+
+//             // ==========================================
+//             // CHECK SUBSCRIPTION STOCK
+//             // ==========================================
+
+//             if (requestedQuantity > subscriptionStock) {
+
+//                 await client.query("ROLLBACK");
+
+//                 return res.status(400).json({
+//                     success: false,
+//                     message:
+//                         `Only ${subscriptionStock} units of ${product.name} are available for subscription.`
+//                 });
+//             }
+
+//             // ==========================================
+//             // CHECK INVENTORY CONSISTENCY
+//             // ==========================================
+
+//             if (
+//                 subscriptionStock + instantStock !== totalStock
+//             ) {
+
+//                 console.error(
+//                     "INVENTORY MISMATCH:",
+//                     {
+//                         productId,
+//                         totalStock,
+//                         subscriptionStock,
+//                         instantStock
+//                     }
+//                 );
+
+//                 await client.query("ROLLBACK");
+
+//                 return res.status(400).json({
+//                     success: false,
+//                     message:
+//                         `Inventory mismatch for ${product.name}. Subscription stock + instant stock must equal total stock.`
+//                 });
+//             }
+//         }
+
+//         // ==========================================
 //         // CREATE SUBSCRIPTION
-//         // ------------------------------------------------------
+//         // ==========================================
 
-//         const result = await pool.query(
+//         const result = await client.query(
 //             `
 //             INSERT INTO subscriptions
 //             (
@@ -136,7 +312,7 @@ exports.changeStatus = async (req, res) => {
 //                 start_date,
 //                 next_delivery_date,
 //                 status,
-//                    address_id
+//                 address_id
 //             )
 //             VALUES
 //             (
@@ -150,7 +326,7 @@ exports.changeStatus = async (req, res) => {
 //                 CURRENT_DATE,
 //                 $8,
 //                 'Active',
-//                  $9
+//                 $9
 //             )
 //             RETURNING *
 //             `,
@@ -163,38 +339,28 @@ exports.changeStatus = async (req, res) => {
 //                 wallet_amount,
 //                 payment_method,
 //                 next_delivery_date,
-//                  address_id
+//                 address_id
 //             ]
 //         );
 
-
 //         const subscription = result.rows[0];
 
+//         console.log(
+//             "CREATED SUBSCRIPTION =",
+//             subscription
+//         );
 
-//         // ------------------------------------------------------
-//         // GENERATE DELIVERY SCHEDULE
-//         // ------------------------------------------------------
+//         // ==========================================
+//         // SAVE PRODUCTS + REDUCE SUBSCRIPTION STOCK
+//         // ==========================================
 
-//         // await generateDeliverySchedule(
-//         //     subscription.id,
-//         //     frequency,
-//         //     subscription.start_date,
-//         //     items || []
-//         // );
-// await generateDeliverySchedule(
-//     subscription.id,
-//     frequency,
-//     subscription.next_delivery_date,
-//     items || []
-// );
+//         for (const item of items) {
 
-//         // ------------------------------------------------------
-//         // SAVE SUBSCRIPTION PRODUCTS
-//         // ------------------------------------------------------
+//             const productId = Number(item.id);
+//             const requestedQuantity = Number(item.quantity);
 
-//         for (const item of items || []) {
-
-//             await pool.query(
+//             // Insert subscription item
+//             await client.query(
 //                 `
 //                 INSERT INTO subscription_items
 //                 (
@@ -215,33 +381,89 @@ exports.changeStatus = async (req, res) => {
 //                 `,
 //                 [
 //                     subscription.id,
-//                     item.id,
+//                     productId,
 //                     item.name,
-//                     item.quantity,
+//                     requestedQuantity,
 //                     item.price
 //                 ]
 //             );
 
+//             // Reduce ONLY subscription stock + total stock
+//             const stockUpdate = await client.query(
+//                 `
+//                 UPDATE products
+//                 SET
+//                     subscription_stock =
+//                         subscription_stock - $1,
+
+//                     stock =
+//                         stock - $1,
+
+//                     updated_at = CURRENT_TIMESTAMP
+
+//                 WHERE id = $2
+//                 AND subscription_stock >= $1
+
+//                 RETURNING
+//                     id,
+//                     name,
+//                     stock,
+//                     subscription_stock,
+//                     instant_stock
+//                 `,
+//                 [
+//                     requestedQuantity,
+//                     productId
+//                 ]
+//             );
+
+//             if (stockUpdate.rows.length === 0) {
+
+//                 throw new Error(
+//                     `Unable to reduce subscription stock for ${item.name || "product"}`
+//                 );
+//             }
+
+//             console.log(
+//                 "SUBSCRIPTION STOCK UPDATED:",
+//                 stockUpdate.rows[0]
+//             );
 //         }
 
+//         // ==========================================
+//         // GENERATE DELIVERY SCHEDULE
+//         // ==========================================
 
-//         // ------------------------------------------------------
+//         await generateDeliverySchedule(
+//             subscription.id,
+//             frequency,
+//             subscription.next_delivery_date,
+//             items || []
+//         );
+
+//         // ==========================================
 //         // CREATE TRANSACTION
-//         // ------------------------------------------------------
+//         // ==========================================
 
 //         await transactionModel.createTransaction({
 
-//             subscription_id: subscription.id,
+//             subscription_id:
+//                 subscription.id,
 
-//             user_id: user_id,
+//             user_id:
+//                 user_id,
 
-//             transaction_type: "Initial Payment",
+//             transaction_type:
+//                 "Initial Payment",
 
-//             amount: wallet_amount,
+//             amount:
+//                 wallet_amount,
 
-//             payment_method: payment_method,
+//             payment_method:
+//                 payment_method,
 
-//             payment_status: "Success",
+//             payment_status:
+//                 "Success",
 
 //             transaction_id:
 //                 "SUB" + Date.now(),
@@ -250,32 +472,52 @@ exports.changeStatus = async (req, res) => {
 //                 `${plan} Subscription Payment`
 //         });
 
+//         // ==========================================
+//         // COMMIT
+//         // ==========================================
 
-//         // ------------------------------------------------------
+//         await client.query("COMMIT");
+
+//         console.log(
+//             "SUBSCRIPTION CREATED SUCCESSFULLY:",
+//             subscription.id
+//         );
+
+//         // ==========================================
 //         // RESPONSE
-//         // ------------------------------------------------------
+//         // ==========================================
 
 //         res.status(201).json({
 //             success: true,
-//             subscription
+//             subscription,
+//             address: selectedAddress
 //         });
-
 
 //     } catch (error) {
 
-//         console.log(
+//         await client.query("ROLLBACK");
+
+//         console.error(
 //             "CREATE SUBSCRIPTION ERROR:",
 //             error
 //         );
 
-//         res.status(500).json({
+//         res.status(error.statusCode || 500).json({
 //             success: false,
 //             message: error.message
 //         });
+
+//     } finally {
+
+//         client.release();
 //     }
 // };
+
 exports.createSubscription = async (req, res) => {
+    const client = await pool.connect();
+
     try {
+        await client.query("BEGIN");
 
         const user_id = req.user.id;
 
@@ -301,13 +543,15 @@ exports.createSubscription = async (req, res) => {
         // ==========================================
 
         if (!address_id) {
+            await client.query("ROLLBACK");
+
             return res.status(400).json({
                 success: false,
                 message: "Address is required"
             });
         }
 
-        const addressResult = await pool.query(
+        const addressResult = await client.query(
             `
             SELECT
                 id,
@@ -328,6 +572,8 @@ exports.createSubscription = async (req, res) => {
         );
 
         if (addressResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+
             return res.status(400).json({
                 success: false,
                 message: "Invalid address selected"
@@ -336,16 +582,158 @@ exports.createSubscription = async (req, res) => {
 
         const selectedAddress = addressResult.rows[0];
 
-        console.log(
-            "SELECTED ADDRESS =",
-            selectedAddress
-        );
+        // ==========================================
+        // VALIDATE ITEMS
+        // ==========================================
+
+        if (!Array.isArray(items) || items.length === 0) {
+            await client.query("ROLLBACK");
+
+            return res.status(400).json({
+                success: false,
+                message: "At least one product is required"
+            });
+        }
+
+        // ==========================================
+        // CHECK PRODUCT INVENTORY
+        // ==========================================
+
+        for (const item of items) {
+
+            const productId = Number(item.id);
+            const requestedQuantity = Number(item.quantity);
+
+            if (
+                !Number.isInteger(productId) ||
+                productId <= 0
+            ) {
+                await client.query("ROLLBACK");
+
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid product"
+                });
+            }
+
+            if (
+                !Number.isInteger(requestedQuantity) ||
+                requestedQuantity <= 0
+            ) {
+                await client.query("ROLLBACK");
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        `Invalid quantity for ${
+                            item.name || "product"
+                        }`
+                });
+            }
+
+            // ==========================================
+            // LOCK PRODUCT
+            // ==========================================
+
+            const productResult = await client.query(
+                `
+                SELECT
+                    id,
+                    name,
+                    price,
+                    stock
+                FROM products
+                WHERE id = $1
+                FOR UPDATE
+                `,
+                [productId]
+            );
+
+            if (productResult.rows.length === 0) {
+                await client.query("ROLLBACK");
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        `${item.name || "Product"} not found`
+                });
+            }
+
+            const product = productResult.rows[0];
+
+            const totalStock = Number(product.stock);
+
+            // ==========================================
+            // GET CURRENT ACTIVE SUBSCRIPTION REQUIREMENT
+            // ==========================================
+
+            const subscriptionResult = await client.query(
+                `
+                SELECT
+                    COALESCE(
+                        SUM(si.quantity),
+                        0
+                    ) AS subscription_required
+                FROM subscription_items si
+
+                INNER JOIN subscriptions s
+                    ON s.id = si.subscription_id
+
+                WHERE si.product_id = $1
+                AND LOWER(s.status) = 'active'
+                `,
+                [productId]
+            );
+
+            const existingSubscriptionRequired =
+                Number(
+                    subscriptionResult.rows[0]
+                        .subscription_required || 0
+                );
+
+            // ==========================================
+            // CHECK AVAILABLE STOCK FOR THIS NEW
+            // SUBSCRIPTION
+            // ==========================================
+
+            const availableForSubscription =
+                Math.max(
+                    0,
+                    totalStock -
+                    existingSubscriptionRequired
+                );
+
+            console.log(
+                "SUBSCRIPTION INVENTORY CHECK:",
+                {
+                    productId,
+                    productName: product.name,
+                    totalStock,
+                    existingSubscriptionRequired,
+                    availableForSubscription,
+                    requestedQuantity
+                }
+            );
+
+            if (
+                requestedQuantity >
+                availableForSubscription
+            ) {
+                await client.query("ROLLBACK");
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        `Only ${availableForSubscription} units of ${product.name} are available for subscription.`
+                });
+            }
+        }
 
         // ==========================================
         // CREATE SUBSCRIPTION
         // ==========================================
 
-        const result = await pool.query(
+        const result = await client.query(
             `
             INSERT INTO subscriptions
             (
@@ -391,6 +779,18 @@ exports.createSubscription = async (req, res) => {
         );
 
         const subscription = result.rows[0];
+        
+console.log("NEW SUBSCRIPTION ID:", subscription.id);
+
+const verifySubscription = await client.query(
+  "SELECT id FROM subscriptions WHERE id = $1",
+  [subscription.id]
+);
+
+console.log(
+  "VERIFY SUBSCRIPTION IN SAME TRANSACTION:",
+  verifySubscription.rows
+);
 
         console.log(
             "CREATED SUBSCRIPTION =",
@@ -401,9 +801,17 @@ exports.createSubscription = async (req, res) => {
         // SAVE SUBSCRIPTION PRODUCTS
         // ==========================================
 
-        for (const item of items || []) {
+        for (const item of items) {
 
-            await pool.query(
+            const productId = Number(item.id);
+            const requestedQuantity =
+                Number(item.quantity);
+
+            // ==========================================
+            // INSERT SUBSCRIPTION ITEM
+            // ==========================================
+
+            await client.query(
                 `
                 INSERT INTO subscription_items
                 (
@@ -424,11 +832,47 @@ exports.createSubscription = async (req, res) => {
                 `,
                 [
                     subscription.id,
-                    item.id,
+                    productId,
                     item.name,
-                    item.quantity,
+                    requestedQuantity,
                     item.price
                 ]
+            );
+
+            // ==========================================
+            // REDUCE TOTAL STOCK ONLY
+            // ==========================================
+
+            const stockUpdate = await client.query(
+                `
+                UPDATE products
+                SET
+                    stock = stock - $1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $2
+                AND stock >= $1
+                RETURNING
+                    id,
+                    name,
+                    stock
+                `,
+                [
+                    requestedQuantity,
+                    productId
+                ]
+            );
+
+            if (stockUpdate.rows.length === 0) {
+                throw new Error(
+                    `Unable to reduce stock for ${
+                        item.name || "product"
+                    }`
+                );
+            }
+
+            console.log(
+                "TOTAL STOCK UPDATED:",
+                stockUpdate.rows[0]
             );
         }
 
@@ -436,43 +880,72 @@ exports.createSubscription = async (req, res) => {
         // GENERATE DELIVERY SCHEDULE
         // ==========================================
 
-        await generateDeliverySchedule(
-            subscription.id,
-            frequency,
-            subscription.next_delivery_date,
-            items || []
-        );
+        
+        
+await generateDeliverySchedule(
+    subscription.id,
+    frequency,
+    subscription.next_delivery_date,
+    items || [],
+    client
+);
+
+
 
         // ==========================================
         // CREATE TRANSACTION
         // ==========================================
 
-        await transactionModel.createTransaction({
+        // await transactionModel.createTransaction({
 
-            subscription_id:
-                subscription.id,
+        //     subscription_id:
+        //         subscription.id,
 
-            user_id:
-                user_id,
+        //     user_id:
+        //         user_id,
 
-            transaction_type:
-                "Initial Payment",
+        //     transaction_type:
+        //         "Initial Payment",
 
-            amount:
-                wallet_amount,
+        //     amount:
+        //         wallet_amount,
 
-            payment_method:
-                payment_method,
+        //     payment_method:
+        //         payment_method,
 
-            payment_status:
-                "Success",
+        //     payment_status:
+        //         "Success",
 
-            transaction_id:
-                "SUB" + Date.now(),
+        //     transaction_id:
+        //         "SUB" + Date.now(),
 
-            description:
-                `${plan} Subscription Payment`
-        });
+        //     description:
+        //         `${plan} Subscription Payment`
+        // });
+
+await transactionModel.createTransaction(
+  {
+    subscription_id: subscription.id,
+    user_id,
+    transaction_type: "Initial Payment",
+    amount: wallet_amount,
+    payment_method,
+    payment_status: "Success",
+    transaction_id: "SUB" + Date.now(),
+    description: `${plan} Subscription Payment`,
+  },
+  client
+);
+        // ==========================================
+        // COMMIT
+        // ==========================================
+
+        await client.query("COMMIT");
+
+        console.log(
+            "SUBSCRIPTION CREATED SUCCESSFULLY:",
+            subscription.id
+        );
 
         // ==========================================
         // RESPONSE
@@ -486,21 +959,23 @@ exports.createSubscription = async (req, res) => {
 
     } catch (error) {
 
-        console.log(
+        await client.query("ROLLBACK");
+
+        console.error(
             "CREATE SUBSCRIPTION ERROR:",
             error
         );
 
-        res.status(500).json({
+        res.status(error.statusCode || 500).json({
             success: false,
             message: error.message
         });
+
+    } finally {
+
+        client.release();
     }
 };
-
-// ============================================================
-// USER - MY SUBSCRIPTIONS
-// ============================================================
 
 exports.mySubscriptions = async (req, res) => {
 
@@ -1213,4 +1688,47 @@ exports.assignRider = async (req, res) => {
 
     }
 
+};
+// ============================================================
+// ADMIN - CANCEL SUBSCRIPTION
+// ============================================================
+
+exports.adminCancelSubscription = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        console.log("ADMIN CANCEL SUBSCRIPTION ID:", id);
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid subscription ID"
+            });
+        }
+
+        const data = await cancelSubscription(Number(id));
+
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Subscription not found"
+            });
+        }
+
+        console.log("ADMIN SUBSCRIPTION CANCELLED:", data.id);
+
+        res.json({
+            success: true,
+            message: "Subscription cancelled successfully",
+            subscription: data
+        });
+
+    } catch (error) {
+        console.error("ADMIN CANCEL SUBSCRIPTION ERROR:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
 };

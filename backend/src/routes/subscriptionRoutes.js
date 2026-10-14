@@ -1,151 +1,68 @@
-
-
 const express = require("express");
-
 const router = express.Router();
 
-const {
-  getSubscriptions,
-  changeStatus,
-  createSubscription,
-  mySubscriptions,
-  getSubscriptionById,
-  pause,
-  resume,
-  cancel,
-  calendar,
-  updateSubscription,
-  deleteSubscription,
-  getPausedSubscriptions,
-  skipDelivery,
-  assignRider,
-} = require("../controllers/subscriptionController");
+const {getSubscriptions,changeStatus,createSubscription,mySubscriptions,getSubscriptionById,pause,resume,
+  cancel,calendar,updateSubscription,deleteSubscription,getPausedSubscriptions,skipDelivery,assignRider, adminCancelSubscription,} = require("../controllers/subscriptionController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-// =====================================================
-// ADMIN
-// =====================================================
+// ===========================// ADMIN// ================================================
 
 router.get("/", getSubscriptions);
 
 router.put("/:id/status", changeStatus);
 
-// =====================================================
-// USER - CREATE
-// =====================================================
+// =====================// USER - CREATE// ===============================================
 
-router.post(
-  "/create",
-  authMiddleware,
-  createSubscription
-);
+router.post("/create",authMiddleware,createSubscription);
 
-// =====================================================
-// USER - MY SUBSCRIPTIONS
-// =====================================================
+router.put("/:id/admin-cancel", adminCancelSubscription);
 
-router.get(
-  "/my",
-  authMiddleware,
-  mySubscriptions
-);
+router.post("/create", authMiddleware, createSubscription);
 
-// =====================================================
-// USER - PAUSED SUBSCRIPTIONS
-// =====================================================
+// ====================// USER - MY SUBSCRIPTIONS// ========================================
 
-router.get(
-  "/paused",
-  authMiddleware,
-  getPausedSubscriptions
-);
+router.get("/my", authMiddleware,  mySubscriptions);
 
-// =====================================================
-// USER - SINGLE SUBSCRIPTION DETAILS
-// =====================================================
+// =====================// USER - PAUSED SUBSCRIPTIONS// ===================================
 
-router.get(
-  "/:id",
-  authMiddleware,
-  getSubscriptionById
-);
+router.get("/paused", authMiddleware,  getPausedSubscriptions);
 
-// =====================================================
-// USER - PAUSE
-// =====================================================
+// =====================// USER - SINGLE SUBSCRIPTION DETAILS// ============================
 
-router.put(
-  "/:id/pause",
-  authMiddleware,
-  pause
-);
+router.get("/:id",authMiddleware, getSubscriptionById);
 
-// =====================================================
-// USER - RESUME
-// =====================================================
+// ===================// USER - PAUSE// =====================================================
 
-router.put(
-  "/:id/resume",
-  authMiddleware,
-  resume
-);
+router.put( "/:id/pause", pause);
 
-// =====================================================
-// USER - CANCEL
-// =====================================================
+// =====================// USER - RESUME// ========================================
 
-router.put(
-  "/:id/cancel",
-  authMiddleware,
-  cancel
-);
+router.put("/:id/resume", resume);
 
-// =====================================================
-// USER - DELIVERY CALENDAR
-// =====================================================
+// =====================// USER - CANCEL// ==========================================
 
-router.get(
-  "/:id/calendar",
-  authMiddleware,
-  calendar
-);
+router.put( "/:id/cancel", authMiddleware, cancel);
 
-// =====================================================
-// USER - UPDATE
-// =====================================================
+// =========================// USER - DELIVERY CALENDAR// ====================================
 
-router.put(
-  "/:id",
-  authMiddleware,
-  updateSubscription
-);
+router.get("/:id/calendar", authMiddleware,calendar);
 
-// =====================================================
-// USER - DELETE
-// =====================================================
+// =======================// USER - UPDATE// =====================================
 
-router.delete(
-  "/:id",
-  authMiddleware,
-  deleteSubscription
-);
+router.put("/:id", authMiddleware, updateSubscription);
 
-// =====================================================
-// USER - SKIP SINGLE DELIVERY
-// =====================================================
+// ========================// USER - DELETE// ======================================
 
-router.put(
-  "/delivery/:deliveryId/skip",
-  authMiddleware,
-  skipDelivery
-);
+router.delete("/:id",authMiddleware,deleteSubscription);
 
-router.put(
-  "/delivery/:deliveryId/assign-rider",
-  authMiddleware,
-  assignRider
-);
+// ======================// USER - SKIP SINGLE DELIVERY// ==========================
+
+router.put("/delivery/:deliveryId/skip", authMiddleware, skipDelivery);
+
+router.put( "/delivery/:deliveryId/assign-rider", authMiddleware,  assignRider);
+
+
 
 module.exports = router;
 

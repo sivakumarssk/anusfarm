@@ -188,10 +188,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  title: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
+ title: {
+  fontSize: 10,
+  fontFamily: 'Inter-SemiBold',
+},
 
   activeBadge: {
     backgroundColor: '#D8EFD8',
@@ -201,24 +201,25 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 
-  activeText: {
-    color: '#0A8A2A',
-    fontSize: 10,
-    fontWeight:'600',
-  },
+ activeText: {
+  color: '#0A8A2A',
+  fontSize: 10,
+  fontFamily: 'Inter-SemiBold',
+},
 
-  product: {
-    marginTop: 2,
-    color: '#888',
-    fontSize: 12,
-  },
+ product: {
+  marginTop: 2,
+  color: '#888',
+  fontSize: 10,
+  fontFamily: 'Inter-Regular',
+},
 
-  price: {
-    color: '#0A8A2A',
-    fontWeight: '700',
-    fontSize: 13,
-    marginTop:2,
-  },
+ price: {
+  color: '#0A8A2A',
+  fontFamily: 'Inter-Bold',
+  fontSize: 11,
+  marginTop: 2,
+},
 
   divider: {
     height: 1,
@@ -234,9 +235,10 @@ const styles = StyleSheet.create({
 },
 
   feature: {
-    fontSize: 10,
-    color: '#666',
-  },
+  fontSize: 10,
+  color: '#666',
+  fontFamily: 'Inter-Regular',
+},
 
   deliveryCard: {
   backgroundColor: '#DDEADD',
@@ -254,16 +256,16 @@ verticalDivider: {
   backgroundColor: '#B8CBB8',
   marginHorizontal: 12,
 },
-
-  label: {
+label: {
   color: '#8A8A8A',
   fontSize: 10,
+  fontFamily: 'Inter-Regular',
 },
 
  value: {
   marginTop: 2,
   color: '#0A8A2A',
-  fontWeight: '700',
+  fontFamily: 'Inter-Bold',
   fontSize: 13,
 },
   featureItem: {

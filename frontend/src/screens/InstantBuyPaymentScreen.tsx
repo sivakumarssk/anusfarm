@@ -2,65 +2,35 @@ import React, {useState} from 'react';
 import { useCart } from '../context/CartContext';
 import {useOrderHistory,} from '../context/OrderHistoryContext';
 import {API_URL} from "../config/api";
-import {View,Text, StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image
-} from 'react-native';
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import {
-  useNavigation,
-} from '@react-navigation/native';
-
-import { Ionicons }
-from '@expo/vector-icons';
+import {View,Text, StyleSheet, TouchableOpacity, ScrollView, Image} from 'react-native';
+import { SafeAreaView,} from 'react-native-safe-area-context';
+import { useNavigation,} from '@react-navigation/native';
+import { Ionicons }from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-
+import CustomAlert from '../components/CustomAlert';
 const InstantBuyPaymentScreen = ({route}: any) => {
 const address = route?.params?.address;
-console.log("ORDER ADDRESS =", address);
-console.log("ROUTE =", route);
-console.log("PARAMS =", route?.params);
-console.log("ADDRESS =", route?.params?.address);
-  console.log("ORDER ADDRESS =", address);
   const [loading,setLoading] = useState(false);
-const [
-  paymentMethod,
-  setPaymentMethod,
-] = useState('upi');
+const [ paymentMethod, setPaymentMethod,] = useState('upi');
+const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState("");
+const [alertMessage, setAlertMessage] = useState("");
+  const navigation =useNavigation<any>();
+    const { addOrder } =useOrderHistory();
 
-
-  const navigation =
-    useNavigation<any>();
-
-    const { addOrder } =
-  useOrderHistory();
-
-
-
-  
-//    const {cartItems,clearCart,} = useCart();
-// const allItems = cartItems;
-const {
-  clearCart,
-} = useCart();
-
+const {clearCart,} = useCart();
+const showCustomAlert = (title: string, message: string) => {
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setAlertVisible(true);
+};
 
 const instantItems = route?.params?.items || [];
-
 const orderType = route?.params?.type;
 
 
 const allItems:any[] = instantItems;
-console.log("PAYMENT SCREEN ITEMS =", allItems);
-console.log("ORDER TYPE =", orderType);
-
-// const subtotal =allItems.reduce((sum, item) =>  sum +item.price * item.quantity,0);
 
    const subtotal =allItems.reduce((sum:number,item:any) =>
       sum +  Number(item.price) * Number(item.quantity), 0);
@@ -115,38 +85,7 @@ console.log("ORDER TYPE =", orderType);
 ];
 
 
-// const handlePayNow = () => {
 
-//   addOrder({
-//     orderId:
-//       Date.now().toString(),
-
-//     orderType:
-//       'instant',
-
-//     items:
-//       cartItems,
-
-//     totalAmount:
-//       totalAmount,
-
-//     status:
-//       'delivered',
-
-//     deliveryDate: new Date().toISOString(),
-
-//     paymentMethod:
-//       paymentMethod,
-//   });
-
-//   clearCart();
-
-//   navigation.navigate(
-//     'InstantBuySuccess'
-//   );
-
-// };
- 
   const handlePayNow = async () => {
 
 if(loading) return;
@@ -157,15 +96,11 @@ try {
 
 const token = await AsyncStorage.getItem("token");
 if (allItems.length === 0) {
-  alert("Cart is empty");
+  showCustomAlert("Empty Cart", "Cart is empty.");
   return;
 }
 
-// const requestItems = allItems.map(item => ({
-//   product_id: item.id,
-//   quantity: item.quantity,
-//   price: item.price,
-// }));
+
 const requestItems = allItems.map(
 (item:any)=>({
 
@@ -182,7 +117,7 @@ console.log("ALL ITEMS =", allItems);
 console.log("REQUEST ITEMS =", requestItems);
 
 if (requestItems.length === 0) {
-  alert("No products selected");
+  showCustomAlert("No Products", "No products selected.");
   return;
 }
 
@@ -206,10 +141,12 @@ if (paymentMethod === "wallet") {
   console.log("WALLET PAYMENT:", walletData);
 
   if (!walletData.success) {
-    alert(walletData.message);
-    setLoading(false);
-    return;
-  }
+  showCustomAlert(
+    "Payment Failed",
+    walletData.message || "Unable to complete wallet payment."
+  );
+  return;
+}
 
   const orderId = walletData.order_id;
 
@@ -240,23 +177,6 @@ if (paymentMethod === "wallet") {
 
   return;
 }
-  
-
-
-
-// const response = await fetch(`${API_URL}/api/orders`, {
-//   method: "POST",
-//   headers: {
-//     "Content-Type": "application/json",
-//     "Authorization": `Bearer ${token}`,
-//   },
-//   body: JSON.stringify({
-//     total_amount: totalAmount,
-//     payment_method: paymentMethod,
-//     items: requestItems,
-//      address_id: address.id
-//   }),
-// });
 const finalPaymentMethod =
   paymentMethod === "cod"
     ? "COD"
@@ -316,14 +236,7 @@ if(orderType !== "instant"){
    clearCart();
 }
 
-// navigation.navigate(
-// "InstantBuySuccess",
-// {
-// orderId,
-// total:totalAmount,
-// paymentMethod
-// }
-// );
+
 navigation.navigate(
   "InstantBuySuccess",
   {
@@ -340,10 +253,20 @@ navigation.navigate(
 
 
 }
-catch(error){
+catch (error: any) {
+  console.log("ORDER ERROR:", error);
 
-console.log(error);
+  if (axios.isAxiosError(error)) {
+    console.log("STATUS:", error.response?.status);
+    console.log("ERROR DATA:", error.response?.data);
+    console.log("ERROR MESSAGE:", error.response?.data?.message);
+  }
 
+  showCustomAlert(
+  "Order Failed",
+  error.response?.data?.message ||
+    "Failed to place order. Please try again."
+);
 }
 finally{
 
@@ -564,6 +487,14 @@ setLoading(false);
 
       </ScrollView>
 
+      <CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  buttonText="OK"
+  onClose={() => setAlertVisible(false)}
+/>
+
     </SafeAreaView>
 
   );
@@ -586,25 +517,21 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
 
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-
-    color: '#000',
-
-    marginLeft: 12,
-  },
+ headerTitle: {
+  fontSize: 15,
+  fontFamily: 'Inter-SemiBold',
+  color: '#000',
+  marginLeft: 12,
+},
 
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-
-    color: '#000',
-
-    marginHorizontal: 16,
-    marginTop: 24,
-    marginBottom: 12,
-  },
+  fontSize: 13,
+  fontFamily: 'Inter-SemiBold',
+  color: '#000',
+  marginHorizontal: 16,
+  marginTop: 24,
+  marginBottom: 12,
+},
 
   summaryCard: {
     backgroundColor: '#FFF',
@@ -636,33 +563,34 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 14,
-    color: '#555',
-  },
+  fontSize: 12,
+  color: '#555',
+  fontFamily: 'Inter-Regular',
+},
 
   value: {
-    fontSize: 14,
-    color: '#000',
-    fontWeight: '500',
-  },
+  fontSize: 13,
+  color: '#000',
+  fontFamily: 'Inter-Medium',
+},
 
   freeText: {
-    fontSize: 14,
-    color: '#0A8A2A',
-    fontWeight: '500',
-  },
+  fontSize: 12,
+  color: '#0A8A2A',
+  fontFamily: 'Inter-Medium',
+},
 
   totalLabel: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#000',
-  },
+  fontSize: 12,
+  fontFamily: 'Inter-Bold',
+  color: '#000',
+},
 
   totalValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#000',
-  },
+  fontSize: 12,
+  fontFamily: 'Inter-Bold',
+  color: '#000',
+},
 
   dashedLine: {
     borderStyle: 'dashed',
@@ -674,11 +602,9 @@ const styles = StyleSheet.create({
 
 
   paymentTitle: {
-  fontSize: 15,
-  fontWeight: '600',
-
+  fontSize: 13,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
-
   marginHorizontal: 16,
   marginTop: 20,
   marginBottom: 12,
@@ -756,14 +682,15 @@ paymentIcon: {
 
 methodTitle: {
   fontSize: 14,
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
 },
 
 methodSub: {
-  fontSize: 11,
+  fontSize: 10,
   color: '#777',
   marginTop: 2,
+  fontFamily: 'Inter-Regular',
 },
 
 radioOuter: {
@@ -810,8 +737,8 @@ payButton: {
 
 payText: {
   color: '#FFF',
-  fontSize: 16,
-  fontWeight: '600',
+  fontSize: 13,
+  fontFamily: 'Inter-SemiBold',
 },
 
 });

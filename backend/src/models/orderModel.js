@@ -2,8 +2,8 @@
 const pool = require("../config/db");
 
 
-const getAllOrders = async () => {
 
+const getAllOrders = async () => {
     const result = await pool.query(`
         SELECT
             o.id AS order_id,
@@ -15,6 +15,10 @@ const getAllOrders = async () => {
             o.status,
             o.payment_method,
             o.created_at,
+
+            -- Instant order delivery is next day
+            (o.created_at::date + INTERVAL '1 day')::date
+                AS delivery_date,
 
             u.name AS customer_name,
             u.phone AS customer_phone,
@@ -98,7 +102,8 @@ const getOrderStats = async()=>{
 
 };
 
-  const getPendingStats = async () => {
+
+const getPendingStats = async () => {
 
     const result = await pool.query(`
         SELECT
@@ -113,6 +118,7 @@ const getOrderStats = async()=>{
             SELECT COUNT(*)
             FROM subscription_delivery_schedule
             WHERE LOWER(status) = 'pending'
+            AND delivery_date = CURRENT_DATE
         ) AS subscription_pending
     `);
 
@@ -121,7 +127,12 @@ const getOrderStats = async()=>{
         subscription_pending: Number(result.rows[0].subscription_pending)
     };
 };
-//   const createOrder = async ( userId,  items,paymentMethod,addressId) => {
+// const createOrder = async (
+//     userId,
+//     items,
+//     paymentMethod,
+//     addressId
+// ) => {
 
 //     const client = await pool.connect();
 
@@ -131,65 +142,107 @@ const getOrderStats = async()=>{
 
 //         let totalAmount = 0;
 
-//         // Calculate total
+//         // ==========================================
+//         // CHECK INSTANT STOCK
+//         // ==========================================
+
 //         for (const item of items) {
 
-//             console.log("ITEM =", item);
-//             console.log("PRODUCT ID =", item.product_id);
+//             const requestedQuantity = Number(item.quantity);
 
-//             const product = await client.query(
+//             if (
+//                 !Number.isInteger(requestedQuantity) ||
+//                 requestedQuantity <= 0
+//             ) {
+//                 throw new Error("Invalid product quantity");
+//             }
+
+//             const productResult = await client.query(
 //                 `
-//                 SELECT price
+//                 SELECT
+//                     id,
+//                     price,
+//                     stock,
+//                     subscription_stock,
+//                     instant_stock
 //                 FROM products
 //                 WHERE id = $1
+//                 FOR UPDATE
 //                 `,
 //                 [item.product_id]
 //             );
 
-//             if (product.rows.length === 0) {
+//             if (productResult.rows.length === 0) {
 //                 throw new Error("Product not found");
 //             }
 
+//             const product = productResult.rows[0];
+
+//             const instantStock = Number(product.instant_stock);
+
+//             console.log(
+//                 "PRODUCT:",
+//                 item.product_id,
+//                 "TOTAL:",
+//                 product.stock,
+//                 "SUBSCRIPTION STOCK:",
+//                 product.subscription_stock,
+//                 "INSTANT STOCK:",
+//                 instantStock,
+//                 "REQUESTED:",
+//                 requestedQuantity
+//             );
+
+//             // ==========================================
+//             // CHECK INSTANT STOCK
+//             // ==========================================
+
+//             if (requestedQuantity > instantStock) {
+
+//                 const error = new Error(
+//                     `Only ${instantStock} units are available for instant order.`
+//                 );
+
+//                 error.statusCode = 400;
+
+//                 throw error;
+//             }
+
 //             totalAmount +=
-//                 Number(product.rows[0].price) *
-//                 item.quantity;
+//                 Number(product.price) * requestedQuantity;
 //         }
 
+//         // ==========================================
+//         // CREATE ORDER
+//         // ==========================================
 
-// const orderResult = await client.query(
-//     `
-//     INSERT INTO orders
-//     (
-//         user_id,
-//         total_amount,
-//         status,
-//         payment_method,
-//         address_id
-//     )
-//     VALUES
-//     (
-//         $1,
-//         $2,
-//         $3,
-//         $4,
-//         $5
-//     )
-//     RETURNING id
-//     `,
-//     [
-//         userId,
-//         totalAmount,
-//         "Pending",
-//         paymentMethod,
-//         addressId
-//     ]
-// );
-//         const orderId =
-//             orderResult.rows[0].id;
+//         const orderResult = await client.query(
+//             `
+//             INSERT INTO orders
+//             (
+//                 user_id,
+//                 total_amount,
+//                 status,
+//                 payment_method,
+//                 address_id
+//             )
+//             VALUES
+//             ($1, $2, $3, $4, $5)
+//             RETURNING id
+//             `,
+//             [
+//                 userId,
+//                 totalAmount,
+//                 "Pending",
+//                 paymentMethod,
+//                 addressId
+//             ]
+//         );
 
+//         const orderId = orderResult.rows[0].id;
 
 //         // ==========================================
-//         // INSERT ORDER ITEMS
+//         // INSERT ORDER ITEMS + REDUCE INSTANT STOCK
 //         // ==========================================
 
 //         for (const item of items) {
@@ -202,7 +255,6 @@ const getOrderStats = async()=>{
 //                 `,
 //                 [item.product_id]
 //             );
-
 
 //             await client.query(
 //                 `
@@ -224,21 +276,30 @@ const getOrderStats = async()=>{
 //                 ]
 //             );
 
-//         }
+//             // ==========================================
+//             // REDUCE INSTANT STOCK
+//             // ==========================================
 
+//             await client.query(
+//                 `
+//                 UPDATE products
+//                 SET
+//                     instant_stock = instant_stock - $1,
+//                     stock = stock - $1
+//                 WHERE id = $2
+//                 `,
+//                 [
+//                     item.quantity,
+//                     item.product_id
+//                 ]
+//             );
+//         }
 
 //         await client.query("COMMIT");
 
-
-//       console.log(
-//     "ORDER CREATED:",
-//     orderId,
-//     "RIDER: Not Assigned"
-// );
-
+//         console.log("ORDER CREATED:", orderId);
 
 //         return orderId;
-
 
 //     } catch (error) {
 
@@ -251,10 +312,9 @@ const getOrderStats = async()=>{
 //         client.release();
 
 //     }
-
 // };
 
-   const createOrder = async (
+const createOrder = async (
     userId,
     items,
     paymentMethod,
@@ -269,18 +329,31 @@ const getOrderStats = async()=>{
 
         let totalAmount = 0;
 
+        // ==========================================
+        // CHECK INSTANT STOCK
+        // ==========================================
+
         for (const item of items) {
 
             const requestedQuantity = Number(item.quantity);
 
-            if (!Number.isInteger(requestedQuantity) || requestedQuantity <= 0) {
+            if (
+                !Number.isInteger(requestedQuantity) ||
+                requestedQuantity <= 0
+            ) {
                 throw new Error("Invalid product quantity");
             }
 
-            // Get product stock and price
+            // ==========================================
+            // LOCK PRODUCT
+            // ==========================================
+
             const productResult = await client.query(
                 `
-                SELECT id, price, stock
+                SELECT
+                    id,
+                    price,
+                    stock
                 FROM products
                 WHERE id = $1
                 FOR UPDATE
@@ -296,67 +369,100 @@ const getOrderStats = async()=>{
 
             const totalStock = Number(product.stock);
 
-            // Get active subscription reserved quantity
+            // ==========================================
+            // CALCULATE ACTIVE SUBSCRIPTION QUANTITY
+            // ==========================================
+
             const subscriptionResult = await client.query(
                 `
-                SELECT COALESCE(SUM(si.quantity), 0) AS reserved_quantity
+                SELECT
+                    COALESCE(SUM(si.quantity), 0) AS reserved_quantity
+
                 FROM subscription_items si
+
                 INNER JOIN subscriptions s
                     ON s.id = si.subscription_id
+
                 WHERE si.product_id = $1
+
                 AND LOWER(s.status) = 'active'
                 `,
                 [item.product_id]
             );
 
             const subscriptionReserved = Number(
-                subscriptionResult.rows[0].reserved_quantity
+                subscriptionResult.rows[0].reserved_quantity || 0
             );
 
-            // Stock available for instant purchase
+            // ==========================================
+            // CALCULATE INSTANT AVAILABLE
+            // ==========================================
+
             const availableForInstant = Math.max(
                 0,
                 totalStock - subscriptionReserved
             );
 
             console.log(
+                "================================="
+            );
+
+            console.log(
                 "PRODUCT:",
-                item.product_id,
+                item.product_id
+            );
+
+            console.log(
                 "TOTAL STOCK:",
-                totalStock,
+                totalStock
+            );
+
+            console.log(
                 "SUBSCRIPTION RESERVED:",
-                subscriptionReserved,
+                subscriptionReserved
+            );
+
+            console.log(
                 "INSTANT AVAILABLE:",
-                availableForInstant,
+                availableForInstant
+            );
+
+            console.log(
                 "REQUESTED:",
                 requestedQuantity
             );
 
-            // Check instant purchase quantity
-        //     if (requestedQuantity > availableForInstant) {
-        //         throw new Error(
-        //             `Only ${availableForInstant} units are available for instant purchase.`
-        //         );
-        //     }
-        //     totalAmount += Number(product.price) * requestedQuantity;
-        // }
-        // Check instant purchase quantity
-if (requestedQuantity > availableForInstant) {
+            console.log(
+                "================================="
+            );
 
-    const error = new Error(
-        `Only ${availableForInstant} units are available for instant purchase.`
-    );
+            // ==========================================
+            // CHECK INSTANT ORDER
+            // ==========================================
 
-    error.statusCode = 400;
+            if (
+                requestedQuantity >
+                availableForInstant
+            ) {
 
-    throw error;
-}
+                const error = new Error(
+                    `Only ${availableForInstant} units are available for instant order.`
+                );
 
-totalAmount +=
-    Number(product.price) * requestedQuantity;
-}
+                error.statusCode = 400;
 
-        // Create order
+                throw error;
+            }
+
+            totalAmount +=
+                Number(product.price) *
+                requestedQuantity;
+        }
+
+        // ==========================================
+        // CREATE ORDER
+        // ==========================================
+
         const orderResult = await client.query(
             `
             INSERT INTO orders
@@ -380,9 +486,13 @@ totalAmount +=
             ]
         );
 
-        const orderId = orderResult.rows[0].id;
+        const orderId =
+            orderResult.rows[0].id;
 
-        // Insert order items
+        // ==========================================
+        // INSERT ORDER ITEMS
+        // ==========================================
+
         for (const item of items) {
 
             const product = await client.query(
@@ -413,11 +523,31 @@ totalAmount +=
                     product.rows[0].price
                 ]
             );
+
+            // ==========================================
+            // REDUCE TOTAL STOCK
+            // ==========================================
+
+            await client.query(
+                `
+                UPDATE products
+                SET
+                    stock = stock - $1
+                WHERE id = $2
+                `,
+                [
+                    item.quantity,
+                    item.product_id
+                ]
+            );
         }
 
         await client.query("COMMIT");
 
-        console.log("ORDER CREATED:", orderId);
+        console.log(
+            "ORDER CREATED:",
+            orderId
+        );
 
         return orderId;
 
@@ -577,6 +707,211 @@ const assignRiderToOrder = async (orderId, riderId) => {
     return result.rows[0];
 };
 
+const cancelMyOrder = async (orderId, userId) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        // Find and lock this user's order
+        const orderResult = await client.query(
+            `
+            SELECT id, user_id, status
+            FROM orders
+            WHERE id = $1 AND user_id = $2
+            FOR UPDATE
+            `,
+            [orderId, userId]
+        );
+
+        if (orderResult.rows.length === 0) {
+            const error = new Error("Order not found");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const order = orderResult.rows[0];
+
+        // Allow cancellation only while Pending
+        if (String(order.status).toLowerCase() !== "pending") {
+            const error = new Error(
+                "This order can no longer be cancelled."
+            );
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // Restore the stock deducted when the order was placed
+        const itemsResult = await client.query(
+            `
+            SELECT product_id, quantity
+            FROM order_items
+            WHERE order_id = $1
+            `,
+            [orderId]
+        );
+
+        for (const item of itemsResult.rows) {
+            await client.query(
+                `
+                UPDATE products
+                SET stock = stock + $1
+                WHERE id = $2
+                `,
+                [item.quantity, item.product_id]
+            );
+        }
+
+        // Update status only if the order is still Pending
+        const updateResult = await client.query(
+            `
+            UPDATE orders
+            SET status = 'Cancelled'
+            WHERE id = $1
+              AND user_id = $2
+              AND LOWER(status) = 'pending'
+            RETURNING *
+            `,
+            [orderId, userId]
+        );
+
+        if (updateResult.rows.length === 0) {
+            throw new Error(
+                "Order could not be cancelled. Please refresh and try again."
+            );
+        }
+
+        await client.query("COMMIT");
+
+        return updateResult.rows[0];
+
+    } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+const cancelOrderByAdmin = async (orderId) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        // ==========================================
+        // FIND AND LOCK ORDER
+        // ==========================================
+
+        const orderResult = await client.query(
+            `
+            SELECT
+                id,
+                user_id,
+                status
+            FROM orders
+            WHERE id = $1
+            FOR UPDATE
+            `,
+            [orderId]
+        );
+
+        if (orderResult.rows.length === 0) {
+            const error = new Error("Order not found");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const order = orderResult.rows[0];
+
+        // ==========================================
+        // ADMIN CAN CANCEL ONLY PENDING ORDERS
+        // ==========================================
+
+        if (
+            String(order.status || "")
+                .trim()
+                .toLowerCase() !== "pending"
+        ) {
+            const error = new Error(
+                "Only pending orders can be cancelled."
+            );
+
+            error.statusCode = 400;
+
+            throw error;
+        }
+
+        // ==========================================
+        // GET ORDER ITEMS
+        // ==========================================
+
+        const itemsResult = await client.query(
+            `
+            SELECT
+                product_id,
+                quantity
+            FROM order_items
+            WHERE order_id = $1
+            `,
+            [orderId]
+        );
+
+        // ==========================================
+        // RESTORE PRODUCT STOCK
+        // ==========================================
+
+        for (const item of itemsResult.rows) {
+            await client.query(
+                `
+                UPDATE products
+                SET stock = stock + $1
+                WHERE id = $2
+                `,
+                [
+                    item.quantity,
+                    item.product_id
+                ]
+            );
+        }
+
+        // ==========================================
+        // CANCEL ORDER
+        // ==========================================
+
+        const updateResult = await client.query(
+            `
+            UPDATE orders
+            SET status = 'Cancelled'
+            WHERE id = $1
+              AND LOWER(status) = 'pending'
+            RETURNING *
+            `,
+            [orderId]
+        );
+
+        if (updateResult.rows.length === 0) {
+            throw new Error(
+                "Order could not be cancelled. Please refresh and try again."
+            );
+        }
+
+        await client.query("COMMIT");
+
+        return updateResult.rows[0];
+
+    } catch (error) {
+
+        await client.query("ROLLBACK");
+
+        throw error;
+
+    } finally {
+
+        client.release();
+    }
+};
+
 module.exports = {
     getAllOrders,
     getOrderStats,
@@ -587,5 +922,7 @@ module.exports = {
     updateOrderStatus,
     deleteOrder,
      assignRiderToOrder,
+     cancelMyOrder,
+      cancelOrderByAdmin,
 };
 

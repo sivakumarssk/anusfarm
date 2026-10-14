@@ -48,40 +48,82 @@ const QualityTestingCard = () => {
 
 export default QualityTestingCard;
 
-const styles = StyleSheet.create({
+// const styles = StyleSheet.create({
 
+//   container: {
+//     backgroundColor: '#DDF5E4',
+//     borderRadius: 12,
+//     padding: 20,
+//     marginTop: 14,
+//     marginBottom: 0,
+//   },
+
+//   headerRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 10,
+//   },
+
+//   heading: {
+//     marginLeft: 6,
+//     fontSize: 13,
+//     fontFamily: 'Inter-SemiBold',
+//     color: '#000',
+//   },
+
+//   description: {
+//     fontSize: 12,
+//     fontFamily: 'Inter-Regular',
+//     color: '#4B5563',
+//     lineHeight: 18,
+//   },
+
+//   linkText: {
+//     marginTop: 12,
+//     fontSize: 12,
+//     fontFamily: 'Inter-Regular',
+//     color: '#000',
+//     textDecorationLine: 'underline',
+//   },
+
+// });
+
+const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#DDF5E4',
-    borderRadius: 12,
-    padding: 20,
-    marginTop: 14,
-    marginBottom: 0,
+    backgroundColor: "#F0FAF3",
+    borderRadius: 20,
+    padding: 18,
+    marginTop: 18,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: "#D9EEDC",
   },
 
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 9,
   },
 
   heading: {
-    marginLeft: 6,
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#000',
+    marginLeft: 7,
+    fontSize: 15,
+    fontFamily: "Inter-SemiBold",
+    color: "#111",
   },
 
   description: {
-    fontSize: 14,
-    color: '#4B5563',
+    fontSize: 12,
+    fontFamily: "Inter-Regular",
+    color: "#555",
     lineHeight: 18,
   },
 
   linkText: {
     marginTop: 12,
     fontSize: 12,
-    color: '#000',
-    textDecorationLine: 'underline',
+    fontFamily: "Inter-SemiBold",
+    color: "#2E7D32",
+    textDecorationLine: "underline",
   },
-
 });

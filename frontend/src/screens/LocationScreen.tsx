@@ -6,6 +6,9 @@ import {View,Text,TextInput,TouchableOpacity,StyleSheet,Image,Keyboard,Touchable
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import {API_URL} from "../config/api";
+import CustomAlert from '../components/CustomAlert';
+
 
 const LocationScreen = () => {
   const getCurrentLocation = async () => {
@@ -15,19 +18,22 @@ const LocationScreen = () => {
     const enabled =
       await Location.hasServicesEnabledAsync();
    if (!enabled) {
-  Alert.alert(
-    'Location Disabled',
-    'Please enable location services'
-  );
+  showCustomAlert(
+  "Location Disabled",
+  "Please enable location services."
+);
+return;
   return;
 }
     // Ask permission
     const { status } =
       await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      alert(
-        'Location permission denied'
-      );
+      showCustomAlert(
+  "Permission Denied",
+  "Location permission denied."
+);
+return;
       return;
     }
     // Get current location
@@ -85,23 +91,24 @@ const serviceableAreas = [
 ];
 const handleConfirmLocation = async () => {
   if (!address.trim()) {
-    Alert.alert(
-      "Location Required",
-      "Please select a location first"
-    );
-    return;
+   showCustomAlert(
+  "Location Required",
+  "Please select a location first."
+);
+return;
   }
   try {
     const token = await AsyncStorage.getItem("token");
     if (!token) {
-      Alert.alert(
-        "Error",
-        "Token not found"
-      );
+      showCustomAlert(
+  "Error",
+  "Token not found."
+);
+return;
       return;
     }
     const response = await fetch(
-     "http://192.168.0.112:5000/api/location",
+     `${API_URL}/api/location`,
       {
         method: "POST",
         headers: {
@@ -122,33 +129,62 @@ const handleConfirmLocation = async () => {
       data
     );
     if(data.success){
-      await AsyncStorage.setItem(
-        "userLocation",
-        JSON.stringify({
-          address,
-          latitude,
-          longitude
-        })
-      );
-      Alert.alert(
-        "Success",
-        "Location Saved Successfully"
-      );
+      // await AsyncStorage.setItem(
+      //   "userLocation",
+      //   JSON.stringify({
+      //     address,
+      //     latitude,
+      //     longitude
+      //   })
+      // );
+      // Save the new user's location
+// await AsyncStorage.setItem("selectedAddress", address);
+
+// await AsyncStorage.setItem(
+//   "userLocation",
+//   JSON.stringify({
+//     address,
+//     latitude,
+//     longitude
+//   })
+// );
+
+const userId = await AsyncStorage.getItem("userId");
+
+if (!userId) {
+  showCustomAlert("Error", "User ID not found. Please log in again.");
+  return;
+}
+
+// Save normal location separately for this user
+await AsyncStorage.setItem(
+  `userLocation_${userId}`,
+  JSON.stringify({
+    address,
+    latitude,
+    longitude,
+  })
+);
+      showCustomAlert(
+  "Success",
+  "Location Saved Successfully",
+  true
+);
       navigation.navigate(
         "HomeScreen"
       );
     } else {
-      Alert.alert(
-        "Error",
-        data.message
-      );
+      showCustomAlert(
+  "Error",
+  data.message || "Unable to save location."
+);
     }
   } catch(error) {
     console.log(error);
-    Alert.alert(
-      "Error",
-      "Unable to save location"
-    );
+    showCustomAlert(
+  "Error",
+  "Unable to save location."
+);
   }
 };
   const navigation = useNavigation<any>();
@@ -158,6 +194,21 @@ const handleConfirmLocation = async () => {
   useState<number | null>(null);
    const [longitude, setLongitude] =
   useState<number | null>(null);
+  const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState("");
+const [alertMessage, setAlertMessage] = useState("");
+const [navigateAfterAlert, setNavigateAfterAlert] = useState(false);
+
+const showCustomAlert = (
+  title: string,
+  message: string,
+  navigate = false
+) => {
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setNavigateAfterAlert(navigate);
+  setAlertVisible(true);
+};
   return (
     <TouchableWithoutFeedback
    onPress={() => Keyboard.dismiss()}>
@@ -291,13 +342,27 @@ const handleConfirmLocation = async () => {
 
       </TouchableOpacity>
       </Pressable>
+<CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  buttonText="OK"
+  onClose={() => {
+    setAlertVisible(false);
 
+    if (navigateAfterAlert) {
+      setNavigateAfterAlert(false);
+      navigation.navigate("HomeScreen");
+    }
+  }}
+/>
     </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };
 
 export default LocationScreen;
+
 
 const styles = StyleSheet.create({
 
@@ -307,27 +372,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-header: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginTop: 45,
-  marginBottom: 10,
-},
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
 
   headerTitle: {
     flex: 1,
     textAlign: 'center',
     fontSize: 18,
-    fontWeight: '600',
-    marginRight: 24,
+    fontFamily: 'Inter-SemiBold',
+    marginLeft:10,
+    color: '#000',
   },
 
- description: {
-  textAlign: 'center',
-  color: '#777',
-  fontSize: 14,
-  lineHeight: 18,
-},
+  description: {
+    textAlign: 'center',
+    color: '#777',
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    lineHeight: 18,
+  },
+
   searchContainer: {
     marginTop: 25,
     backgroundColor: '#FFF',
@@ -344,6 +412,8 @@ header: {
     flex: 1,
     marginHorizontal: 10,
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
+    color: '#000',
   },
 
   mapImage: {
@@ -382,12 +452,13 @@ header: {
 
   locationTitle: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#000',
   },
 
   locationSubtitle: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
     color: '#888',
     marginTop: 3,
   },
@@ -400,14 +471,15 @@ header: {
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   disabledButton: {
-  opacity: 0.5,
-},
+    opacity: 0.5,
+  },
 
   buttonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
 
 });

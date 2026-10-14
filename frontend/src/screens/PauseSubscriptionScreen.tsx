@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert,} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { API_URL } from "../config/api";
-// const BASE_URL = "http://192.168.0.112:5000/api";
+import CustomAlert from "../components/CustomAlert";
 
 export default function PauseSubscriptionScreen() {
   const navigation = useNavigation<any>();
@@ -15,43 +15,95 @@ export default function PauseSubscriptionScreen() {
 
   const [pauseFrom, setPauseFrom] = useState("");
   const [pauseTo, setPauseTo] = useState("");
+const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState("");
+const [alertMessage, setAlertMessage] = useState("");
+const [navigateAfterAlert, setNavigateAfterAlert] = useState(false);
+
+const showCustomAlert = (
+  title: string,
+  message: string,
+  navigate = false
+) => {
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setNavigateAfterAlert(navigate);
+  setAlertVisible(true);
+};
+
+const closeCustomAlert = () => {
+  setAlertVisible(false);
+
+  if (navigateAfterAlert) {
+    setNavigateAfterAlert(false);
+    navigation.goBack();
+  }
+};
 
   const pauseSubscription = async () => {
-    if (!pauseFrom || !pauseTo) {
-      Alert.alert("Enter both dates");
-      return;
-    }
+if (!pauseFrom || !pauseTo) {
+showCustomAlert(
+"Missing Dates",
+"Please enter both pause and resume dates."
+);
+return;
+}
 
-    try {
-      const token = await AsyncStorage.getItem("token");
+if (pauseFrom > pauseTo) {
+showCustomAlert(
+"Invalid Dates",
+"Resume date must be on or after the pause date."
+);
+return;
+}
 
-      const res = await fetch(
-        `${API_URL}/subscriptions/${id}/pause`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            pause_from: pauseFrom,
-            pause_to: pauseTo,
-          }),
-        }
-      );
+try {
+const token = await AsyncStorage.getItem("token");
 
-      const json = await res.json();
 
-      if (json.success) {
-        Alert.alert("Subscription Paused");
-        navigation.goBack();
-      } else {
-        Alert.alert(json.message);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
+const res = await fetch(
+  `${API_URL}/subscriptions/${id}/pause`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      pause_from: pauseFrom,
+      pause_to: pauseTo,
+    }),
+  }
+);
+
+const json = await res.json();
+
+if (json.success) {
+  showCustomAlert(
+    "Success",
+    "Subscription Paused Successfully",
+    true
+  );
+} else {
+  showCustomAlert(
+    "Unable to Pause",
+    json.message || "Unable to pause subscription."
+  );
+}
+
+
+} catch (e) {
+console.log(e);
+
+
+showCustomAlert(
+  "Error",
+  "Something went wrong. Please try again."
+);
+
+
+}
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -73,11 +125,13 @@ export default function PauseSubscriptionScreen() {
         </Text>
 
         <TextInput
-          placeholder="YYYY-MM-DD"
-          value={pauseFrom}
-          onChangeText={setPauseFrom}
-          style={styles.input}
-        />
+  placeholder="YYYY-MM-DD"
+  placeholderTextColor="#999"
+  value={pauseFrom}
+  onChangeText={setPauseFrom}
+  style={styles.input}
+  maxLength={10}
+/>
 
         <Text style={styles.label}>
           Resume On
@@ -85,9 +139,11 @@ export default function PauseSubscriptionScreen() {
 
         <TextInput
           placeholder="YYYY-MM-DD"
+           placeholderTextColor="#999"
           value={pauseTo}
           onChangeText={setPauseTo}
           style={styles.input}
+          maxLength={10}
         />
 
         <TouchableOpacity
@@ -100,7 +156,13 @@ export default function PauseSubscriptionScreen() {
         </TouchableOpacity>
 
       </View>
-
+<CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  buttonText="OK"
+  onClose={closeCustomAlert}
+/>
     </SafeAreaView>
   );
 }
@@ -116,12 +178,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
   },
-
   title: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginLeft: 10,
-  },
+  fontFamily: "Inter-Bold",
+  fontSize: 22,
+  marginLeft: 10,
+  color: "#000",
+},
+
+label: {
+  fontFamily: "Inter-SemiBold",
+  marginBottom: 8,
+  marginTop: 12,
+  color: "#222",
+},
+
+input: {
+  fontFamily: "Inter-Regular",
+  fontSize: 15,
+  color: "#000",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 10,
+  padding: 12,
+},
+
+buttonText: {
+  fontFamily: "Inter-Bold",
+  color: "#fff",
+  textAlign: "center",
+  fontSize: 15,
+},
+
+ 
 
   card: {
     margin: 16,
@@ -130,18 +218,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
-  label: {
-    fontWeight: "600",
-    marginBottom: 8,
-    marginTop: 12,
-  },
+ 
 
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
-    padding: 12,
-  },
+  
 
   button: {
     marginTop: 25,
@@ -150,9 +229,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  buttonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "700",
-  },
+ 
 });

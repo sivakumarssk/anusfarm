@@ -1,49 +1,22 @@
 import React, {  useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator,  TouchableOpacity,} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_URL } from "../config/api";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect , useNavigation,} from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import  {useCallback} from "react";
 const NotificationScreen = () => {
+   const navigation = useNavigation<any>();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
  useFocusEffect(
   useCallback(() => {
     fetchNotifications();
+    markAsRead();
   }, [])
 );
-  // const fetchNotifications = async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem("token");
-
-  //     const response = await fetch(
-  //       `${API_URL}/api/notifications`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     const data = await response.json();
-
-  //     if (data.success) {
-  //       setNotifications(data.notifications);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const fetchNotifications = async () => {
   try {
     const token = await AsyncStorage.getItem("token");
@@ -102,7 +75,22 @@ const NotificationScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Notifications</Text>
+      <View style={styles.header}>
+  <TouchableOpacity
+    onPress={() => navigation.goBack()}
+    style={styles.backButton}
+  >
+    <Ionicons
+      name="arrow-back"
+      size={26}
+      color="#000"
+    />
+  </TouchableOpacity>
+
+  <Text style={styles.title}>
+    Notifications
+  </Text>
+</View>
 
       <FlatList
         data={notifications}
@@ -145,11 +133,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 20,
-  },
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 20,
+},
+
+backButton: {
+  marginRight: 15,
+},
+
+title: {
+  fontSize: 20,
+  fontFamily: "Inter-Bold",
+},
 
   card: {
     backgroundColor: "#fff",
@@ -160,19 +157,22 @@ const styles = StyleSheet.create({
   },
 
   type: {
-    fontWeight: "700",
+    fontFamily: "Inter-Bold",
     fontSize: 16,
     color: "#0A8A2A",
   },
 
   message: {
     marginTop: 5,
-    fontSize: 15,
+    fontSize: 13,
+    fontFamily: "Inter-Regular",
+    color: "#000",
   },
 
   time: {
     marginTop: 8,
     color: "gray",
     fontSize: 12,
+    fontFamily: "Inter-Regular",
   },
 });

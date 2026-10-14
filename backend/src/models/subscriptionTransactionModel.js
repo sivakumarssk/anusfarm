@@ -88,11 +88,11 @@ exports.getAllTransactions = async () => {
 
 // Create transaction
 
-// exports.createTransaction = async(data)=>{
-//  console.log("MODEL RECEIVED:", data);
+// exports.createTransaction = async (data) => {
+
+//     console.log("MODEL RECEIVED:", data);
 
 //     const {
-
 //         subscription_id,
 //         user_id,
 //         transaction_type,
@@ -101,67 +101,85 @@ exports.getAllTransactions = async () => {
 //         payment_status,
 //         transaction_id,
 //         description
-
-
 //     } = data;
 
-// console.log("CREATING SUBSCRIPTION TRANSACTION");
-// console.log({
-//   subscription_id: subscription.id,
-//   user_id,
-//   transaction_type: "Initial Payment",
-//   amount: wallet_amount,
-//   payment_method,
-// });
+//     try {
 
-//     const result = await pool.query(
+//         const result = await pool.query(
+//             `
+//             INSERT INTO subscription_transactions
+//             (
+//                 subscription_id,
+//                 user_id,
+//                 transaction_type,
+//                 amount,
+//                 payment_method,
+//                 payment_status,
+//                 transaction_id,
+//                 description
+//             )
+//             VALUES
+//             ($1,$2,$3,$4,$5,$6,$7,$8)
+//             RETURNING *
+//             `,
+//             [
+//                 subscription_id,
+//                 user_id,
+//                 transaction_type,
+//                 amount,
+//                 payment_method,
+//                 payment_status,
+//                 transaction_id,
+//                 description
+//             ]
+//         );
 
-//         `
-//         INSERT INTO subscription_transactions
+//         console.log("TRANSACTION INSERTED:", result.rows[0]);
 
-//         (
-//         subscription_id,
-//         user_id,
-//         transaction_type,
-//         amount,
-//         payment_method,
-//         payment_status,
-//         transaction_id,
-//         description
-//         )
+//         return result.rows[0];
 
+//     } catch (err) {
 
-//         VALUES
-//         ($1,$2,$3,$4,$5,$6,$7,$8)
+//         console.log("INSERT ERROR:", err);
 
-
-//         RETURNING *
-
-//         `,
-
-
-//         [
-//             subscription_id,
-//             user_id,
-//             transaction_type,
-//             amount,
-//             payment_method,
-//             payment_status,
-//             transaction_id,
-//             description
-//         ]
-
-//     );
-
-
-//     return result.rows[0];
-
+//         throw err;
+//     }
 // };
-exports.createTransaction = async (data) => {
 
-    console.log("MODEL RECEIVED:", data);
+ // Create transaction
+exports.createTransaction = async (data, client = pool) => {
+  console.log("MODEL RECEIVED:", data);
 
-    const {
+  const {
+    subscription_id,
+    user_id,
+    transaction_type,
+    amount,
+    payment_method,
+    payment_status,
+    transaction_id,
+    description,
+  } = data;
+
+  try {
+    // Verify the subscription using the same database client
+    const subscriptionCheck = await client.query(
+      "SELECT id FROM subscriptions WHERE id = $1",
+      [subscription_id]
+    );
+
+    console.log("SUBSCRIPTION CHECK:", subscriptionCheck.rows);
+
+    if (subscriptionCheck.rows.length === 0) {
+      throw new Error(
+        `Subscription ID ${subscription_id} does not exist in this transaction`
+      );
+    }
+
+    const result = await client.query(
+      `
+      INSERT INTO subscription_transactions
+      (
         subscription_id,
         user_id,
         transaction_type,
@@ -170,47 +188,27 @@ exports.createTransaction = async (data) => {
         payment_status,
         transaction_id,
         description
-    } = data;
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+      `,
+      [
+        subscription_id,
+        user_id,
+        transaction_type,
+        amount,
+        payment_method,
+        payment_status,
+        transaction_id,
+        description,
+      ]
+    );
 
-    try {
+    console.log("TRANSACTION INSERTED:", result.rows[0]);
 
-        const result = await pool.query(
-            `
-            INSERT INTO subscription_transactions
-            (
-                subscription_id,
-                user_id,
-                transaction_type,
-                amount,
-                payment_method,
-                payment_status,
-                transaction_id,
-                description
-            )
-            VALUES
-            ($1,$2,$3,$4,$5,$6,$7,$8)
-            RETURNING *
-            `,
-            [
-                subscription_id,
-                user_id,
-                transaction_type,
-                amount,
-                payment_method,
-                payment_status,
-                transaction_id,
-                description
-            ]
-        );
-
-        console.log("TRANSACTION INSERTED:", result.rows[0]);
-
-        return result.rows[0];
-
-    } catch (err) {
-
-        console.log("INSERT ERROR:", err);
-
-        throw err;
-    }
+    return result.rows[0];
+  } catch (err) {
+    console.error("INSERT TRANSACTION ERROR:", err);
+    throw err;
+  }
 };

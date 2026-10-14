@@ -40,8 +40,8 @@ const RecentProductsSection = () => {
 
   <Text
     style={{
-      fontSize: 18,
-      fontWeight: '600',
+      fontSize: 15,
+      fontFamily: 'Inter-SemiBold',
       color: '#000',
     }}
   >

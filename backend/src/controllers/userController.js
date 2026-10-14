@@ -32,40 +32,6 @@ exports.createUser = async (req, res) => {
     });
   }
 };
-// ======================// GET ALL USERS// ======================
-// exports.getAllUsers = async(req,res)=>{
-// try{
-// const result = await pool.query(`
-// SELECT
-// u.id,
-// u.name,
-// u.phone,
-// CASE
-// WHEN EXISTS(
-// SELECT 1
-// FROM subscriptions s
-// WHERE s.user_id=u.id
-// )
-// THEN 'Subscribed'
-// ELSE 'Not Subscribed'
-// END AS subscription
-
-// FROM users u
-// ORDER BY u.id DESC
-// `);
-// res.json({
-// success:true,
-// totalUsers:result.rows.length,
-// users:result.rows
-// });
-// }catch(error){
-// console.log(error);
-// res.status(500).json({
-// success:false,
-// message:error.message
-// });
-// }
-// };
 
     // ======================
 // GET ALL USERS
@@ -356,15 +322,6 @@ exports.deleteUser = async (req, res) => {
             `,
             [id]
         );
-
-
-        // 7. Delete addresses
-        // await client.query(  `
-        //     DELETE FROM addresses
-        //     WHERE user_id = $1
-        //     `,
-        //     [id]
-        // );
 // 7. Remove address references from this user's orders
 await client.query(
     `

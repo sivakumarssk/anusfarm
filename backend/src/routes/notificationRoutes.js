@@ -3,12 +3,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
 
-const {
-  getNotifications,
-  createNotification,
-  unreadCount,
-  readNotifications,
-} = require("../controllers/notificationController");
+const { getNotifications, createNotification, unreadCount, readNotifications,} = require("../controllers/notificationController");
 
 router.get("/", authMiddleware, getNotifications);
 

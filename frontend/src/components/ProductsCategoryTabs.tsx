@@ -106,13 +106,13 @@ container: {
 
 tabText: {
   fontSize: 12,
-  fontWeight: '500',
+  fontFamily: 'Inter-Medium',
   color: '#000',
 },
 
  activeTabText: {
   color: '#FFF',
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
 },
 milkActiveTab: {
   backgroundColor: '#5C9D61',

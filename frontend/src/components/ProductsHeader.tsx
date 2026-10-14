@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import {
   useNavigation,
@@ -11,6 +13,8 @@ import {
   Image,
 } from 'react-native';
 
+import { Ionicons } from '@expo/vector-icons';
+
 type Props = {
   cartCount: number;
 };
@@ -18,20 +22,32 @@ type Props = {
 const ProductsHeader = ({
   cartCount,
 }: Props) => {
-  const navigation=useNavigation<any>();
+  const navigation = useNavigation<any>();
 
   return (
-
     <View style={styles.container}>
 
-      {/* Title */}
+      {/* Back Arrow + Title */}
+      <View style={styles.leftContainer}>
 
-      <Text style={styles.title}>
-        Products
-      </Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={26}
+            color="#000"
+          />
+        </TouchableOpacity>
+
+        <Text style={styles.title}>
+          Products
+        </Text>
+
+      </View>
 
       {/* Right Icons */}
-
       <View style={styles.iconsContainer}>
 
         <TouchableOpacity>
@@ -43,9 +59,9 @@ const ProductsHeader = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-        onPress={()=>{
-          navigation.navigate("Wallet")
-        }}
+          onPress={() => {
+            navigation.navigate("Wallet");
+          }}
         >
           <Image
             source={require('../../assets/icons/wallet.png')}
@@ -54,42 +70,30 @@ const ProductsHeader = ({
           />
         </TouchableOpacity>
 
-   <View>
+        <View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Cart')}
+          >
+            <Image
+              source={require('../../assets/icons/cart.png')}
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
 
-  <TouchableOpacity
-onPress={()=>
-  navigation.navigate('Cart')
-}
-  >
-
-    <Image
-      source={require('../../assets/icons/cart.png')}
-      style={styles.icon}
-      resizeMode="contain"
-    />
-
-  </TouchableOpacity>
-
-  {cartCount > 0 && (
-
-    <View style={styles.badge}>
-
-      <Text style={styles.badgeText}>
-        {cartCount}
-      </Text>
-
-    </View>
-
-  )}
-
-</View>
+          {cartCount > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {cartCount}
+              </Text>
+            </View>
+          )}
+        </View>
 
       </View>
 
     </View>
-
   );
-
 };
 
 export default ProductsHeader;
@@ -104,46 +108,50 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#000',
-    marginLeft:10
+  leftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
+
+  backButton: {
+    marginLeft: 10,
+    marginRight: 8,
+  },
+
+  title: {
+  fontSize: 20,
+  fontFamily: 'Inter-Bold',
+  color: '#000',
+},
 
   iconsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight:18
+    marginRight: 18,
   },
 
   icon: {
     width: 20,
     height: 20,
     marginLeft: 12,
-    
   },
+
   badge: {
-  position: 'absolute',
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
-  top: -6,
-  right: -6,
-
-  width: 16,
-  height: 16,
-
-  borderRadius: 8,
-
-  backgroundColor: '#000',
-
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-
-badgeText: {
+  badgeText: {
   color: '#FFF',
   fontSize: 10,
-  fontWeight: '700',
+  fontFamily: 'Inter-Bold',
 },
 
 });

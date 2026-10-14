@@ -179,24 +179,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  headerText: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: '#333',
-    fontWeight: '500',
-    lineHeight: 18,
-  },
+  headerText: { textAlign: 'center', fontSize: 12, color: '#333', fontFamily: 'Inter-Medium', lineHeight: 18, },
 
   deliveryContainer: {
     paddingBottom: 12,
     alignItems: 'center',
   },
 
-  deliveryText: {
-    fontSize: 12,
-    color: '#B0B0B0',
-    fontWeight: '400',
-  },
+ deliveryText: { fontSize: 12, color: '#B0B0B0', fontFamily: 'Inter-Regular', },
 
  buttonRow: {
   flexDirection: 'row',
@@ -216,11 +206,7 @@ divider: {
   backgroundColor: '#D0D0D0',
 },
 
-  buttonText: {
-  fontSize: 14,
-  color: '#222',
-  fontWeight: '500',
-},
+  buttonText: { fontSize: 14, color: '#222', fontFamily: 'Inter-Medium', },
 
   arrowButton: {
     position: 'absolute',
@@ -244,10 +230,6 @@ divider: {
     right: -10,
   },
 
-  arrowText: {
-    fontSize: 18,
-    color: '#555',
-    marginTop: -2,
-  },
+  arrowText: { fontSize: 18, color: '#555', marginTop: -2, fontFamily: 'Inter-Regular', },
 
 });

@@ -91,11 +91,11 @@ export default function SplashScreen() {
 
       <Text
         style={{
-          fontSize: 28,
-          fontWeight: '700',
-          color: '#3A2418',
-          marginTop: -20,
-        }}
+  fontSize: 25,
+  fontFamily: 'Inter-Bold',
+  color: '#3A2418',
+  marginTop: -20,
+}}
       >
         Pure Buffalo Milk
       </Text>

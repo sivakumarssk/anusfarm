@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 20,
+    fontFamily: "Inter-SemiBold",
     color: '#000',
     marginLeft: 12,
   },
@@ -397,25 +397,26 @@ const styles = StyleSheet.create({
   },
 
   walletLabel: {
-    marginLeft: 8,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
+  marginLeft: 8,
+  fontSize: 15,
+  fontFamily: "Inter-SemiBold",
+  color: "#000",
+},
 
   balanceAmount: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#000',
-    textAlign: 'right',
-  },
+  fontSize: 20,
+  fontFamily: "Inter-Bold",
+  color: "#000",
+  textAlign: "right",
+},
 
   balanceText: {
-    fontSize: 11,
-    color: '#777',
-    textAlign: 'right',
-    marginTop: 2,
-  },
+  fontSize: 11,
+  fontFamily: "Inter-Regular",
+  color: "#777",
+  textAlign: "right",
+  marginTop: 2,
+},
 
   addMoneyCard: {
     backgroundColor: '#FFF',
@@ -445,16 +446,17 @@ const styles = StyleSheet.create({
   },
 
   addMoneyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
+  fontSize: 15,
+  fontFamily: "Inter-SemiBold",
+  color: "#000",
+},
 
-  addMoneySubtitle: {
-    fontSize: 12,
-    color: '#777',
-    marginTop: 2,
-  },
+ addMoneySubtitle: {
+  fontSize: 10,
+  fontFamily: "Inter-Regular",
+  color: "#777",
+  marginTop: 2,
+},
 
   sectionHeader: {
   marginHorizontal: 16,
@@ -466,16 +468,16 @@ const styles = StyleSheet.create({
 },
 
 sectionTitle: {
-  fontSize: 18,
-  fontWeight: '600',
-  color: '#000',
+  fontSize: 15,
+  fontFamily: "Inter-SemiBold",
+  color: "#000",
 },
 
 viewAll: {
-  color: '#16A34A',
-  fontSize: 16,
-  fontWeight: '400',
-  textDecorationLine:'underline'
+  color: "#16A34A",
+  fontSize: 13,
+  fontFamily: "Inter-Regular",
+  textDecorationLine: "underline",
 },
 
 transactionContainer: {

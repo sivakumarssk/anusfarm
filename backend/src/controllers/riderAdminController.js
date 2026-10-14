@@ -1,9 +1,4 @@
-const {
-    getAllRiders,
-    addRider,
-    updateRider,
-    updateRiderActiveStatus
-} = require("../models/riderAdminModel");
+const { getAllRiders, addRider, updateRider, updateRiderActiveStatus} = require("../models/riderAdminModel");
 
 // ============================================================
 // GET ALL RIDERS

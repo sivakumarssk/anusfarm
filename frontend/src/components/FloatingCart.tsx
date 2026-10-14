@@ -114,15 +114,16 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
+  color: '#FFF',
+  fontSize: 13,
+  fontFamily: 'Inter-SemiBold',
+},
 
-  subtitle: {
-    color: '#D0D0D0',
-    fontSize: 11,
-    marginTop: -2,
-  },
+ subtitle: {
+  color: '#D0D0D0',
+  fontSize: 11,
+  marginTop: -2,
+  fontFamily: 'Inter-Regular',
+},
 
 });

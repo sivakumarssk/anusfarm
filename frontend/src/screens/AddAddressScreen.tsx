@@ -9,11 +9,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_URL } from "../config/api";
 import * as Location from "expo-location";
-
+import CustomAlert from "../components/CustomAlert";
 export default function AddAddressScreen() {
   const navigation = useNavigation<any>();
   const [addressType, setAddressType] = useState("Home");
@@ -22,27 +23,58 @@ export default function AddAddressScreen() {
 const [latitude, setLatitude] = useState<number | null>(null);
 const [longitude, setLongitude] = useState<number | null>(null);
 const [loading, setLoading] = useState(false);
+const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState("");
+const [alertMessage, setAlertMessage] = useState("");
+const [alertAction, setAlertAction] = useState<"none" | "back">("none");
 
+const showCustomAlert = (
+  title: string,
+  message = "",
+  action: "none" | "back" = "none"
+) => {
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setAlertAction(action);
+  setAlertVisible(true);
+};
+
+const closeCustomAlert = () => {
+  const action = alertAction;
+
+  setAlertVisible(false);
+  setAlertAction("none");
+
+  if (action === "back") {
+    navigation.goBack();
+  }
+};
 
   const saveAddress = async () => {
     try {
       if (!address.trim()) {
-  Alert.alert("Please enter an address");
+  showCustomAlert("Please enter an address");
   return;
 }
-
+if (address.trim().length < 15) {
+  showCustomAlert(
+  "Incomplete Address",
+  "Please enter your complete address.\n\nExample: H.No, Street/Area, Kodad, Telangana, Pincode"
+);
+  return;
+}
 if (!phone.trim()) {
-  Alert.alert("Please enter a phone number");
+  showCustomAlert("Please enter a phone number");
   return;
 }
 
 if (phone.length !== 10) {
-  Alert.alert("Please enter a valid 10-digit phone number");
+  showCustomAlert("Please enter a valid 10-digit phone number");
   return;
 }
       const token = await AsyncStorage.getItem("token");
       if (!token) {
-  Alert.alert("Error", "Please login again.");
+  showCustomAlert("Error", "Please login again.");
   return;
 }
       await axios.post(  `${API_URL}/api/addresses`,{
@@ -58,14 +90,14 @@ if (phone.length !== 10) {
           },
         }
       );
-      Alert.alert("Success", "Address Added");
+     showCustomAlert("Success", "Address Added");
       navigation.goBack();
     } catch (error: any) {
   console.log("ADD ADDRESS ERROR =", error.response?.data);
   console.log("ADD ADDRESS STATUS =", error.response?.status);
   console.log("ADD ADDRESS MESSAGE =", error.message);
 
-  Alert.alert(
+  showCustomAlert(
     "Failed to save address",
     error.response?.data?.message || error.message
   );
@@ -79,7 +111,7 @@ if (phone.length !== 10) {
         await Location.hasServicesEnabledAsync();
     if (!enabled) {
   setLoading(false);
-  Alert.alert(
+  showCustomAlert(
     "Location Disabled",
     "Please enable location services"
   );
@@ -90,7 +122,7 @@ if (phone.length !== 10) {
         await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
   setLoading(false);
-  Alert.alert(
+  showCustomAlert(
     "Permission Denied",
     "Location permission is required."
   );
@@ -132,14 +164,27 @@ if (phone.length !== 10) {
     }catch (error) {
   setLoading(false);
   console.log(error);
-  Alert.alert("Error", "Unable to fetch your current location.");
+ showCustomAlert("Error", "Unable to fetch your current location.");
 }
   };
 
   return (
     <SafeAreaView style={styles.container}>
 
-      <Text style={styles.title}>Add Address</Text>
+      <View style={styles.header}>
+  <TouchableOpacity
+    onPress={() => navigation.goBack()}
+    style={styles.backButton}
+  >
+    <Ionicons
+      name="arrow-back"
+      size={26}
+      color="#000"
+    />
+  </TouchableOpacity>
+
+  <Text style={styles.title}>Add Address</Text>
+</View>
 
       <Text style={styles.label}>Address Type</Text>
 
@@ -219,22 +264,35 @@ if (phone.length !== 10) {
       </TouchableOpacity>
 
       
-
+<CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  onClose={closeCustomAlert}
+/>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 10,
+},
+
+backButton: {
+  marginRight: 15,
+},
+
+title: {
+  fontSize: 22,
+  fontWeight: "bold",
+},
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
   },
 
   label: {

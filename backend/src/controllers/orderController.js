@@ -1,7 +1,8 @@
+// const { getDistance } = require("../utils/distance");
 const { getDistance } = require("../utils/distance");
-
+const { getLatLngFromAddress } = require("../utils/geocode");
 const { getAllOrders,   getOrderStats, getPendingStats, createOrder, getMyOrders,
-  getOrderById,updateOrderStatus,deleteOrder, assignRiderToOrder} = require("../models/orderModel");
+  getOrderById,updateOrderStatus,deleteOrder, assignRiderToOrder,cancelMyOrder, cancelOrderByAdmin,} = require("../models/orderModel");
 
 const notificationModel = require("../models/notificationModel");
 const pool = require("../config/db");
@@ -73,32 +74,87 @@ exports.placeOrder = async (req, res) => {
       });
     }
 
-    // Get selected address
-    const addressResult = await pool.query(
+  
+// Get selected address
+const addressResult = await pool.query(
+  `
+  SELECT
+    id,
+    full_address,
+    latitude,
+    longitude
+  FROM addresses
+  WHERE id = $1
+  AND user_id = $2
+  `,
+  [
+    address_id,
+    userId
+  ]
+);
+
+if (addressResult.rows.length === 0) {
+  return res.status(400).json({
+    success: false,
+    message: "Address not found"
+  });
+}
+
+const selectedAddress = addressResult.rows[0];
+
+let latitude = selectedAddress.latitude;
+let longitude = selectedAddress.longitude;
+
+// If saved address does not have coordinates,
+// geocode the saved address.
+if (latitude == null || longitude == null) {
+  console.log("Saved address has no coordinates. Geocoding...");
+
+  try {
+    const { getLatLngFromAddress } = require("../utils/geocode");
+
+    const location = await getLatLngFromAddress(
+      selectedAddress.full_address
+    );
+
+    latitude = location.lat;
+    longitude = location.lng;
+
+    // Save coordinates for future orders
+    await pool.query(
       `
-      SELECT latitude, longitude
-      FROM addresses
-      WHERE id=$1
-      AND user_id=$2
+      UPDATE addresses
+      SET
+        latitude = $1,
+        longitude = $2
+      WHERE id = $3
+      AND user_id = $4
       `,
       [
+        latitude,
+        longitude,
         address_id,
         userId
       ]
     );
 
+    console.log("Geocoded Latitude =", latitude);
+    console.log("Geocoded Longitude =", longitude);
 
-    if(addressResult.rows.length === 0){
-      return res.status(400).json({
-        success:false,
-        message:"Address not found"
-      });
-    }
+  } catch (error) {
+    console.log("GEOCODING ERROR =", error);
 
+    return res.status(400).json({
+      success: false,
+      message:
+        "Unable to verify delivery location. Please edit the address and try again."
+    });
+  }
+}
 
-   const { latitude, longitude } = addressResult.rows[0];
-   const FARM_LAT = 16.9947802;
+const FARM_LAT = 16.9947802;
 const FARM_LNG = 79.9749826;
+
 const distance = getDistance(
   FARM_LAT,
   FARM_LNG,
@@ -106,7 +162,13 @@ const distance = getDistance(
   Number(longitude)
 );
 
-console.log("Distance =", distance, "KM");
+console.log("========== DISTANCE CHECK ==========");
+console.log("FARM LAT =", FARM_LAT);
+console.log("FARM LNG =", FARM_LNG);
+console.log("CUSTOMER LAT =", latitude);
+console.log("CUSTOMER LNG =", longitude);
+console.log("DISTANCE =", distance, "KM");
+console.log("====================================");
 
 if (distance > 20) {
   return res.status(400).json({
@@ -115,10 +177,8 @@ if (distance > 20) {
   });
 }
 
-    // TODO:
-    // Google 20KM distance check will come here
 
-
+    
     const orderId = await createOrder(
       userId,
       items,
@@ -140,17 +200,6 @@ if (distance > 20) {
       order_id:orderId
     });
 
-
-//   } catch(error){
-
-//     console.log("PLACE ORDER ERROR:", error);
-
-//     res.status(500).json({
-//       success:false,
-//       message:error.message
-//     });
-
-//   }
 } catch(error){
 
     console.log("PLACE ORDER ERROR:", error);
@@ -186,6 +235,49 @@ exports.myOrders = async (req, res) => {
       message: "Server Error",
     });
   }
+};
+
+exports.cancelMyOrder = async (req, res) => {
+    try {
+        const orderId = Number(req.params.id);
+        const userId = req.user.id;
+
+        if (!Number.isInteger(orderId) || orderId <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order ID",
+            });
+        }
+
+        const order = await cancelMyOrder(orderId, userId);
+
+        try {
+            await notificationModel.createNotification(
+                userId,
+                "Order",
+                `Your order #${order.id} has been cancelled successfully.`
+            );
+        } catch (notificationError) {
+            console.error(
+                "CANCELLATION NOTIFICATION ERROR:",
+                notificationError
+            );
+        }
+
+        return res.json({
+            success: true,
+            message: "Order cancelled successfully",
+            order,
+        });
+
+    } catch (error) {
+        console.error("CANCEL ORDER ERROR:", error);
+
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Unable to cancel order",
+        });
+    }
 };
 exports.getSingleOrder = async(req,res)=>{
 
@@ -404,6 +496,72 @@ exports.getRiders = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Unable to fetch riders"
+        });
+    }
+};
+// ==========================================
+// ADMIN CANCEL ORDER
+// ==========================================
+
+exports.cancelOrderByAdmin = async (req, res) => {
+    try {
+
+        const orderId = Number(req.params.id);
+
+        if (
+            !Number.isInteger(orderId) ||
+            orderId <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order ID",
+            });
+        }
+
+        const order = await cancelOrderByAdmin(
+            orderId
+        );
+
+        // ==========================================
+        // NOTIFY CUSTOMER
+        // ==========================================
+
+        try {
+
+            await notificationModel.createNotification(
+                order.user_id,
+                "Order",
+                `Your order #${order.id} has been cancelled by admin.`
+            );
+
+        } catch (notificationError) {
+
+            console.error(
+                "ADMIN CANCELLATION NOTIFICATION ERROR:",
+                notificationError
+            );
+        }
+
+        return res.json({
+            success: true,
+            message: "Order cancelled successfully",
+            order,
+        });
+
+    } catch (error) {
+
+        console.error(
+            "ADMIN CANCEL ORDER ERROR:",
+            error
+        );
+
+        return res.status(
+            error.statusCode || 500
+        ).json({
+            success: false,
+            message:
+                error.message ||
+                "Unable to cancel order",
         });
     }
 };

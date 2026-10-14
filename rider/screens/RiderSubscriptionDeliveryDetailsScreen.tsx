@@ -1,25 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Linking,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
+import { ActivityIndicator, Alert, Image, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View,} from "react-native";
 import axios from "axios";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-import {
-  useNavigation,
-  useRoute,
-} from "@react-navigation/native";
-
+import { useNavigation, useRoute,} from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { API_URL } from "../config/api";
 
 // ==========================================
@@ -207,26 +191,24 @@ const RiderSubscriptionDeliveryDetailsScreen =() => {
 // NAVIGATE TO CUSTOMER
 // ======================================
 
+
 const openCustomerLocation = async () => {
-  if (
-    delivery?.customer_latitude == null ||
-    delivery?.customer_longitude == null
-  ) {
+  if (!delivery?.customer_address) {
     Alert.alert(
-      "Location Unavailable",
-      "Customer location is not available."
+      "Address unavailable",
+      "Customer address is not available."
     );
     return;
   }
 
-  const latitude = delivery.customer_latitude;
-  const longitude = delivery.customer_longitude;
-
-  const googleMapsUrl =
-    `https://www.google.com/maps/dir/?api=1` +
-    `&destination=${latitude},${longitude}`;
-
   try {
+    const encodedAddress = encodeURIComponent(
+      delivery.customer_address
+    );
+
+    const googleMapsUrl =
+      `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+
     const supported = await Linking.canOpenURL(
       googleMapsUrl
     );
@@ -235,7 +217,7 @@ const openCustomerLocation = async () => {
       await Linking.openURL(googleMapsUrl);
     } else {
       Alert.alert(
-        "Error",
+        "Maps unavailable",
         "Unable to open Google Maps."
       );
     }
@@ -252,50 +234,7 @@ const openCustomerLocation = async () => {
   }
 };
 
-// ======================================
-// CALL CUSTOMER
-// ======================================
-
-// const callCustomer = async () => {
-//   const phone =
-//     delivery?.address_phone ||
-//     delivery?.customer_phone;
-
-//   if (!phone) {
-//     Alert.alert(
-//       "Phone Number Unavailable",
-//       "Customer phone number is not available."
-//     );
-//     return;
-//   }
-
-//   try {
-//     const phoneUrl = `tel:${phone}`;
-
-//     const supported =
-//       await Linking.canOpenURL(phoneUrl);
-
-//     if (supported) {
-//       await Linking.openURL(phoneUrl);
-//     } else {
-//       Alert.alert(
-//         "Error",
-//         "Unable to open phone dialer."
-//       );
-//     }
-//   } catch (error) {
-//     console.log(
-//       "CALL CUSTOMER ERROR:",
-//       error
-//     );
-
-//     Alert.alert(
-//       "Error",
-//       "Unable to call customer."
-//     );
-//   }
-// };
-  const callCustomer = async () => {
+const callCustomer = async () => {
   const phone = delivery?.address_phone;
 
   if (!phone) {
@@ -676,27 +615,22 @@ const openCustomerLocation = async () => {
       >
         {/* HEADER */}
 
-        <View
-          style={styles.header}
-        >
-          <TouchableOpacity
-            onPress={() =>
-              navigation.goBack()
-            }
-          >
-            <Text
-              style={styles.backText}
-            >
-              ← Back
-            </Text>
-          </TouchableOpacity>
+        <View style={styles.header}>
+  <TouchableOpacity
+    style={styles.backIconButton}
+    onPress={() => navigation.goBack()}
+  >
+    <Ionicons
+      name="arrow-back"
+      size={24}
+      color="#000"
+    />
+  </TouchableOpacity>
 
-          <Text
-            style={styles.title}
-          >
-            Delivery Details
-          </Text>
-        </View>
+  <Text style={styles.title}>
+    Delivery Details
+  </Text>
+</View>
 
         {/* DELIVERY */}
 
@@ -829,7 +763,7 @@ const openCustomerLocation = async () => {
 {/* DELIVERY ADDRESS */}
 {/* ================================== */}
 
-<View style={styles.card}>
+{/* <View style={styles.card}>
   <Text style={styles.sectionTitle}>
     Delivery Address
   </Text>
@@ -859,9 +793,29 @@ const openCustomerLocation = async () => {
         </Text>
       </>
     )}
-</View>       
+</View>        */}
+<View style={styles.card}>
+  <Text style={styles.sectionTitle}>
+    Delivery Address
+  </Text>
 
-{delivery.customer_latitude != null &&
+  <Text style={styles.address}>
+    {delivery.customer_address || "Address not available"}
+  </Text>
+
+  {delivery.customer_address && (
+    <TouchableOpacity
+      style={styles.mapButton}
+      onPress={openCustomerLocation}
+    >
+      <Text style={styles.mapButtonText}>
+        📍 Open in Google Maps
+      </Text>
+    </TouchableOpacity>
+  )}
+</View>
+
+{/* {delivery.customer_latitude != null &&
   delivery.customer_longitude != null && (
     <TouchableOpacity
       style={styles.navigateButton}
@@ -871,7 +825,8 @@ const openCustomerLocation = async () => {
         📍 Navigate to Customer
       </Text>
     </TouchableOpacity>
-  )}
+  )} */}
+  
 
         {/* PRODUCTS */}
 
@@ -1072,25 +1027,46 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: "#777",
+    fontFamily: "InterRegular",
+    fontSize: 14,
   },
 
+  // ========================================
+  // HEADER
+  // ========================================
+
   header: {
-    marginTop: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
     marginBottom: 20,
+  },
+
+  backIconButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+
+  title: {
+    flex: 1,
+    fontSize: 20,
+    fontFamily: "InterBold",
+    color: "#000",
   },
 
   backText: {
     fontSize: 15,
+    fontFamily: "InterSemiBold",
     color: "#0A8A2A",
-    fontWeight: "600",
     marginBottom: 12,
   },
 
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#000",
-  },
+  // ========================================
+  // CARD
+  // ========================================
 
   card: {
     backgroundColor: "#FFF",
@@ -1103,15 +1079,14 @@ const styles = StyleSheet.create({
 
   cardHeader: {
     flexDirection: "row",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     alignItems: "center",
   },
 
   deliveryId: {
     flex: 1,
     fontSize: 17,
-    fontWeight: "700",
+    fontFamily: "InterBold",
     color: "#000",
   },
 
@@ -1131,7 +1106,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     fontSize: 11,
-    fontWeight: "700",
+    fontFamily: "InterBold",
   },
 
   pendingText: {
@@ -1150,18 +1125,19 @@ const styles = StyleSheet.create({
 
   info: {
     fontSize: 14,
+    fontFamily: "InterRegular",
     color: "#555",
     marginBottom: 8,
   },
 
   bold: {
-    fontWeight: "600",
+    fontFamily: "InterSemiBold",
     color: "#000",
   },
 
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontFamily: "InterBold",
     color: "#000",
     marginBottom: 14,
   },
@@ -1201,6 +1177,7 @@ const styles = StyleSheet.create({
 
   noImageText: {
     fontSize: 11,
+    fontFamily: "InterRegular",
     color: "#888",
   },
 
@@ -1210,20 +1187,21 @@ const styles = StyleSheet.create({
 
   productName: {
     fontSize: 16,
-    fontWeight: "700",
+    fontFamily: "InterBold",
     color: "#000",
     marginBottom: 6,
   },
 
   productQuantity: {
     fontSize: 13,
+    fontFamily: "InterRegular",
     color: "#777",
     marginBottom: 5,
   },
 
   productPrice: {
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "InterBold",
     color: "#0A8A2A",
   },
 
@@ -1249,7 +1227,7 @@ const styles = StyleSheet.create({
   statusButtonText: {
     color: "#FFF",
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "InterBold",
   },
 
   deliveredButton: {
@@ -1263,7 +1241,7 @@ const styles = StyleSheet.create({
   deliveredButtonText: {
     color: "#FFF",
     fontSize: 15,
-    fontWeight: "700",
+    fontFamily: "InterBold",
   },
 
   completedBox: {
@@ -1275,14 +1253,20 @@ const styles = StyleSheet.create({
 
   completedText: {
     color: "#0A8A2A",
-    fontWeight: "700",
+    fontFamily: "InterBold",
     fontSize: 15,
   },
 
   emptyText: {
     color: "#777",
     textAlign: "center",
+    fontFamily: "InterRegular",
+    fontSize: 14,
   },
+
+  // ========================================
+  // BACK BUTTON
+  // ========================================
 
   backButton: {
     marginTop: 20,
@@ -1294,38 +1278,80 @@ const styles = StyleSheet.create({
 
   backButtonText: {
     color: "#FFF",
-    fontWeight: "700",
+    fontFamily: "InterBold",
+  },
+
+  // ========================================
+  // NAVIGATE BUTTON
+  // ========================================
+
+  navigateButton: {
+    backgroundColor: "#0A8A2A",
+    marginBottom: 14,
+    height: 52,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  navigateButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "InterBold",
+  },
+
+  // ========================================
+  // CALL BUTTON
+  // ========================================
+
+  callButton: {
+    backgroundColor: "#0A8A2A",
+    height: 52,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+
+  callButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "InterBold",
+  },
+
+  // ========================================
+  // MAP BUTTON
+  // ========================================
+
+  mapButton: {
+    height: 45,
+    backgroundColor: "#E3F2FD",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 5,
+    marginBottom: 10,
+  },
+
+  mapButtonText: {
+    color: "#1565C0",
+    fontSize: 14,
+    fontFamily: "InterBold",
+  },
+
+  // ========================================
+  // ADDRESS
+  // ========================================
+
+  address: {
+    fontSize: 14,
+    fontFamily: "InterRegular",
+    color: "#444",
+    lineHeight: 21,
+    marginBottom: 10,
   },
 
   bottomSpace: {
     height: 30,
   },
-  navigateButton: {
-  backgroundColor: "#0A8A2A",
-  marginBottom: 14,
-  height: 52,
-  borderRadius: 12,
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-navigateButtonText: {
-  color: "#FFF",
-  fontSize: 16,
-  fontWeight: "700",
-},
-callButton: {
-  backgroundColor: "#0A8A2A",
-  height: 52,
-  borderRadius: 12,
-  justifyContent: "center",
-  alignItems: "center",
-  marginTop: 8,
-},
-
-callButtonText: {
-  color: "#FFF",
-  fontSize: 16,
-  fontWeight: "700",
-},
 });

@@ -1,10 +1,8 @@
+
+
 import React from 'react';
-
 import { Image } from 'react-native';
-
-import {
-  createBottomTabNavigator,
-} from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeScreen from '../screens/HomeScreen';
 import ProductsScreen from '../screens/ProductScreen';
@@ -14,51 +12,44 @@ import ProfileScreen from '../screens/ProfileScreen';
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
-
   return (
-
     <Tab.Navigator
-
       screenOptions={{
-
         headerShown: false,
 
         tabBarStyle: {
-  position: 'absolute',
+  position: "absolute",
+  bottom: 12,
+  height: 70,
+  marginHorizontal: 16,
 
-  
-  left: 12,
-  right: 12,
-
-  height: 90,
-  paddingTop:10,
-
-  backgroundColor: '#000',
-
+  backgroundColor: "#FFF",
   borderRadius: 20,
-
   borderTopWidth: 0,
 
-  elevation: 10,
-
-  shadowColor: '#000',
+  elevation: 8,
+  shadowColor: "#000",
   shadowOffset: {
     width: 0,
-    height: 4,
+    height: 3,
   },
-  shadowOpacity: 0.15,
+  shadowOpacity: 0.12,
   shadowRadius: 8,
 },
 
-        tabBarActiveTintColor: '#FFF',
-
-        tabBarInactiveTintColor: '#FFF',
+        tabBarActiveTintColor: '#000',
+        tabBarInactiveTintColor: '#000',
 
         tabBarLabelStyle: {
+          fontFamily: 'Inter-Medium',
           fontSize: 10,
-          marginBottom: 6,
+          marginBottom: 7,
         },
 
+        tabBarItemStyle: {
+          flex: 1,
+          paddingTop: 5,
+        },
       }}
     >
 
@@ -67,7 +58,6 @@ const BottomTabNavigator = () => {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-
             <Image
               source={
                 focused
@@ -75,11 +65,11 @@ const BottomTabNavigator = () => {
                   : require('../../assets/icons/home-inactive.png')
               }
               style={{
-                width: 24,
-                height: 24,
+                width: 23,
+                height: 23,
+                tintColor: '#000',
               }}
             />
-
           ),
         }}
       />
@@ -89,7 +79,6 @@ const BottomTabNavigator = () => {
         component={ProductsScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-
             <Image
               source={
                 focused
@@ -99,9 +88,9 @@ const BottomTabNavigator = () => {
               style={{
                 width: 24,
                 height: 24,
+                tintColor: '#000',
               }}
             />
-
           ),
         }}
       />
@@ -111,7 +100,6 @@ const BottomTabNavigator = () => {
         component={OrdersScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-
             <Image
               source={
                 focused
@@ -121,9 +109,9 @@ const BottomTabNavigator = () => {
               style={{
                 width: 24,
                 height: 24,
+                tintColor: '#000',
               }}
             />
-
           ),
         }}
       />
@@ -133,7 +121,6 @@ const BottomTabNavigator = () => {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-
             <Image
               source={
                 focused
@@ -143,17 +130,15 @@ const BottomTabNavigator = () => {
               style={{
                 width: 24,
                 height: 24,
+                tintColor: '#000',
               }}
             />
-
           ),
         }}
       />
 
     </Tab.Navigator>
-
   );
-
 };
 
 export default BottomTabNavigator;

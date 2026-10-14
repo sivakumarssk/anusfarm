@@ -145,24 +145,25 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#000",
-    marginTop: 6,
-  },
+  fontSize: 11,
+  fontFamily: "Inter-SemiBold",
+  color: "#000",
+  marginTop: 6,
+},
 
   quantity: {
-    fontSize: 10,
-    color: "#777",
-    marginTop: 4,
-  },
+  fontSize: 10,
+  fontFamily: "Inter-Regular",
+  color: "#777",
+  marginTop: 4,
+},
 
   price: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#000",
-    marginTop: 4,
-  },
+  fontSize: 12,
+  fontFamily: "Inter-Bold",
+  color: "#000",
+  marginTop: 4,
+},
 
   button: {
     backgroundColor: "#000",
@@ -174,10 +175,10 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#FFF",
-    fontSize: 12,
-    fontWeight: "600",
-  },
+  color: "#FFF",
+  fontSize: 12,
+  fontFamily: "Inter-SemiBold",
+},
 
   quantityContainer: {
     height: 32,
@@ -191,15 +192,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
-  actionText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#000",
-  },
+ actionText: {
+  fontSize: 18,
+  fontFamily: "Inter-SemiBold",
+  color: "#000",
+},
 
-  countText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#000",
-  },
+ countText: {
+  fontSize: 14,
+  fontFamily: "Inter-SemiBold",
+  color: "#000",
+},
 });

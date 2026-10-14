@@ -1,474 +1,11 @@
-// import React, { useEffect, useState } from "react";
-// import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert,   Modal,} from "react-native";
-// import DateTimePicker from "@react-native-community/datetimepicker";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import {API_URL} from "../config/api";
-
-// // const BASE_URL = "http://192.168.0.112:5000/api";
-
-// export default function MySubscriptionsScreen() {
-//   const [subscriptions, setSubscriptions] = useState([]);
-//   const [pauseModal, setPauseModal] = useState(false);
-
-// const [selectedSubscription, setSelectedSubscription] =
-//   useState<number | null>(null);
-
-// const [pauseFrom, setPauseFrom] = useState(new Date());
-// const [pauseTo, setPauseTo] = useState(new Date());
-
-// const [showFromPicker, setShowFromPicker] = useState(false);
-// const [showToPicker, setShowToPicker] = useState(false);
-
-//   useEffect(() => {
-//     loadSubscriptions();
-//   }, []);
-
-//   const loadSubscriptions = async () => {
-//     const token = await AsyncStorage.getItem("token");
-
-//     const res = await fetch(
-//       `${API_URL}/api/subscriptions/my`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-
-//     const json = await res.json();
-   
-//      console.log(
-//   "MY SUBSCRIPTIONS API:",
-//   JSON.stringify(json, null, 2)
-// );
-
-//     if (json.success) {
-//       setSubscriptions(json.subscriptions);
-//     }
-    
-//   };
-
-//   const pauseSubscription = (id:number)=>{
-
-//   setSelectedSubscription(id);
-
-//   setPauseModal(true);
-
-// };
-
-
-
-// const confirmPause = async()=>{
-
-//   if(!selectedSubscription) return;
-
-
-//   const token = await AsyncStorage.getItem("token");
-
-
-//   const res = await fetch(
-//     `${API_URL}/api/subscriptions/${selectedSubscription}/pause`,
-//     {
-//       method:"PUT",
-//       headers:{
-//         Authorization:`Bearer ${token}`,
-//         "Content-Type":"application/json",
-//       },
-
-//       body:JSON.stringify({
-
-//         pause_from:
-//         pauseFrom.toISOString().split("T")[0],
-
-//         pause_to:
-//         pauseTo.toISOString().split("T")[0],
-
-//       })
-//     }
-//   );
-
-
-//   const json = await res.json();
-
-//   console.log("PAUSE RESPONSE",json);
-
-
-//   setPauseModal(false);
-
-
-//   Alert.alert(
-//     "Success",
-//     "Subscription Paused"
-//   );
-
-
-//   loadSubscriptions();
-
-// };
-
-//   const resumeSubscription = async (id: number) => {
-//     const token = await AsyncStorage.getItem("token");
-
-//     await fetch(
-//       `${API_URL}/api/subscriptions/${id}/resume`,
-//       {
-//         method: "PUT",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-
-//     Alert.alert("Resumed");
-
-//     loadSubscriptions();
-//   };
-
-//   const cancelSubscription = async (id: number) => {
-
-//   const token = await AsyncStorage.getItem("token");
-
-//   const res = await fetch(
-//     `${API_URL}/api/subscriptions/${id}/cancel`,
-//     {
-//       method: "PUT",
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     }
-//   );
-
-
-//   const json = await res.json();
-
-//   console.log("CANCEL RESPONSE:", json);
-
-
-//   if(json.success){
-
-//     Alert.alert(
-//       "Success",
-//       "Subscription Cancelled"
-//     );
-
-//     loadSubscriptions();
-
-//   }
-//   else{
-
-//     Alert.alert(
-//       "Error",
-//       json.message
-//     );
-
-//   }
-
-// };
-               
-//   return (
-//   <>
-//     <Modal
-//       visible={pauseModal}
-//       transparent
-//       animationType="slide"
-//     >
-
-//       <View style={styles.modalContainer}>
-
-//         <View style={styles.modalBox}>
-
-//           <Text style={styles.modalTitle}>
-//             Pause Subscription
-//           </Text>
-
-//           <Text>
-//             Pause From
-//           </Text>
-
-//           <TouchableOpacity
-//             style={styles.dateButton}
-//             onPress={() => setShowFromPicker(true)}
-//           >
-//             <Text>
-//               {pauseFrom.toDateString()}
-//             </Text>
-//           </TouchableOpacity>
-
-
-//           {showFromPicker && (
-//             <DateTimePicker
-//               value={pauseFrom}
-//               mode="date"
-//               onChange={(event, date) => {
-
-//                 setShowFromPicker(false);
-
-//                 if (date)
-//                   setPauseFrom(date);
-
-//               }}
-//             />
-//           )}
-
-
-//           <Text>
-//             Pause To
-//           </Text>
-
-
-//           <TouchableOpacity
-//             style={styles.dateButton}
-//             onPress={() => setShowToPicker(true)}
-//           >
-//             <Text>
-//               {pauseTo.toDateString()}
-//             </Text>
-//           </TouchableOpacity>
-
-
-//           {showToPicker && (
-//             <DateTimePicker
-//               value={pauseTo}
-//               mode="date"
-//               onChange={(event, date) => {
-
-//                 setShowToPicker(false);
-
-//                 if (date)
-//                   setPauseTo(date);
-
-//               }}
-//             />
-//           )}
-
-
-//           <TouchableOpacity
-//             style={styles.confirm}
-//             onPress={confirmPause}
-//           >
-//             <Text style={styles.btnText}>
-//               Confirm Pause
-//             </Text>
-//           </TouchableOpacity>
-
-
-//           <TouchableOpacity
-//             style={styles.cancel}
-//             onPress={() => setPauseModal(false)}
-//           >
-
-//             <Text style={styles.btnText}>
-//               Cancel
-//             </Text>
-//           </TouchableOpacity>
-
-
-//         </View>
-
-//       </View>
-
-//     </Modal>
-
-
-//     <FlatList
-//       data={subscriptions}
-//       keyExtractor={(item:any)=>item.id.toString()}
-//       renderItem={({item}:any)=>(
-        
-//         <View style={styles.card}>
-
-//           <Text style={styles.title}>
-//             {item.plan}
-//           </Text>
-
-
-//           <Text>
-//             Frequency : {item.frequency}
-//           </Text>
-
-
-//           <Text>
-//             Next Delivery : {item.next_delivery_date}
-//           </Text>
-
-
-//           <Text>
-//             Status : {item.status}
-//           </Text>
-
-
-//           {item.status?.toLowerCase()=="active" && (
-//             <>
-//               <TouchableOpacity
-//                 style={styles.pause}
-//                 onPress={() =>
-//                   pauseSubscription(item.id)
-//                 }
-//               >
-//                 <Text style={styles.btnText}>
-//                   Pause
-//                 </Text>
-//               </TouchableOpacity>
-   
-
-//               <TouchableOpacity
-//  style={styles.cancel}
-//  onPress={() =>
-
-//  Alert.alert(
-//    "Cancel Subscription",
-//    "Are you sure you want to cancel?",
-//    [
-//      {
-//        text:"No"
-//      },
-//      {
-//        text:"Yes",
-//        onPress:()=>cancelSubscription(item.id)
-//      }
-//    ]
-//  )
-
-//  }
-// >
-// <Text style={styles.btnText}>
-//  Cancel
-// </Text>
-// </TouchableOpacity>
-//             </>
-//           )}
-
-
-
-//           {item.status?.toLowerCase()=="paused" && (
-//             <TouchableOpacity
-//               style={styles.resume}
-//               onPress={() =>
-//                 resumeSubscription(item.id)
-//               }
-//             >
-//               <Text style={styles.btnText}>
-//                 Resume
-//               </Text>
-//             </TouchableOpacity>
-//           )}
-// {item.status?.toLowerCase()=="cancelled" && (
-
-//   <Text
-//     style={{
-//       color:"red",
-//       fontWeight:"bold",
-//       marginTop:10
-//     }}
-//   >
-//     Subscription Cancelled
-//   </Text>
-
-// )}
-//         </View>
-
-//       )}
-//     />
-
-//   </>
-// );
-// }
-
-// const styles = StyleSheet.create({
-//   card: {
-//     backgroundColor: "#fff",
-//     margin: 15,
-//     padding: 15,
-//     borderRadius: 10,
-//     elevation: 4,
-//   },
-
-//   title: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginBottom: 10,
-//   },
-
-//   pause: {
-//     backgroundColor: "orange",
-//     padding: 12,
-//     borderRadius: 8,
-//     marginTop: 10,
-//   },
-
-//   resume: {
-//     backgroundColor: "green",
-//     padding: 12,
-//     borderRadius: 8,
-//     marginTop: 10,
-//   },
-
-//   cancel: {
-//     backgroundColor: "red",
-//     padding: 12,
-//     borderRadius: 8,
-//     marginTop: 10,
-//   },
-
-//   btnText: {
-//     color: "#fff",
-//     textAlign: "center",
-//     fontWeight: "bold",
-//   },
-//   modalContainer:{
-//  flex:1,
-//  justifyContent:"center",
-//  backgroundColor:"rgba(0,0,0,0.5)",
-// },
-
-
-// modalBox:{
-//  backgroundColor:"#fff",
-//  margin:20,
-//  padding:20,
-//  borderRadius:15,
-// },
-
-
-// modalTitle:{
-//  fontSize:20,
-//  fontWeight:"bold",
-//  marginBottom:20,
-// },
-
-
-// dateButton:{
-//  borderWidth:1,
-//  borderColor:"#ccc",
-//  padding:12,
-//  borderRadius:8,
-//  marginVertical:10,
-// },
-
-
-// confirm:{
-//  backgroundColor:"green",
-//  padding:12,
-//  borderRadius:8,
-//  marginTop:15,
-// },
-// });
-
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Modal,
-} from "react-native";
+import {View,Text,FlatList,TouchableOpacity, StyleSheet,Alert,Modal,} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { API_URL } from "../config/api";
-
+import CustomAlert from "../components/CustomAlert";
 export default function MySubscriptionsScreen() {
   const navigation = useNavigation<any>();
 
@@ -483,7 +20,42 @@ export default function MySubscriptionsScreen() {
 
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
+const [alertVisible, setAlertVisible] = useState(false);
+const [alertTitle, setAlertTitle] = useState("");
+const [alertMessage, setAlertMessage] = useState("");
+const [alertConfirmAction, setAlertConfirmAction] =
+  useState<(() => void) | null>(null);
+const [alertCancelText, setAlertCancelText] = useState<string | undefined>(
+  undefined
+);
+const [alertButtonText, setAlertButtonText] = useState("OK");
 
+const showCustomAlert = (
+  title: string,
+  message: string,
+  onConfirm?: () => void,
+  cancelText?: string,
+  buttonText = "OK"
+) => {
+  setAlertTitle(title);
+  setAlertMessage(message);
+  setAlertConfirmAction(() => onConfirm ?? null);
+  setAlertCancelText(cancelText);
+  setAlertButtonText(buttonText);
+  setAlertVisible(true);
+};
+
+const closeCustomAlert = () => {
+  setAlertVisible(false);
+  setAlertConfirmAction(null);
+  setAlertCancelText(undefined);
+};
+
+const confirmCustomAlert = () => {
+  const action = alertConfirmAction;
+  closeCustomAlert();
+  action?.();
+};
   useEffect(() => {
     loadSubscriptions();
   }, []);
@@ -524,16 +96,6 @@ export default function MySubscriptionsScreen() {
   // OPEN SUBSCRIPTION DETAILS
   // ==============================
 
-  // const openSubscriptionDetails = (id: number) => {
-  //   console.log(
-  //     "OPEN SUBSCRIPTION DETAILS:",
-  //     id
-  //   );
-
-  //   navigation.navigate("SubscriptionDetails", {
-  //     subscriptionId: id,
-  //   });
-  // };
 const openSubscriptionDetails = (id: number) => {
   console.log("OPEN SUBSCRIPTION DETAILS:", id);
 
@@ -583,29 +145,21 @@ const openSubscriptionDetails = (id: number) => {
 
       setPauseModal(false);
 
-      if (json.success) {
-        Alert.alert(
-          "Success",
-          "Subscription Paused"
-        );
-
-        loadSubscriptions();
-      } else {
-        Alert.alert(
-          "Error",
-          json.message || "Unable to pause subscription"
-        );
-      }
+     if (json.success) {
+  showCustomAlert("Success", "Subscription Paused");
+  loadSubscriptions();
+} else {
+  showCustomAlert(
+    "Error",
+    json.message || "Unable to pause subscription"
+  );
+}
     } catch (error) {
       console.log(
         "PAUSE ERROR:",
         error
       );
-
-      Alert.alert(
-        "Error",
-        "Something went wrong"
-      );
+showCustomAlert("Error", "Something went wrong");
     }
   };
 
@@ -638,18 +192,14 @@ const openSubscriptionDetails = (id: number) => {
       );
 
       if (json.success) {
-        Alert.alert(
-          "Success",
-          "Subscription Resumed"
-        );
-
-        loadSubscriptions();
-      } else {
-        Alert.alert(
-          "Error",
-          json.message || "Unable to resume subscription"
-        );
-      }
+  showCustomAlert("Success", "Subscription Resumed");
+  loadSubscriptions();
+} else {
+  showCustomAlert(
+    "Error",
+    json.message || "Unable to resume subscription"
+  );
+}
     } catch (error) {
       console.log(
         "RESUME ERROR:",
@@ -687,18 +237,14 @@ const openSubscriptionDetails = (id: number) => {
       );
 
       if (json.success) {
-        Alert.alert(
-          "Success",
-          "Subscription Cancelled"
-        );
-
-        loadSubscriptions();
-      } else {
-        Alert.alert(
-          "Error",
-          json.message || "Unable to cancel subscription"
-        );
-      }
+  showCustomAlert("Success", "Subscription Cancelled");
+  loadSubscriptions();
+} else {
+  showCustomAlert(
+    "Error",
+    json.message || "Unable to cancel subscription"
+  );
+}
     } catch (error) {
       console.log(
         "CANCEL ERROR:",
@@ -713,6 +259,22 @@ const openSubscriptionDetails = (id: number) => {
 
   return (
     <>
+     <View style={styles.header}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <Ionicons
+          name="arrow-back"
+          size={26}
+          color="#000"
+        />
+      </TouchableOpacity>
+
+      <Text style={styles.headerTitle}>
+        My Subscriptions
+      </Text>
+    </View>
       <FlatList
         data={subscriptions}
         keyExtractor={(item: any) =>
@@ -797,23 +359,14 @@ const openSubscriptionDetails = (id: number) => {
                 <TouchableOpacity
                   style={styles.cancel}
                   onPress={() =>
-                    Alert.alert(
-                      "Cancel Subscription",
-                      "Are you sure you want to cancel?",
-                      [
-                        {
-                          text: "No",
-                        },
-                        {
-                          text: "Yes",
-                          onPress: () =>
-                            cancelSubscription(
-                              item.id
-                            ),
-                        },
-                      ]
-                    )
-                  }
+  showCustomAlert(
+    "Cancel Subscription",
+    "Are you sure you want to cancel?",
+    () => cancelSubscription(item.id),
+    "No",
+    "Yes"
+  )
+}
                 >
                   <Text style={styles.btnText}>
                     Cancel
@@ -873,9 +426,9 @@ const openSubscriptionDetails = (id: number) => {
               Pause Subscription
             </Text>
 
-            <Text>
-              Pause From
-            </Text>
+            <Text style={{ fontFamily: "Inter-Regular" }}>
+  Pause From
+</Text>
 
             <TouchableOpacity
               style={styles.dateButton}
@@ -883,9 +436,9 @@ const openSubscriptionDetails = (id: number) => {
                 setShowFromPicker(true)
               }
             >
-              <Text>
-                {pauseFrom.toDateString()}
-              </Text>
+              <Text style={{ fontFamily: "Inter-Regular" }}>
+  {pauseFrom.toDateString()}
+</Text>
             </TouchableOpacity>
 
             {showFromPicker && (
@@ -905,7 +458,7 @@ const openSubscriptionDetails = (id: number) => {
               />
             )}
 
-            <Text>
+           <Text style={{ fontFamily: "Inter-Regular" }}>
               Pause To
             </Text>
 
@@ -915,7 +468,7 @@ const openSubscriptionDetails = (id: number) => {
                 setShowToPicker(true)
               }
             >
-              <Text>
+              <Text style={{ fontFamily: "Inter-Regular" }}>
                 {pauseTo.toDateString()}
               </Text>
             </TouchableOpacity>
@@ -960,50 +513,81 @@ const openSubscriptionDetails = (id: number) => {
           </View>
         </View>
       </Modal>
+      <CustomAlert
+  visible={alertVisible}
+  title={alertTitle}
+  message={alertMessage}
+  buttonText={alertButtonText}
+  cancelText={alertCancelText}
+  onClose={closeCustomAlert}
+  onConfirm={confirmCustomAlert}
+/>
     </>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  paddingHorizontal: 15,
+  paddingTop: 50,
+  paddingBottom: 15,
+  // backgroundColor: "#fff",
+},
+
+backButton: {
+  marginRight: 15,
+},
+
+headerTitle: {
+  fontSize: 16,
+  fontFamily: "Inter-Bold",
+},
   card: {
     backgroundColor: "#fff",
     margin: 15,
     padding: 15,
     borderRadius: 10,
     elevation: 4,
+    marginTop:30
+    
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
+ title: {
+  fontSize: 14,
+  fontFamily: "Inter-Bold",
+  marginBottom: 10,
+},
 
   info: {
-    marginBottom: 6,
-  },
+  marginBottom: 6,
+  fontFamily: "Inter-Regular",
+  fontSize:13
+},
 
-  active: {
-    color: "green",
-    fontWeight: "bold",
-  },
+ active: {
+  color: "green",
+  fontFamily: "Inter-Bold",
+},
 
-  paused: {
-    color: "orange",
-    fontWeight: "bold",
-  },
+ paused: {
+  color: "orange",
+  fontFamily: "Inter-Bold",
+},
 
-  cancelled: {
-    color: "red",
-    fontWeight: "bold",
-  },
+ cancelled: {
+  color: "red",
+  fontFamily: "Inter-Bold",
+},
 
-  viewDetails: {
-    color: "#673AB7",
-    fontWeight: "bold",
-    marginTop: 12,
-    marginBottom: 5,
-  },
+ viewDetails: {
+  color: "#673AB7",
+  fontFamily: "Inter-Bold",
+  marginTop: 12,
+  marginBottom: 5,
+  fontSize:11
+},
 
   pause: {
     backgroundColor: "orange",
@@ -1026,17 +610,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  btnText: {
-    color: "#fff",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-
+ btnText: {
+  color: "#fff",
+  textAlign: "center",
+  fontFamily: "Inter-Bold",
+},
   cancelledText: {
-    color: "red",
-    fontWeight: "bold",
-    marginTop: 10,
-  },
+  color: "red",
+  fontFamily: "Inter-Bold",
+  marginTop: 10,
+},
 
   modalContainer: {
     flex: 1,
@@ -1052,11 +635,11 @@ const styles = StyleSheet.create({
     borderRadius: 15,
   },
 
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+ modalTitle: {
+  fontSize: 18,
+  fontFamily: "Inter-Bold",
+  marginBottom: 20,
+},
 
   dateButton: {
     borderWidth: 1,

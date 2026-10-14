@@ -3,16 +3,7 @@ const router = express.Router();
 
 const upload = require("../middleware/upload");
 
-const {
-  addProduct,
-  getProducts,
-  getProductsByCategory,
-  getProductById,
-  updateProduct,
-  updateProductStock,
-  deleteProduct,
-  toggleProductStatus,
-} = require("../controllers/productController");
+const {addProduct,getProducts,getProductsByCategory,getProductById,updateProduct,updateProductStock,deleteProduct,toggleProductStatus,} = require("../controllers/productController");
 
 
 // CREATE PRODUCT with image

@@ -582,20 +582,20 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 
- headerTitle: {
-  fontSize: 18,
-  fontWeight: '600',
+headerTitle: {
+  fontSize: 16,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
   marginLeft: 12,
 },
 
-  sectionTitle: {
-    marginHorizontal: 16,
-    marginTop: 24,
-    fontSize: 14,
-    color: '#333',
-    fontWeight:600,
-  },
+sectionTitle: {
+  marginHorizontal: 16,
+  marginTop: 24,
+  fontSize: 12,
+  color: '#333',
+  fontFamily: 'Inter-SemiBold',
+},
 
 optionsCard: {
   backgroundColor: '#FFF',
@@ -652,10 +652,9 @@ shadowRadius: 2,
 
 elevation: 2,
 },
-
- optionTitle: {
-  fontSize: 15,
-  fontWeight: '500',
+optionTitle: {
+  fontSize: 13,
+  fontFamily: 'Inter-Medium',
   color: '#000',
 },
 
@@ -663,28 +662,21 @@ elevation: 2,
   fontSize: 10,
   color: '#8A8A8A',
   marginTop: 2,
+  fontFamily: 'Inter-Regular',
 },
-
-//   radioOuter: {
-//     width: 18,
-//     height: 18,
-//     borderRadius: 9,
-//     borderWidth: 1,
-//     borderColor: '#CCC',
-//   },
 
   radioSelected: {
     backgroundColor: '#0A8A2A',
     borderColor: '#0A8A2A',
   },
 
-  timeTitle: {
-    marginHorizontal: 16,
-    marginTop: 18,
-    marginBottom: 10,
-    fontSize: 14,
-    fontWeight: '600',
-  },
+ timeTitle: {
+  marginHorizontal: 16,
+  marginTop: 18,
+  marginBottom: 10,
+  fontSize: 14,
+  fontFamily: 'Inter-SemiBold',
+},
 
   timeRow: {
     flexDirection: 'row',
@@ -710,23 +702,24 @@ elevation: 2,
 },
 
 timeText: {
-  fontSize: 11,
-  fontWeight: '500',
+  fontSize: 10,
+  fontFamily: 'Inter-Medium',
 },
 
 timeSubText: {
-  fontSize: 8,
+  fontSize: 6,
   color: '#777',
   marginTop: 1,
+  fontFamily: 'Inter-Regular',
 },
 
-  listTitle: {
-    marginHorizontal: 12,
-    marginTop: 24,
-    marginBottom: 10,
-    fontSize: 15,
-    fontWeight: '600',
-  },
+ listTitle: {
+  marginHorizontal: 12,
+  marginTop: 24,
+  marginBottom: 10,
+  fontSize: 15,
+  fontFamily: 'Inter-SemiBold',
+},
 
  listCard: {
   backgroundColor: '#FFF',
@@ -749,34 +742,33 @@ timeSubText: {
   elevation: 2,
 },
 
-  itemText: {
-    fontSize: 14,
-    marginBottom: 8,
-  },
+ itemText: {
+  fontSize: 14,
+  marginBottom: 8,
+  fontFamily: 'Inter-Regular',
+},
 
-  continueButton: {
-    backgroundColor: '#008015',
-    marginHorizontal: 12,
-    marginLeft:5,
-    marginVertical: 24,
-    height: 50,
-    width:365,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+continueButton: {
+  backgroundColor: '#008015',
+  height: 50,
+  width: '100%',
+  borderRadius: 10,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginTop:20
+},
 
   continueText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  color: '#FFF',
+  fontSize: 16,
+  fontFamily: 'Inter-SemiBold',
+ 
+},
 
- footer: {
-  bottom: 20,
-  left: 8,
-  right: 8,
-  marginTop:24
+footer: {
+  marginHorizontal: 16,
+  marginTop: 24,
+  marginBottom: 20,
 },
 
 radioOuter: {
@@ -808,13 +800,14 @@ productRow: {
 },
 
 productName: {
-  fontSize: 14,
+  fontSize: 12,
   color: '#000',
+  fontFamily: 'Inter-Regular',
 },
 
 productQty: {
-  fontSize: 14,
-  fontWeight: '600',
+  fontSize: 12,
+  fontFamily: 'Inter-SemiBold',
   color: '#0A8A2A',
 },
 
@@ -836,14 +829,15 @@ productRight: {
 },
 
 productCategory: {
-  fontSize: 11,
+  fontSize: 10,
   color: '#888',
   marginTop: 2,
+  fontFamily: 'Inter-Regular',
 },
 
 productPrice: {
-  fontSize: 14,
-  fontWeight: '700',
+  fontSize: 12,
+  fontFamily: 'Inter-Bold',
   color: '#0A8A2A',
   marginTop: 2,
 },
@@ -863,9 +857,8 @@ daysContainer: {
 
 daysTitle: {
   fontSize: 12,
-  fontWeight: '500',
+  fontFamily: 'Inter-Medium',
   color: '#000',
-
   marginBottom: 10,
 },
 
@@ -898,11 +891,12 @@ selectedDayChip: {
 dayText: {
   fontSize: 11,
   color: '#444',
+  fontFamily: 'Inter-Regular',
 },
 
 selectedDayText: {
   color: '#FFF',
-  fontWeight: '600',
+  fontFamily: 'Inter-SemiBold',
 },
 
 });

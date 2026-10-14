@@ -1,5 +1,4 @@
 import React from 'react';
-
 import {
   View,
   Text,
@@ -9,22 +8,14 @@ import {
   Image
 } from 'react-native';
 
-import {
-  useSubscription,
-} from '../context/SubscriptionContext';
-
-import {
-  SafeAreaView,
-} from 'react-native-safe-area-context';
-
-import {
-  useNavigation,
-} from '@react-navigation/native';
+import { useSubscription } from '../context/SubscriptionContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const SubscriptionSuccessScreen = () => {
-  const {
-  subscriptionData,
-} = useSubscription();
+
+  const { subscriptionData } = useSubscription();
 
   const navigation = useNavigation<any>();
 
@@ -32,335 +23,377 @@ const SubscriptionSuccessScreen = () => {
 
     <SafeAreaView style={styles.container}>
 
-        <ScrollView
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: 20,
-  }}
->
+      {/* ==============================
+          BACK ARROW
+      ============================== */}
 
-      <View style={styles.content}>
+      <View style={styles.header}>
 
-        <Image
-        source={require('../../assets/images/SubscriptionSuccess.png')}
-        style={{
-          width:400,
-          height:120,
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={26}
+            color="#000"
+          />
+        </TouchableOpacity>
+
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 20,
         }}
-        resizeMode='contain'
-        />
+      >
 
+        <View style={styles.content}>
 
-        <Text style={styles.successTitle}>
-          Subscription Successful!
-        </Text>
+          <Image
+            source={require('../../assets/images/SubscriptionSuccess.png')}
+            style={{
+              width: 400,
+              height: 120,
+            }}
+            resizeMode="contain"
+          />
 
-        <Text style={styles.successSubtitle}>
-         Your subscription is successful.
-        </Text>
+          <Text style={styles.successTitle}>
+            Subscription Successful!
+          </Text>
 
-        <Text style={styles.successSubtitle}>
-         We'll deliver your selected products as per your schedule.
-        </Text>
+          <Text style={styles.successSubtitle}>
+            Your subscription is successful.
+          </Text>
 
-        <Text style={styles.summaryHeading}>
-  Subscription Summary
-</Text>
+          <Text style={styles.successSubtitle}>
+            We'll deliver your selected products as per your schedule.
+          </Text>
 
-<View style={styles.summaryCard}>
+          <Text style={styles.summaryHeading}>
+            Subscription Summary
+          </Text>
 
-  {/* Delivery Days */}
+          <View style={styles.summaryCard}>
 
-  <View style={styles.summaryRow}>
-    <View style={styles.rowLeft}>
-  <View style={styles.summaryIconCircle}>
-    <Image
-      source={require('../../assets/icons/DeliveryDays.png')}
-      style={styles.summaryIcon}
-    />
-  </View>
+            {/* Delivery Days */}
 
-  <Text style={styles.rowLabel}>
-    Delivery Days
-  </Text>
-</View>
+            <View style={styles.summaryRow}>
 
-    <View>
-      <Text style={styles.rowValue}>
-  {subscriptionData?.frequency}
-</Text>
+              <View style={styles.rowLeft}>
 
-<Text style={styles.rowSubValue}>
-  {
-    subscriptionData?.selectedDays
-      ?.join(', ')
-  }
-</Text>
-    </View>
-  </View>
+                <View style={styles.summaryIconCircle}>
 
-  <View style={styles.divider} />
+                  <Image
+                    source={require('../../assets/icons/DeliveryDays.png')}
+                    style={styles.summaryIcon}
+                  />
 
-  {/* Delivery Time */}
+                </View>
 
-  <View style={styles.summaryRow}>
-    <View style={styles.rowLeft}>
-  <View style={styles.summaryIconCircle}>
-    <Image
-      source={require('../../assets/icons/DeliveryTime.png')}
-      style={styles.summaryIcon}
-    />
-  </View>
+                <Text style={styles.rowLabel}>
+                  Delivery Days
+                </Text>
 
-  <Text style={styles.rowLabel}>
-    Delivery Time
-  </Text>
-</View>
+              </View>
 
-    <Text style={styles.rowValue}>
+              <View>
 
-  {
-    subscriptionData?.deliveryTime ===
-    'Morning'
+                <Text style={styles.rowValue}>
+                  {subscriptionData?.frequency}
+                </Text>
 
-      ? '06:00AM - 08:00AM'
+                <Text style={styles.rowSubValue}>
+                  {
+                    subscriptionData?.selectedDays
+                      ?.join(', ')
+                  }
+                </Text>
 
-      : '06:00PM - 08:00PM'
-  }
+              </View>
 
-</Text>
-  </View>
+            </View>
 
-  <View style={styles.divider} />
+            <View style={styles.divider} />
 
-  {/* Product */}
+            {/* Delivery Time */}
 
-  {/* Products */}
+            <View style={styles.summaryRow}>
 
-<View style={styles.summaryRow}>
+              <View style={styles.rowLeft}>
 
-  <View style={styles.rowLeft}>
-    <View style={styles.summaryIconCircle}>
-      <Image
-        source={require('../../assets/icons/Product.png')}
-        style={styles.summaryIcon}
-      />
-    </View>
+                <View style={styles.summaryIconCircle}>
 
-    <Text style={styles.rowLabel}>
-      Products
-    </Text>
-  </View>
+                  <Image
+                    source={require('../../assets/icons/DeliveryTime.png')}
+                    style={styles.summaryIcon}
+                  />
 
-  {/* <View style={styles.productsContainer}>
+                </View>
 
-    {
-      subscriptionData?.subscriptionItems?.map(
-        item => (
-          <View
-            key={item.id}
-            style={styles.productItemRow}
-          >
-            <Text style={styles.productItemName}>
-              {item.name}
-            </Text>
+                <Text style={styles.rowLabel}>
+                  Delivery Time
+                </Text>
 
-            <Text style={styles.productItemQty}>
-              Qty {item.quantity}
-            </Text>
+              </View>
+
+              <Text style={styles.rowValue}>
+
+                {
+                  subscriptionData?.deliveryTime ===
+                  'Morning'
+
+                    ? '06:00AM - 08:00AM'
+
+                    : '06:00PM - 08:00PM'
+                }
+
+              </Text>
+
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Products */}
+
+            <View style={styles.summaryRow}>
+
+              <View style={styles.rowLeft}>
+
+                <View style={styles.summaryIconCircle}>
+
+                  <Image
+                    source={require('../../assets/icons/Product.png')}
+                    style={styles.summaryIcon}
+                  />
+
+                </View>
+
+                <Text style={styles.rowLabel}>
+                  Products
+                </Text>
+
+              </View>
+
+              <View style={styles.productsContainer}>
+
+                {[
+                  ...(subscriptionData?.subscriptionItems || []),
+                  ...(subscriptionData?.instantItems || [])
+                ].map(item => (
+
+                  <View
+                    key={item.id}
+                    style={styles.productItemRow}
+                  >
+
+                    <Text style={styles.productItemName}>
+                      {item.name}
+                    </Text>
+
+                    <Text style={styles.productItemQty}>
+                      Qty {item.quantity}
+                    </Text>
+
+                  </View>
+
+                ))}
+
+              </View>
+
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Payment */}
+
+            <View style={styles.summaryRow}>
+
+              <View style={styles.rowLeft}>
+
+                <View style={styles.summaryIconCircle}>
+
+                  <Image
+                    source={require('../../assets/icons/PaymentMethod.png')}
+                    style={styles.summaryIcon}
+                  />
+
+                </View>
+
+                <Text style={styles.rowLabel}>
+                  Payment Method
+                </Text>
+
+              </View>
+
+              <View>
+
+                <Text style={styles.rowValue}>
+                  {subscriptionData?.paymentMethod}
+                </Text>
+
+                <Text style={styles.rowSubValue}>
+                  {subscriptionData?.subscriptionStatus}
+                </Text>
+
+              </View>
+
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Next Delivery */}
+
+            <View style={styles.summaryRow}>
+
+              <View style={styles.rowLeft}>
+
+                <View style={styles.summaryIconCircle}>
+
+                  <Image
+                    source={require('../../assets/icons/NextDelivery.png')}
+                    style={styles.summaryIcon}
+                  />
+
+                </View>
+
+                <Text style={styles.rowLabel}>
+                  Next Delivery
+                </Text>
+
+              </View>
+
+              <View>
+
+                <Text style={styles.rowValue}>
+                  {subscriptionData?.nextDeliveryDate}
+                </Text>
+
+                <Text style={styles.rowSubValue}>
+                  06:00AM - 08:00AM
+                </Text>
+
+              </View>
+
+            </View>
+
           </View>
-        )
-      )
-    }
 
-  </View> */}
-  <View style={styles.productsContainer}>
+          {/* Instant Buy Summary */}
 
-{
-[
-  ...(subscriptionData?.subscriptionItems || []),
-  ...(subscriptionData?.instantItems || [])
-].map(
-  item => (
-    <View
-      key={item.id}
-      style={styles.productItemRow}
-    >
+          {
+            (subscriptionData?.instantItems?.length ?? 0) > 0 && (
 
-      <Text style={styles.productItemName}>
-        {item.name}
-      </Text>
+              <>
 
-      <Text style={styles.productItemQty}>
-        Qty {item.quantity}
-      </Text>
+                <Text style={styles.summaryHeading}>
+                  Instant Buy Summary
+                </Text>
 
-    </View>
-  )
-)
-}
+                <View style={styles.summaryCard}>
 
-</View>
+                  <View style={styles.summaryRow}>
 
-</View>
+                    <Text style={styles.rowLabel}>
+                      Subtotal (
+                      {subscriptionData?.instantItems?.length ?? 0}
+                      {' '}items)
+                    </Text>
 
-<View style={styles.divider} />
+                    <Text style={styles.rowValue}>
+                      ₹{subscriptionData?.instantTotal}
+                    </Text>
 
-  {/* Payment */}
+                  </View>
 
-  <View style={styles.summaryRow}>
-    <View style={styles.rowLeft}>
-  <View style={styles.summaryIconCircle}>
-    <Image
-      source={require('../../assets/icons/PaymentMethod.png')}
-      style={styles.summaryIcon}
-    />
-  </View>
+                  <View style={styles.divider} />
 
-  <Text style={styles.rowLabel}>
-    Payment Method
-  </Text>
-</View>
+                  <View style={styles.summaryRow}>
 
-    <View>
-      <Text style={styles.rowValue}>
-  {subscriptionData?.paymentMethod}
-</Text>
+                    <Text style={styles.rowLabel}>
+                      Delivery
+                    </Text>
 
-      <Text style={styles.rowSubValue}>
-  {subscriptionData?.subscriptionStatus}
-</Text>
-    </View>
-  </View>
+                    <Text
+                      style={[
+                        styles.rowValue,
+                        { color: '#0A8A2A' }
+                      ]}
+                    >
+                      Free
+                    </Text>
 
-  <View style={styles.divider} />
+                  </View>
 
-  {/* Next Delivery */}
+                  <View style={styles.divider} />
 
-  <View style={styles.summaryRow}>
-    <View style={styles.rowLeft}>
-  <View style={styles.summaryIconCircle}>
-    <Image
-      source={require('../../assets/icons/NextDelivery.png')}
-      style={styles.summaryIcon}
-    />
-  </View>
+                  <View style={styles.summaryRow}>
 
-  <Text style={styles.rowLabel}>
-    Next Delivery
-  </Text>
-</View>
-
-    <View>
-      <Text style={styles.rowValue}>
-        {subscriptionData?.nextDeliveryDate}
-      </Text>
-
-      <Text style={styles.rowSubValue}>
-        06:00AM - 08:00AM
-      </Text>
-    </View>
-  </View>
-
-</View>
-
-      {
-(subscriptionData?.instantItems?.length ?? 0) > 0 && (
-    <>
-      <Text style={styles.summaryHeading}>
-        Instant Buy Summary
-      </Text>
-
-      <View style={styles.summaryCard}>
-
-        <View style={styles.summaryRow}>
-         <Text style={styles.rowLabel}>
-  Subtotal (
-  {subscriptionData?.instantItems?.length ?? 0}
-  {' '}items)
-</Text>
-
-          <Text style={styles.rowValue}>
-            ₹{subscriptionData?.instantTotal}
-          </Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.summaryRow}>
-          <Text style={styles.rowLabel}>
-            Delivery
-          </Text>
-
-          <Text
-            style={[
-              styles.rowValue,
-              { color: '#0A8A2A' }
-            ]}
-          >
-            Free
-          </Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.summaryRow}>
-          <Text
-            style={[
-              styles.rowLabel,
-              { fontWeight: '700' }
-            ]}
-          >
-            Total Amount
-          </Text>
-
-          <Text
-            style={[
-              styles.rowValue,
-              { fontWeight: '700' }
-            ]}
-          >
-            ₹{subscriptionData?.instantTotal}
-          </Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.summaryRow}>
-          <Text style={styles.rowLabel}>
-            Payment Method
-          </Text>
-
-          <Text style={styles.rowValue}>
-            {subscriptionData?.paymentMethod}
-          </Text>
-        </View>
-
-      </View>
-    </>
-  )
-}
-
-      </View>
-
-
-
-
-      <TouchableOpacity
-  style={styles.homeButton}
-  onPress={() =>
-    navigation.navigate("MySubscriptions")
-  }
+                   <Text
+  style={[
+    styles.rowLabel,
+    { fontFamily: 'Inter-Bold' }
+  ]}
 >
-  <Text style={styles.homeButtonText}>
-    View My Subscription
-  </Text>
-</TouchableOpacity>
+  Total Amount
+</Text>
+
+<Text
+  style={[
+    styles.rowValue,
+    { fontFamily: 'Inter-Bold' }
+  ]}
+>
+  ₹{subscriptionData?.instantTotal}
+</Text>
+
+                    
+
+                  </View>
+
+                  <View style={styles.divider} />
+
+                  <View style={styles.summaryRow}>
+
+                    <Text style={styles.rowLabel}>
+                      Payment Method
+                    </Text>
+
+                    <Text style={styles.rowValue}>
+                      {subscriptionData?.paymentMethod}
+                    </Text>
+
+                  </View>
+
+                </View>
+
+              </>
+
+            )
+          }
+
+        </View>
+
+        {/* View Subscription */}
+
+        <TouchableOpacity
+          style={styles.homeButton}
+          onPress={() =>
+            navigation.navigate("MySubscriptions")
+          }
+        >
+
+          <Text style={styles.homeButtonText}>
+            View My Subscription
+          </Text>
+
+        </TouchableOpacity>
 
       </ScrollView>
 
     </SafeAreaView>
-
   );
 };
 
@@ -374,9 +407,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
+  // ==============================
+  // HEADER / BACK BUTTON
+  // ==============================
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+
+  backButton: {
+    padding: 4,
+  },
+
   content: {
     alignItems: 'center',
-    marginTop: 80,
+    marginTop: 40,
     paddingHorizontal: 24,
   },
 
@@ -385,25 +433,26 @@ const styles = StyleSheet.create({
   },
 
   successTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 20,
+     fontFamily: 'Inter-Bold',
     color: '#000',
     marginTop: 20,
   },
 
-  successSubtitle: {
-    fontSize: 14,
-    color: '#777',
-    marginTop: 6,
-    textAlign: 'center',
-  },
+ successSubtitle: {
+  fontSize: 11,
+  color: '#777',
+  marginTop: 6,
+  textAlign: 'center',
+  fontFamily: 'Inter-Regular',
+},
 
   homeButton: {
     height: 52,
     backgroundColor: '#000',
     borderRadius: 10,
 
-    marginTop:30,
+    marginTop: 30,
     marginHorizontal: 20,
     marginBottom: 30,
 
@@ -411,123 +460,122 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  homeButtonText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-
-  summaryHeading: {
-  fontSize: 18,
-  fontWeight: '600',
+ homeButtonText: {
+  color: '#FFF',
+  fontSize: 14,
+  fontFamily: 'Inter-SemiBold',
+},
+summaryHeading: {
+  fontSize: 15,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
-
   marginTop: 40,
   marginBottom: 16,
-
   alignSelf: 'flex-start',
 },
 
-summaryCard: {
-  width: '100%',
+  summaryCard: {
+    width: '100%',
 
-  backgroundColor: '#FFF',
+    backgroundColor: '#FFF',
 
-  borderRadius: 20,
+    borderRadius: 20,
 
-  borderWidth: 1,
-  borderColor: '#E8E8E8',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
 
-  paddingVertical: 8,
+    paddingVertical: 8,
 
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 1,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+
+    elevation: 2,
   },
-  shadowOpacity: 0.05,
-  shadowRadius: 3,
 
-  elevation: 2,
-},
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
 
-summaryRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
 
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-},
+  divider: {
+    height: 1,
+    backgroundColor: '#EFEFEF',
+  },
 
-divider: {
-  height: 1,
-  backgroundColor: '#EFEFEF',
-},
-
-rowLabel: {
-  fontSize: 14,
-  fontWeight: '500',
+  rowLabel: {
+  fontSize: 12,
+  fontFamily: 'Inter-Medium',
   color: '#000',
 },
 
-rowValue: {
-  fontSize: 14,
-  fontWeight: '600',
+ rowValue: {
+  fontSize: 12,
+  fontFamily: 'Inter-SemiBold',
   color: '#000',
   textAlign: 'right',
 },
 
-rowSubValue: {
-  fontSize: 11,
+  rowSubValue: {
+  fontSize: 10,
   color: '#8A8A8A',
   marginTop: 2,
   textAlign: 'right',
+  fontFamily: 'Inter-Regular',
 },
 
-rowLeft: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 
-summaryIconCircle: {
-  width: 40,
-  height: 40,
+  summaryIconCircle: {
+    width: 40,
+    height: 40,
 
-  borderRadius: 18,
+    borderRadius: 18,
 
-  backgroundColor: '#eff7f0',
+    backgroundColor: '#eff7f0',
 
-  justifyContent: 'center',
-  alignItems: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
 
-  marginRight: 12,
-},
+    marginRight: 12,
+  },
 
-summaryIcon: {
-  width: 22,
-  height: 22,
-},
+  summaryIcon: {
+    width: 22,
+    height: 22,
+  },
 
-productsContainer: {
-  alignItems: 'flex-end',
-},
+  productsContainer: {
+    alignItems: 'flex-end',
+  },
 
-productItemRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  marginBottom: 4,
-},
+  productItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
 
-productItemName: {
-  fontSize: 13,
+ productItemName: {
+  fontSize: 12,
   color: '#000',
   marginRight: 8,
+  fontFamily: 'Inter-Regular',
 },
 
-productItemQty: {
-  fontSize: 12,
-  fontWeight: '600',
+ productItemQty: {
+  fontSize: 10,
+  fontFamily: 'Inter-SemiBold',
   color: '#0A8A2A',
 },
 

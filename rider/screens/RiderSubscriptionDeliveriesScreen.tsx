@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,25 +11,19 @@ import {
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-
 import { API_URL } from "../config/api";
-
+import { Ionicons } from "@expo/vector-icons";
 const RiderSubscriptionDeliveriesScreen = () => {
   const navigation = useNavigation<any>();
-
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ==========================================
   // FETCH SUBSCRIPTION DELIVERIES
-  // ==========================================
-
   const fetchDeliveries = async () => {
     try {
       setLoading(true);
 
-      const token =
-        await AsyncStorage.getItem("riderToken");
+      const token = await AsyncStorage.getItem("riderToken");
 
       if (!token) {
         Alert.alert(
@@ -50,28 +42,9 @@ const RiderSubscriptionDeliveriesScreen = () => {
         }
       );
 
-      console.log(
-        "RIDER SUBSCRIPTION DELIVERIES RESPONSE:",
-        response.data
-      );
-
       if (response.data.success) {
         const deliveryList =
           response.data.deliveries || [];
-
-        console.log(
-          "TOTAL SUBSCRIPTION DELIVERIES:",
-          deliveryList.length
-        );
-
-        console.log(
-          "DELIVERY IDs:",
-          deliveryList.map((item: any) => ({
-            delivery_id: item.delivery_id,
-            plan: item.plan,
-            status: item.delivery_status,
-          }))
-        );
 
         setDeliveries(deliveryList);
       } else {
@@ -98,32 +71,15 @@ const RiderSubscriptionDeliveriesScreen = () => {
     }
   };
 
-  // ==========================================
   // LOAD
-  // ==========================================
-
   useEffect(() => {
     fetchDeliveries();
   }, []);
 
-  // ==========================================
   // OPEN DETAILS
-  // ==========================================
-
   const openDeliveryDetails = (
     delivery: any
   ) => {
-    console.log(
-      "SELECTED DELIVERY OBJECT:",
-      delivery
-    );
-
-    console.log(
-      "SELECTED DELIVERY ID:",
-      delivery?.delivery_id
-    );
-
-    // Check ID
     if (
       delivery?.delivery_id === undefined ||
       delivery?.delivery_id === null
@@ -139,11 +95,6 @@ const RiderSubscriptionDeliveriesScreen = () => {
       delivery.delivery_id
     );
 
-    console.log(
-      "FINAL DELIVERY ID:",
-      deliveryId
-    );
-
     if (isNaN(deliveryId)) {
       Alert.alert(
         "Error",
@@ -152,8 +103,6 @@ const RiderSubscriptionDeliveriesScreen = () => {
       return;
     }
 
-    // IMPORTANT:
-    // The parameter name here MUST be deliveryId
     navigation.navigate(
       "RiderSubscriptionDeliveryDetails",
       {
@@ -162,15 +111,13 @@ const RiderSubscriptionDeliveriesScreen = () => {
     );
   };
 
-  // ==========================================
   // LOADING
-  // ==========================================
-
   if (loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator
           size="large"
+          color="#0A8A2A"
         />
 
         <Text style={styles.loadingText}>
@@ -180,18 +127,29 @@ const RiderSubscriptionDeliveriesScreen = () => {
     );
   }
 
-  // ==========================================
   // SCREEN
-  // ==========================================
-
   return (
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>
-        Subscription Deliveries
-      </Text>
+  <View style={styles.header}>
+  <TouchableOpacity
+    style={styles.backButton}
+    onPress={() => navigation.goBack()}
+  >
+    <Ionicons
+      name="arrow-back"
+      size={24}
+      color="#000"
+    />
+  </TouchableOpacity>
+
+  <Text style={styles.title}>
+    Subscription Deliveries
+  </Text>
+</View>
+      
 
       {deliveries.length === 0 ? (
         <View style={styles.empty}>
@@ -404,15 +362,31 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: "#777",
+    fontFamily: "InterRegular",
+    fontSize: 14,
   },
+header: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 20,
+  marginTop:15
+},
 
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#000",
-    marginTop: 30,
-    marginBottom: 20,
-  },
+backButton: {
+  width: 40,
+  height: 40,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 8,
+},
+
+title: {
+  flex: 1,
+  fontSize: 15,
+  fontFamily: "InterBold",
+  color: "#000",
+},
+  
 
   card: {
     backgroundColor: "#FFFFFF",
@@ -425,8 +399,7 @@ const styles = StyleSheet.create({
 
   cardHeader: {
     flexDirection: "row",
-    justifyContent:
-      "space-between",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
   },
@@ -434,26 +407,28 @@ const styles = StyleSheet.create({
   plan: {
     flex: 1,
     fontSize: 17,
-    fontWeight: "700",
+    fontFamily: "InterBold",
     color: "#000",
     marginRight: 10,
   },
 
   deliveryId: {
     fontSize: 13,
+    fontFamily: "InterRegular",
     color: "#777",
     marginBottom: 12,
   },
 
   info: {
     fontSize: 14,
+    fontFamily: "InterRegular",
     color: "#555",
     marginBottom: 8,
   },
 
   bold: {
     color: "#000",
-    fontWeight: "600",
+    fontFamily: "InterSemiBold",
   },
 
   statusBadge: {
@@ -472,7 +447,7 @@ const styles = StyleSheet.create({
 
   statusText: {
     fontSize: 11,
-    fontWeight: "700",
+    fontFamily: "InterBold",
   },
 
   pendingText: {
@@ -491,14 +466,15 @@ const styles = StyleSheet.create({
   },
 
   productsTitle: {
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: 13,
+    fontFamily: "InterBold",
     color: "#000",
     marginBottom: 5,
   },
 
   productText: {
     fontSize: 13,
+    fontFamily: "InterRegular",
     color: "#555",
     marginBottom: 3,
   },
@@ -507,7 +483,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     color: "#0A8A2A",
     fontSize: 14,
-    fontWeight: "700",
+    fontFamily: "InterBold",
     textAlign: "right",
   },
 
@@ -521,9 +497,11 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#777",
     fontSize: 15,
+    fontFamily: "InterRegular",
   },
 
   bottomSpace: {
     height: 30,
   },
+ 
 });

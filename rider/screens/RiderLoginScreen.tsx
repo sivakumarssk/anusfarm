@@ -1,22 +1,17 @@
-
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text,TextInput, TouchableOpacity, StyleSheet, Alert,ActivityIndicator,} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+import { API_URL } from "@/config/api";
 
-const API_URL = "http://192.168.0.112:5000";
+
 
 const RiderLoginScreen = ({ navigation }: any) => {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
+
+
+
 
   const handleLogin = async () => {
     if (!phone.trim()) {
@@ -25,7 +20,7 @@ const RiderLoginScreen = ({ navigation }: any) => {
     }
 
     if (phone.length !== 10) {
-      Alert.alert("Error", "Please enter a valid 10 digit phone number");
+       Alert.alert("Error", "Please enter a valid 10 digit phone number");
       return;
     }
 
@@ -61,7 +56,7 @@ const RiderLoginScreen = ({ navigation }: any) => {
 
         navigation.replace("RiderHome");
       } else {
-        Alert.alert(
+         Alert.alert(
           "Login Failed",
           response.data.message || "Unable to login"
         );
@@ -72,7 +67,7 @@ const RiderLoginScreen = ({ navigation }: any) => {
         error.response?.data || error.message
       );
 
-      Alert.alert(
+       Alert.alert(
         "Login Failed",
         error.response?.data?.message ||
           "Something went wrong"
@@ -145,18 +140,51 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 30,
   },
-
   logo: {
-    fontSize: 30,
-    fontWeight: "700",
-    color: "#0A8A2A",
-  },
+  fontSize: 30,
+  fontFamily: "InterBold",
+  color: "#0A8A2A",
+},
 
-  subtitle: {
-    fontSize: 14,
-    color: "#777",
-    marginTop: 5,
-  },
+subtitle: {
+  fontSize: 14,
+  fontFamily: "InterRegular",
+  color: "#777",
+  marginTop: 5,
+},
+
+title: {
+  fontSize: 22,
+  fontFamily: "InterBold",
+  color: "#000",
+  marginBottom: 25,
+},
+
+label: {
+  fontSize: 14,
+  fontFamily: "InterSemiBold",
+  marginBottom: 8,
+},
+
+input: {
+  height: 52,
+  borderWidth: 1,
+  borderColor: "#DDD",
+  borderRadius: 10,
+  paddingHorizontal: 15,
+  fontSize: 16,
+  fontFamily: "InterRegular",
+},
+
+loginText: {
+  color: "#fff",
+  fontSize: 16,
+  fontFamily: "InterSemiBold",
+},
+
+ 
+
+  
 
   card: {
     backgroundColor: "#fff",
@@ -165,27 +193,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#000",
-    marginBottom: 25,
-  },
+ 
 
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
+ 
 
-  input: {
-    height: 52,
-    borderWidth: 1,
-    borderColor: "#DDD",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    fontSize: 16,
-  },
+ 
 
   loginButton: {
     height: 52,
@@ -196,10 +208,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 
-  loginText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  
 });
 

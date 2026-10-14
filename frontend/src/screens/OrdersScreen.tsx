@@ -25,79 +25,419 @@ const MyOrdersScreen = () => {
   }, [])
 );
 
-  const loadOrders = async () => {
 
-try {
+// const loadOrders = async () => {
+//   try {
+//     const token = await AsyncStorage.getItem("token");
 
-const token = await AsyncStorage.getItem("token");
+//     if (!token) {
+//       console.log("TOKEN NOT FOUND");
+//       return;
+//     }
 
-const res = await fetch(`${API_URL}/api/orders/my`,{
-headers:{
-Authorization:`Bearer ${token}`
-}
-}
-);
+//     // =========================
+//     // INSTANT ORDERS
+//     // =========================
 
+//     const ordersResponse = await fetch(
+//       `${API_URL}/api/orders/my`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
 
-const json = await res.json();
+//     const ordersJson = await ordersResponse.json();
 
-console.log("MY ORDERS:",json);
+//     console.log("MY INSTANT ORDERS:", ordersJson);
 
+//     let instantOrders: any[] = [];
 
-if(json.success){
+//     if (ordersJson.success) {
+//       instantOrders = ordersJson.orders.map(
+//         (order: any) => ({
+//           id: order.id,
+//           orderId: order.id.toString(),
+//           orderType: "instant",
+//           deliveryDate: order.created_at,
+//           created_at: order.created_at,
+//           status: order.status.toLowerCase(),
 
-const backendOrders = json.orders.map((order:any)=>({
+//           products: order.products.map(
+//             (item: any) => ({
+//               ...item,
+//               image: encodeURI(
+//                 `${API_URL.replace(
+//                   "/api",
+//                   ""
+//                 )}/uploads/${item.image}`
+//               ),
+//             })
+//           ),
 
-id:order.id,
+//           total: order.total_amount,
+//         })
+//       );
+//     }
 
-orderId:order.id.toString(),
+//     // =========================
+//     // SUBSCRIPTIONS
+//     // =========================
 
-orderType:"instant",
+//     const subscriptionResponse =
+//       await fetch(
+//         `${API_URL}/api/subscriptions/my`,
+//         {
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
 
-deliveryDate:order.created_at,
+//     const subscriptionJson =
+//       await subscriptionResponse.json();
 
-created_at:order.created_at,
+//     console.log(
+//       "MY SUBSCRIPTIONS:",
+//       subscriptionJson
+//     );
 
-status:order.status.toLowerCase(),
+// console.log(
+//   "SUBSCRIPTION PRODUCT IMAGES:",
+//   JSON.stringify(
+//     subscriptionJson.subscriptions?.map((subscription: any) => ({
+//       subscriptionId: subscription.id,
+//       products: subscription.products,
+//     })),
+//     null,
+//     2
+//   )
+// );
+//     let subscriptionOrders: any[] = [];
 
-products:order.products.map((item:any)=>({
+//     if (
+//       subscriptionJson.success &&
+//       Array.isArray(subscriptionJson.subscriptions)
+//     ) {
+//       subscriptionJson.subscriptions.forEach(
+//         (subscription: any) => {
 
-...item,
+//           const deliveries =
+//             Array.isArray(subscription.deliveries)
+//               ? subscription.deliveries
+//               : [];
 
-image:encodeURI(
-`${API_URL.replace("/api","")}/uploads/${item.image}`
-)
+//           const products =
+//             Array.isArray(subscription.products)
+//               ? subscription.products
+//               : [];
 
-})),
+//           deliveries.forEach(
+//             (delivery: any) => {
 
-total:order.total_amount
+//               subscriptionOrders.push({
+//                 id: delivery.id,
 
-}));
+//                 orderId:
+//                   `SUB-${subscription.id}-${delivery.id}`,
 
+//                 orderType: "subscription",
 
-setOrders(backendOrders);
+//                 subscriptionId:
+//                   subscription.id,
 
-}
+//                 deliveryId:
+//                   delivery.id,
 
+//                 deliveryStatus:
+//                   delivery.status,
 
-}
-catch(error){
+//                 status: "scheduled",
 
-console.log(
-"LOAD ORDERS ERROR:",
-error
-);
+//                 deliveryDate:
+//                   delivery.delivery_date,
 
-}
+//                 created_at:
+//                   delivery.delivery_date,
 
+//                 products: products.map(
+//                   (item: any) => ({
+//                     ...item,
+
+//                     // image: item.image
+//                     //   ? encodeURI(
+//                     //       `${API_URL.replace(
+//                     //         "/api",
+//                     //         ""
+//                     //       )}/uploads/${item.image}`
+//                     //     )
+//                     //   : null,
+                    
+// image: item.image
+//   ? item.image.startsWith("http")
+//     ? encodeURI(item.image)
+//     : encodeURI(
+//         `${API_URL.replace(/\/api\/?$/, "")}/uploads/${item.image.replace(/^\/?uploads\//, "")}`
+//       )
+//   : null,
+//                   })
+//                 ),
+
+//                 total: products.reduce(
+//                   (
+//                     total: number,
+//                     item: any
+//                   ) =>
+//                     total +
+//                     Number(item.price || 0) *
+//                     Number(item.quantity || 0),
+//                   0
+//                 ),
+
+//                 plan:
+//                   subscription.plan,
+
+//                 frequency:
+//                   subscription.frequency,
+
+//                 delivery_time:
+//                   subscription.delivery_time,
+//               });
+//             }
+//           );
+//         }
+//       );
+//     }
+
+//     // =========================
+//     // COMBINE ORDERS
+//     // =========================
+
+//     const allOrders = [
+//       ...instantOrders,
+//       ...subscriptionOrders,
+//     ];
+
+//     console.log(
+//       "ALL ORDERS:",
+//       allOrders
+//     );
+
+//     setOrders(allOrders);
+
+//   } catch (error) {
+
+//     console.log(
+//       "LOAD ORDERS ERROR:",
+//       error
+//     );
+
+//   }
+// };
+const loadOrders = async () => {
+  try {
+    const token = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      console.log("TOKEN NOT FOUND");
+      return;
+    }
+
+    // ==========================================
+    // LOAD INSTANT + SUBSCRIPTION AT SAME TIME
+    // ==========================================
+
+    const [ordersResponse, subscriptionResponse] =
+      await Promise.all([
+        fetch(`${API_URL}/api/orders/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+
+        fetch(`${API_URL}/api/subscriptions/my`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
+
+    // Convert both responses at same time
+    const [ordersJson, subscriptionJson] =
+      await Promise.all([
+        ordersResponse.json(),
+        subscriptionResponse.json(),
+      ]);
+
+    // console.log("MY INSTANT ORDERS:", ordersJson);
+    // console.log("MY SUBSCRIPTIONS:", subscriptionJson);
+
+    // ==========================================
+    // INSTANT ORDERS
+    // ==========================================
+
+    let instantOrders: any[] = [];
+
+    if (
+      ordersJson.success &&
+      Array.isArray(ordersJson.orders)
+    ) {
+      instantOrders = ordersJson.orders.map(
+        (order: any) => ({
+          id: order.id,
+
+          orderId: order.id.toString(),
+
+          orderType: "instant",
+
+          deliveryDate: order.created_at,
+
+          created_at: order.created_at,
+
+          status: order.status
+            ? order.status.toLowerCase()
+            : "pending",
+
+          products: Array.isArray(order.products)
+            ? order.products.map((item: any) => ({
+                ...item,
+
+                image: item.image
+                  ? item.image.startsWith("http")
+                    ? encodeURI(item.image)
+                    : encodeURI(
+                        `${API_URL.replace(
+                          /\/api\/?$/,
+                          ""
+                        )}/uploads/${item.image.replace(
+                          /^\/?uploads\//,
+                          ""
+                        )}`
+                      )
+                  : null,
+              }))
+            : [],
+
+          total: order.total_amount,
+        })
+      );
+    }
+
+    // ==========================================
+    // SUBSCRIPTION ORDERS
+    // ==========================================
+
+    let subscriptionOrders: any[] = [];
+
+    if (
+      subscriptionJson.success &&
+      Array.isArray(subscriptionJson.subscriptions)
+    ) {
+      subscriptionJson.subscriptions.forEach(
+        (subscription: any) => {
+          const deliveries =
+            Array.isArray(subscription.deliveries)
+              ? subscription.deliveries
+              : [];
+
+          const products =
+            Array.isArray(subscription.products)
+              ? subscription.products
+              : [];
+
+          deliveries.forEach((delivery: any) => {
+            subscriptionOrders.push({
+              id: delivery.id,
+
+              orderId: `SUB-${subscription.id}-${delivery.id}`,
+
+              orderType: "subscription",
+
+              subscriptionId: subscription.id,
+
+              deliveryId: delivery.id,
+
+              deliveryStatus: delivery.status,
+
+              status: "scheduled",
+
+              deliveryDate: delivery.delivery_date,
+
+              created_at: delivery.delivery_date,
+
+              products: products.map((item: any) => ({
+                ...item,
+
+                image: item.image
+                  ? item.image.startsWith("http")
+                    ? encodeURI(item.image)
+                    : encodeURI(
+                        `${API_URL.replace(
+                          /\/api\/?$/,
+                          ""
+                        )}/uploads/${item.image.replace(
+                          /^\/?uploads\//,
+                          ""
+                        )}`
+                      )
+                  : null,
+              })),
+
+              total: products.reduce(
+                (total: number, item: any) =>
+                  total +
+                  Number(item.price || 0) *
+                    Number(item.quantity || 0),
+                0
+              ),
+
+              plan: subscription.plan,
+
+              frequency: subscription.frequency,
+
+              delivery_time:
+                subscription.delivery_time,
+            });
+          });
+        }
+      );
+    }
+
+    // ==========================================
+    // COMBINE
+    // ==========================================
+
+    const allOrders = [
+      ...instantOrders,
+      ...subscriptionOrders,
+    ];
+
+    console.log(
+      "INSTANT ORDERS COUNT:",
+      instantOrders.length
+    );
+
+    console.log(
+      "SUBSCRIPTION ORDERS COUNT:",
+      subscriptionOrders.length
+    );
+
+    setOrders(allOrders);
+
+  } catch (error) {
+    console.log(
+      "LOAD ORDERS ERROR:",
+      error
+    );
+  }
 };
-    
+
 const filteredOrders = selectedTab === 'instant' ? orders.filter(
    order => order.orderType ==='instant'  ): orders.filter(
         order =>order.orderType ==='subscription');
 
-  console.log("Selected Tab:", selectedTab);
-console.log("Filtered Orders:", filteredOrders);
+  
 
 
  const todayOrders =
@@ -195,8 +535,8 @@ selectedDate.toDateString()
     <>
       <Text
         style={{
-          fontSize: 16,
-          fontWeight: '600',
+          fontSize: 14,
+         fontFamily:"Inter-SemiBold",
           marginTop: 12,
           marginBottom: 12,
         }}
@@ -375,7 +715,7 @@ onPress={() =>
       <Text
         style={{
           fontSize: 16,
-          fontWeight: '600',
+          fontFamily:"Inter-SemiBold",
           marginBottom: 12,
           marginTop: 8,
         }}
@@ -439,11 +779,12 @@ onPress={() =>
 
 <Text
   style={{
-    fontSize:16,
-    fontWeight:"600",
-    marginTop:20,
-    marginBottom:12,
-  }}
+  fontFamily: "Inter-SemiBold",
+  fontSize: 16,
+  fontWeight: "600",
+  marginTop: 12,
+  marginBottom: 12,
+}}
 >
   Pending Orders
 </Text>
@@ -455,7 +796,8 @@ onPress={() =>
     <Text
       style={{
         color:"#777",
-        marginBottom:10
+        marginBottom:10,
+        fontFamily:"Inter-Medium"
       }}
     >
       No Pending Orders
@@ -464,17 +806,6 @@ onPress={() =>
   ) : (
 
     pendingOrders.map(order => (
-
-//      <OrderCard
-//   key={order.orderId}
-//   order={order}
-//   showActionButton={false}
-//   onPress={() =>
-//     navigation.navigate("TrackOrder", {
-//       orderId: order.orderId,
-//     })
-//   }
-// />
 <OrderCard
   key={order.orderId}
   order={order}
@@ -507,7 +838,7 @@ onPress={() =>
   <Text
     style={{
       fontSize: 16,
-      fontWeight: '600',
+      fontFamily:"Inter-SemiBold"
     }}
   >
     Delivered Orders
@@ -576,11 +907,13 @@ const styles = StyleSheet.create({
 
   },
 
-  reminderText: {
-    fontSize: 16,
-    color: '#888',
-    marginLeft:20,
+ reminderText: {
+    fontFamily: "Inter-Regular",
+    fontSize: 13,
+    color: "#888",
+    marginLeft: 20,
   },
+
 
   emptyStateContainer: {
   backgroundColor: '#D6E1D5',
@@ -600,13 +933,12 @@ basketImage: {
 },
 
 emptyTitle: {
-  fontSize: 18,
-  fontWeight: '600',
-
-  color: '#000',
-
-  marginBottom: 18,
-},
+    fontFamily: "Inter-SemiBold",
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+    marginBottom: 18,
+  },
 
 scheduleButton: {
   backgroundColor: '#000',
@@ -620,12 +952,12 @@ scheduleButton: {
   alignItems: 'center',
 },
 
-scheduleButtonText: {
-  color: '#FFF',
-
-  fontSize: 14,
-  fontWeight: '600',
-},
+ scheduleButtonText: {
+    fontFamily: "Inter-SemiBold",
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 
 tabContainer: {
   flexDirection: 'row',
@@ -658,15 +990,16 @@ activeTab: {
 },
 
 tabText: {
-  color: '#000',
-  fontSize: 14,
-},
-
+    fontFamily: "Inter-Regular",
+    color: "#000",
+    fontSize: 14,
+  },
 activeTabText: {
-  color: '#FFF',
-  fontSize: 14,
-  fontWeight: '600',
-},
+    fontFamily: "Inter-SemiBold",
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
 
 orderCard: {
   backgroundColor: '#FFF',
@@ -682,29 +1015,34 @@ orderCard: {
 },
 
 productName: {
-  fontSize: 15,
-  fontWeight: '600',
-  color: '#000',
-},
+    fontFamily: "Inter-SemiBold",
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#000",
+  },
+
 
 productInfo: {
-  fontSize: 12,
-  color: '#777',
-  marginTop: 4,
-},
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    color: "#777",
+    marginTop: 4,
+  },
 
-productPrice: {
-  fontSize: 16,
-  fontWeight: '700',
-  color: '#000',
-  marginTop: 6,
-},
+ productPrice: {
+    fontFamily: "Inter-Bold",
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+    marginTop: 6,
+  },
 
 deliveryText: {
-  fontSize: 12,
-  color: '#777',
-  marginTop: 4,
-},
+    fontFamily: "Inter-Regular",
+    fontSize: 12,
+    color: "#777",
+    marginTop: 4,
+  },
 
 actionButton: {
   marginTop: 10,
@@ -719,11 +1057,12 @@ actionButton: {
   alignItems: 'center',
 },
 
-actionButtonText: {
-  color: '#FFF',
-  fontSize: 12,
-  fontWeight: '600',
-},
+ actionButtonText: {
+    fontFamily: "Inter-SemiBold",
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
 
 contentContainer:{
   paddingHorizontal:16,

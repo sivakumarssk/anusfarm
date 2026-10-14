@@ -72,46 +72,49 @@ const paymentNames: Record<string, string> = {
         <View style={styles.summaryCard}>
 
           <View style={styles.summaryRow}>
-            <Text>
-Subtotal ({itemCount} items)
+           <Text style={{ fontFamily: 'Inter-Regular' }}>
+  Subtotal ({itemCount} items)
 </Text>
 
-<Text>
-₹{subtotal}
+<Text style={{ fontFamily: 'Inter-Regular' }}>
+  ₹{subtotal}
 </Text>
           </View>
 
           <View style={styles.dashedLine} />
 
           <View style={styles.summaryRow}>
-            <Text>Delivery</Text>
+           <Text style={{ fontFamily: 'Inter-Regular' }}>
+  Delivery
+</Text>
             <Text
-              style={{
-                color:'#0A8A2A'
-              }}
-            >
-              Free
-            </Text>
+  style={{
+    color:'#0A8A2A',
+    fontFamily:'Inter-Medium',
+  }}
+>
+  Free
+</Text>
           </View>
 
           <View style={styles.dashedLine} />
 
           <View style={styles.summaryRow}>
-            <Text
-              style={{
-                fontWeight:'700'
-              }}
-            >
-              Total Amount
-            </Text>
+           <Text
+  style={{
+    fontFamily:'Inter-Bold',
+  }}
+>
+  Total Amount
+</Text>
 
-            <Text
-              style={{
-                fontWeight:'700'
-              }}
-            >
-              ₹{total}
-            </Text>
+<Text
+  style={{
+    fontFamily:'Inter-Bold',
+  }}
+>
+  ₹{total}
+</Text>
           </View>
 
         </View>
@@ -125,19 +128,26 @@ Subtotal ({itemCount} items)
         <View style={styles.summaryCard}>
 
           <View style={styles.summaryRow}>
-            <Text>Total Amount</Text>
-            <Text>₹{total}</Text>
+           <Text style={{ fontFamily:'Inter-Regular' }}>
+  Total Amount
+</Text>
+
+<Text style={{ fontFamily:'Inter-Regular' }}>
+  ₹{total}
+</Text>
           </View>
 
           <View style={styles.dashedLine} />
 
           <View style={styles.summaryRow}>
-            <Text>Paid Via</Text>
+          <Text style={{ fontFamily:'Inter-Regular' }}>
+  Paid Via
+</Text>
 
-          <Text
+         <Text
   style={{
     color: "#0A8A2A",
-    fontWeight: "600",
+    fontFamily: "Inter-SemiBold",
   }}
 >
   {paymentNames[paymentMethod] || paymentMethod}
@@ -186,8 +196,8 @@ header:{
 },
 
 headerTitle:{
-  fontSize:18,
-  fontWeight:'600',
+  fontSize:15,
+  fontFamily:'Inter-SemiBold',
   marginLeft:12,
 },
 
@@ -204,13 +214,15 @@ successBox:{
 
 successTitle:{
   color:'#179A2E',
-  fontSize:14,
-  fontWeight:'700',
+  fontSize:12,
+  fontFamily:'Inter-Bold',
 },
 
 successSubTitle:{
   color:'#777',
   marginTop:4,
+  fontFamily:'Inter-Regular',
+  fontSize:9,
 },
 
 orderCard:{
@@ -229,22 +241,22 @@ orderCard:{
 
 orderLabel:{
   color:'#777',
-  fontSize:13,
+  fontSize:10,
+  fontFamily:'Inter-Regular',
 },
 
 orderId:{
   marginTop:4,
-  fontSize:16,
-  fontWeight:'700',
+  fontSize:12,
+  fontFamily:'Inter-Bold',
 },
 
 sectionTitle:{
   marginHorizontal:16,
   marginTop:16,
   marginBottom:10,
-
-  fontSize:15,
-  fontWeight:'600',
+  fontSize:13,
+  fontFamily:'Inter-SemiBold',
 },
 
 summaryCard:{
@@ -290,7 +302,7 @@ trackButton:{
 trackText:{
   color:'#FFF',
   fontSize:16,
-  fontWeight:'600',
+  fontFamily:'Inter-SemiBold',
 },
 
 });

@@ -4,10 +4,13 @@ import React, { useState, useCallback } from "react";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/api"; // adjust the path if needed
-const Header = ({ location , userName }: any) => {
+import { useCart } from "../context/CartContext";
+// const Header = ({ location , userName }: any) => {
+const Header = ({ location, userName, onSelectAddress }: any) => {
   const [unreadCount, setUnreadCount] = useState(0);
   console.log("CURRENT BADGE COUNT =", unreadCount);
   const navigation = useNavigation<any>();
+  const { totalItems } = useCart();
   useFocusEffect(
   useCallback(() => {
 
@@ -55,11 +58,19 @@ console.log("UNREAD DATA =", data);
       {/* Left Section */}
       <View>
 
-       <Text style={styles.helloText}>
+       {/* <Text style={styles.helloText}>
   Hello {userName ? userName : "!"}
-</Text>
+</Text> */}
+<TouchableOpacity
+  activeOpacity={0.7}
+  onPress={() => navigation.navigate("Profile")}
+>
+  <Text style={styles.helloText}>
+    Hello {userName ? userName : "!"}
+  </Text>
+</TouchableOpacity>
 
-        <View style={styles.locationContainer}>
+        {/* <View style={styles.locationContainer}>
 
           <Image
             source={require('../../assets/icons/location.png')}
@@ -71,8 +82,40 @@ console.log("UNREAD DATA =", data);
             {location || "Select your location"}
           </Text>
 
-        </View>
+        </View> */}
+<TouchableOpacity
+  style={styles.locationContainer}
+  activeOpacity={0.7}
+  
+onPress={() =>
+  navigation.navigate("Address", {
+    fromHome: true,
+    onSelectAddress,
+  })
+}
+>
+  <Image
+    source={require("../../assets/icons/location.png")}
+    style={styles.locationIcon}
+    resizeMode="contain"
+  />
 
+  {/* <Text style={styles.locationText}>
+    {location || "Select your location"}
+  </Text> */}
+  
+<Text
+  style={styles.locationText}
+  numberOfLines={1}
+  ellipsizeMode="tail"
+>
+  {location
+    ? location.length > 20
+      ? location.substring(0, 20) + "..."
+      : location
+    : "Select your location"}
+</Text>
+</TouchableOpacity>
       </View>
 
       {/* Right Section */}
@@ -114,7 +157,7 @@ console.log("UNREAD DATA =", data);
 
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.iconButton}
           onPress={() => {
             navigation.navigate("Cart")
@@ -127,7 +170,27 @@ console.log("UNREAD DATA =", data);
             resizeMode="contain"
           />
 
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+  style={styles.iconButton}
+  onPress={() => {
+    navigation.navigate("Cart");
+  }}
+>
+  <Image
+    source={require("../../assets/icons/cart.png")}
+    style={styles.icon}
+    resizeMode="contain"
+  />
+
+  {totalItems > 0 && (
+    <View style={styles.cartBadge}>
+      <Text style={styles.cartBadgeText}>
+        {totalItems}
+      </Text>
+    </View>
+  )}
+</TouchableOpacity>
 
       </View>
 
@@ -145,32 +208,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginTop: 45,
+    marginTop: 20,
   },
 
-  helloText: {
-    fontSize: 16,
-    color: '#000',
-    fontWeight: '400',
-    marginBottom: 3,
-  },
+  helloText: { fontSize: 13, color: '#000', fontFamily: 'Inter-Regular', marginBottom: 3, },
 
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  
+locationContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  maxWidth: 170,
+  flexShrink: 1,
+},
 
+locationText: {
+  fontSize: 13,
+  color: "#000",
+  fontFamily: "Inter-Regular",
+  marginLeft: 3,
+  flexShrink: 1,
+},
   locationIcon: {
     width: 16,
     height: 16,
     marginRight: 4,
   },
 
-  locationText: {
-    fontSize: 16,
-    color: '#000',
-    marginLeft: 3,
-  },
+  // locationText: { fontSize: 13, color: '#000', fontFamily: 'Inter-Regular', marginLeft: 3, },
 
   iconContainer: {
   flexDirection: 'row',
@@ -191,26 +255,40 @@ const styles = StyleSheet.create({
   elevation:10,
 },
 
-badgeText:{
-  color:"white",
-  fontSize:12,
-  fontWeight:"bold",
-},
+badgeText: { color: "white", fontSize: 12, fontFamily: 'Inter-Bold', },
 
-iconButton:{
-  marginLeft:12,
-  position:"relative",
-  width:35,
-  height:35,
-  justifyContent:"center",
-  alignItems:"center",
-  overflow:"visible",
+iconButton: {
+  marginLeft: 10,
+  position: "relative",
+  width: 38,
+  height: 38,
+  justifyContent: "center",
+  alignItems: "center",
+  overflow: "visible",
 },
 
   icon: {
   width:28,
   height:28,
 },
-
-
+cartBadgeText: {
+  color: "#fff",
+  fontSize: 11,
+  fontFamily: "Inter-Bold",
+  textAlign: "center",
+},
+cartBadge: {
+  position: "absolute",
+  top: -0,
+  right: -0,
+  minWidth: 20,
+  height: 20,
+  borderRadius: 10,
+  backgroundColor: "red",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 5,
+  zIndex: 999,
+  elevation: 10,
+},
 });
